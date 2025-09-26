@@ -1,0 +1,106 @@
+<!-- RUNTIME SKELETON (EN) -->
+<style>
+body{margin:0;background:#0b1020;color:#e8ecf4;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
+.stage{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.phone{width:360px;height:640px;border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0f152a}
+@media (max-width:420px){.phone{width:320px;height:568px}}
+
+/* status bar (preview-only) */
+.status{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;
+font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.06),rgba(255,255,255,.09))}
+.status .dots{display:flex;gap:4px}
+.status .dot{width:6px;height:6px;border-radius:50%;background:#aeb7c8;opacity:.85}
+.wrap{padding:16px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+.h1{font-size:22px;font-weight:800;margin:0 0 6px}
+.p{margin:0 0 10px;color:#9aa3b2}
+.btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(90deg,#34d399,#10b981);color:#062d24}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1d243d;border:1px solid rgba(255,255,255,.08);font-size:12px;color:#9aa3b2;margin-bottom:10px}
+</style>
+
+<div class="stage">
+<div id="phone" class="phone">
+<!-- יוזר אמיתי לא יראה את הסטטוס־בר; מוצג רק כשpreview=1 -->
+<div id="status" class="status" style="display:none">
+<div>9:41</div>
+<div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+</div>
+<div class="wrap"><div id="app" class="card"></div></div>
+</div>
+</div>
+
+<script>
+(function(){
+const qs = new URLSearchParams(location.search);
+const F = (qs.get('f')||'').trim(); // feature slug
+const NAME = (qs.get('name')||'Friend').trim();
+const GIFT = (qs.get('giftUrl')||'#').trim();
+const PREV = (qs.get('preview')||'0').trim()==='1';
+
+// הצג סטטוס־בר רק בפריביו
+if (PREV) document.getElementById('status').style.display = 'flex';
+
+function el(html){ document.getElementById('app').innerHTML = html; }
+
+// ===== Voice Verify (placeholder עד למימוש) =====
+function voiceVerify(){
+el(`
+<div class="badge">Voice Verify – demo</div>
+<h1 class="h1">${NAME}, a special gift is waiting! 🎁</h1>
+<p class="p">Fun verification challenge.</p>
+<button class="btn btn-primary">Verify & get the gift</button>
+<p class="p" style="margin-top:12px">Gift link (hidden in real flow): <a href="${GIFT}" target="_blank">${GIFT}</a></p>
+`);
+}
+
+// ===== Fake Captcha =====
+function captcha(){
+el(`
+<div class="badge">Fake Captcha – demo</div>
+<h1 class="h1">Are you a human, ${NAME}? 🤖</h1>
+<p class="p">Please solve this silly puzzle…</p>
+<button class="btn btn-primary">I'm human</button>
+`);
+}
+
+// ===== Infinite Buttons =====
+function infinite(){
+el(`
+<div class="badge">Infinite Buttons – demo</div>
+<h1 class="h1">Tap the button to continue</h1>
+<button class="btn btn-primary">Continue</button>
+`);
+}
+
+// ===== Narcissist Questions =====
+function narcissistQ(){
+el(`
+<div class="badge">Narcissist Q – demo</div>
+<h1 class="h1">Quick personality check for ${NAME}</h1>
+<p class="p">Answer a few oddly self-centric questions…</p>
+<button class="btn btn-primary">Start</button>
+`);
+}
+
+// ===== Selfie Verify =====
+function selfieVerify(){
+el(`
+<div class="badge">Selfie Verify – demo</div>
+<h1 class="h1">${NAME}, snap a quick selfie 📸</h1>
+<p class="p">This is a demo screen. Real flow will ask for permissions.</p>
+<button class="btn btn-primary">Open camera</button>
+`);
+}
+
+const map = {
+'voice-verify': voiceVerify,
+'captcha': captcha,
+'infinite': infinite,
+'narcissist-q': narcissistQ,
+'selfie-verify': selfieVerify
+};
+
+(map[F] || (()=>el('<h1 class="h1">Feature not found</h1><p class="p">Use ?f=voice-verify|captcha|infinite|narcissist-q|selfie-verify</p>')))();
+})();
+</script>
