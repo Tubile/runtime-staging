@@ -17,6 +17,13 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
 .btn-primary{background:linear-gradient(90deg,#34d399,#10b981);color:#062d24}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1d243d;border:1px solid rgba(255,255,255,.08);font-size:12px;color:#9aa3b2;margin-bottom:10px}
+.btn{ position:relative }
+.btn .label{ pointer-events:none }
+.btn .percent{
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  font-size:12px; opacity:.9
+}
+.confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999 }
 </style>
 
 <!-- Infinite UX extra classes -->
@@ -136,23 +143,30 @@ function infinite(){
   // Inner block (reused for both preview + live)
   const inner = document.createElement('div');
   inner.className = 'wrap';
-  inner.innerHTML = `
-    <h1>${copy.title}</h1>
-    <p class="sub">${copy.subtitle}</p>
-    <button id="ibtn" class="btn">${copy.btn1_loading}</button>
-    <div id="iprogress" class="progress" aria-hidden="true"><div class="progress__bar" id="ibar"></div></div>
-    <span id="itext" class="progress__text" aria-live="polite" aria-atomic="true" style="display:none">0%</span>
-    <div id="earned" class="earned">${copy.earned}</div>
-  `;
+inner.innerHTML = `
+  <h1>${copy.title}</h1>
+  <p class="sub">${copy.subtitle}</p>
+  <button id="ibtn" class="btn">
+    <span id="ilabel" class="label">${getCopy('btn0_start','Click to get your gift')}</span>
+    <span id="ipct" class="percent" style="display:none">0%</span>
+  </button>
+  <div id="iprogress" class="progress" aria-hidden="true" style="display:none">
+    <div class="progress__bar" id="ibar"></div>
+  </div>
+  <div id="earned" class="earned">${copy.earned}</div>
+  <canvas id="confetti" class="confetti-canvas" width="0" height="0"></canvas>
+`;
   
   app.replaceChildren(inner);
 
   // Interaction logic
-  const btn = document.getElementById('ibtn');
-  const bar = document.getElementById('ibar');
-  const progWrap = document.getElementById('iprogress');
-  const ptxt = document.getElementById('itext');
-  const earned = document.getElementById('earned');
+const btn = document.getElementById('ibtn');
+const ilabel = document.getElementById('ilabel');
+const ipct = document.getElementById('ipct');
+const bar = document.getElementById('ibar');
+const progWrap = document.getElementById('iprogress');
+const earned = document.getElementById('earned');
+const confettiCanvas = document.getElementById('confetti');
   
 // helpers for fun states
 function resetBtnColors(){
@@ -168,33 +182,36 @@ function resetFx(){
   let success = false;
 
   // Initialize visual state for Step 1 loading
-  progWrap.style.display = 'block';
-  ptxt.style.display = 'block';
-  ptxt.textContent = '0%';
   btn.disabled = false;
 
   // Start loading animation only on first click (per brief: Tap #1 → loading ~4s)
   let interval = null;
   let progress = 0;
 
-  function startLoading(){
-    loading = true;
-    btn.disabled = true;
-    sfx('confirm');
-    interval = setInterval(()=>{
-      progress = Math.min(100, progress + Math.floor(Math.random()*7)+2);
-      bar.style.width = progress + '%';
-      ptxt.textContent = progress + '%';
-      if (progress >= 100){
-        clearInterval(interval);
-        setTimeout(()=>{
-          btn.disabled = false;
-          loading = false;
-          // After loading finishes, user must tap again to move to step 2
-        }, 350);
-      }
-    }, 120);
-  }
+function startLoading(){
+  loading = true;
+  btn.disabled = true;
+  sfx('confirm');
+  progWrap.style.display = 'block';
+  ipct.style.display = 'inline'; ipct.textContent = '0%';
+
+  let progress = 0;
+  interval = setInterval(()=>{
+    progress = Math.min(100, progress + Math.floor(Math.random()*7)+2);
+    bar.style.width = progress + '%';
+    ipct.textContent = progress + '%';
+
+    if (progress >= 100){
+      clearInterval(interval);
+      setTimeout(()=>{
+        // סיום טעינה: מסתירים אחוזים, משחררים כפתור, ממתינים לטאפ הבא
+        ipct.style.display = 'none';
+        btn.disabled = false;
+        loading = false;
+      }, 300);
+    }
+  }, 120);
+}
 
   function openGift(){
     try { window.open(GIFT, '_blank', 'noopener'); } catch(e) {}
@@ -204,12 +221,13 @@ function resetFx(){
     // If success already achieved, every tap opens gift immediately
     if (success) { openGift(); return; }
 
-    if (tap === 0){
-      // First user tap should start loading if not started
-      if (!interval) startLoading();
-      tap = 1;
-      return;
-    }
+   if (tap === 0){
+  // לחיצה ראשונה → מתגים לטקסט טעינה ומתחילים לטעון
+  ilabel.textContent = copy.btn1_loading;
+  if (!interval) startLoading();
+  tap = 1;
+  return;
+}
     if (loading) return; // ignore taps during loading
 
     tap++; // Move to next stage after loading
@@ -217,10 +235,10 @@ function resetFx(){
     // Stage routing (2..8)
     switch (tap) {
       case 2: {
-  btn.textContent = copy.btn2_error;
+  ilabel.textContent = copy.btn2_error;
   resetBtnColors(); btn.classList.add('error'); sfx('error');
-  resetFx(); inner.classList.add('flash-red','shake','fx-alert');
-  setTimeout(()=>{ inner.classList.remove('flash-red','shake'); }, 550);
+  // בלי היבהוב אדום; רק רטט קצר
+  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
   break;
 }
       case 3: { btn.textContent = copy.btn3_tease1; resetBtnColors(); btn.classList.add('alt1'); resetFx(); break; }
@@ -229,29 +247,50 @@ function resetFx(){
       case 6: { btn.textContent = copy.btn6_tease4; resetBtnColors(); btn.classList.add('alt2'); resetFx(); break; }
       case 7: { btn.textContent = copy.btn7_tease5; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-pink'); sfx('whoosh'); break; }
       case 8: {
-  btn.textContent = copy.btn8_success;
-  resetBtnColors(); btn.classList.add('success'); // ירוק נעים
-  resetFx(); earned.classList.add('show');
+  ilabel.textContent = copy.btn8_success;
+  resetBtnColors(); btn.classList.add('green'); // אם הגדרת .success – אפשר btn.classList.add('success')
+  earned.classList.add('show');
 
-  // קונפטי "פוף": הרבה חלקיקים, משכי זמן שונים, מכסה מסך — אבל נשאר בתוך #app
-  const conf = document.createElement('div');
-  conf.className = 'confetti-fixed';
-  const EMOJI = ['🎉','✨','🎊','💥','🟡','🟣','🟢'];
-  for (let i=0;i<90;i++){
-    const s = document.createElement('span');
-    s.textContent = EMOJI[(Math.random()*EMOJI.length)|0];
-    s.style.left = (Math.random()*100)+'vw';
-    s.style.animationDelay = (Math.random()*0.5)+'s';
-    s.style.animationDuration = (1.6 + Math.random()*0.6)+'s'; // 1.6–2.2s
-    conf.appendChild(s);
-  }
-  // הוסף ל-#app (fixed → מכסה וופורט), הסרה אוטומטית
-  app.appendChild(conf);
-  setTimeout(()=> conf.remove(), 2600);
+  // Canvas confetti "burst" מודרני
+  confettiBurst(confettiCanvas);
 
   sfx('tada');
   success = true;
   break;
+}
+function confettiBurst(canvas){
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  // sizing
+  const r = window.devicePixelRatio || 1;
+  function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+  // attach once
+  if (!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); window.addEventListener('resize', size); }
+  const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+  const pieces = [];
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  for(let i=0;i<120;i++){
+    pieces.push({
+      x:w/2, y:h/2,
+      vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+      r:Math.random()*6+3,
+      c:colors[(Math.random()*colors.length)|0],
+      a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1)
+    });
+  }
+  const g = 0.05; let t=0;
+  (function step(){
+    ctx.clearRect(0,0,w,h);
+    pieces.forEach(p=>{
+      p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+      ctx.globalAlpha = Math.max(p.a,0);
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+    if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+  })();
 }
       default: {
         // Any extra taps after 8 → open immediately
