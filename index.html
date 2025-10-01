@@ -66,11 +66,167 @@ el(`
 
 // ===== Infinite Buttons =====
 function infinite(){
-el(`
-<div class="badge">Infinite Buttons – demo</div>
-<h1 class="h1">Tap the button to continue</h1>
-<button class="btn btn-primary">Continue</button>
-`);
+  const app = document.getElementById('app');
+
+  // Read params
+  const NAME = getCopy('name', 'Friend');
+  const GIFT = qs.get('giftUrl') || 'https://example.com';
+  const ACCENT = (qs.get('accent') || 'dark').toLowerCase();
+  const titleOverride = qs.get('title');
+
+  const copy = {
+    title: titleOverride ? titleOverride : `💖 ${NAME} 💖`,
+    subtitle: getCopy('subtitle', 'Ready for a tiny surprise?'),
+    btn1_loading: getCopy('btn1_loading', 'Checking your surprise…'),
+    btn2_error: getCopy('btn2_error', 'Oops! Try again'),
+    btn3_tease1: getCopy('btn3_tease1', 'Hmm… almost 😉'),
+    btn4_tease2: getCopy('btn4_tease2', 'Keep going…'),
+    btn5_tease3: getCopy('btn5_tease3', 'Patience, hero!'),
+    btn6_tease4: getCopy('btn6_tease4', 'So close…'),
+    btn7_tease5: getCopy('btn7_tease5', 'Last one!'),
+    btn8_success: getCopy('btn8_success', 'Unlocked! Tap to open'),
+    earned: getCopy('earned', 'You earned it 🎉')
+  };
+
+  // Base shell (with optional preview chrome)
+  const shell = document.createElement('div');
+  const themeClass = (ACCENT==='purple'?'theme-purple': ACCENT==='sky'?'theme-sky': ACCENT==='green'?'theme-green':'theme-dark');
+  shell.className = themeClass;
+
+  // Inner block (reused for both preview + live)
+  const inner = document.createElement('div');
+  inner.className = 'wrap';
+  inner.innerHTML = `
+    <h1>${copy.title}</h1>
+    <p class="sub">${copy.subtitle}</p>
+    <button id="ibtn" class="btn">${copy.btn1_loading}</button>
+    <div id="iprogress" class="progress" aria-hidden="true"><div class="progress__bar" id="ibar"></div></div>
+    <span id="itext" class="progress__text" aria-live="polite" aria-atomic="true" style="display:none">0%</span>
+    <div id="earned" class="earned">${copy.earned}</div>
+  `;
+
+  // Mount: preview chrome vs live
+  if (PREV) {
+    const phone = document.createElement('div');
+    phone.className = 'phone';
+    phone.innerHTML = `<div class="statusbar">09:41</div><div class="notch"></div>`;
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    frame.appendChild(inner);
+    const confLayer = document.createElement('div'); confLayer.className = 'confetti'; phone.appendChild(confLayer);
+    phone.appendChild(frame);
+    const chrome = document.createElement('div');
+    chrome.className = 'chrome';
+    chrome.innerHTML = `
+      <a href="#modal-customize-infinite" id="open-customize">Customize free</a>
+      <a class="secondary" href="#" id="close-preview">Close</a>
+    `;
+    shell.appendChild(phone);
+    shell.appendChild(chrome);
+    app.replaceChildren(shell);
+    // Basic close (host site might override)
+    document.getElementById('close-preview').addEventListener('click', function(ev){ ev.preventDefault(); history.replaceState({},'',location.pathname + location.search); });
+  } else {
+    app.replaceChildren(inner);
+    // Confetti layer (absolute) created on demand for live too
+  }
+
+  // Interaction logic
+  const btn = document.getElementById('ibtn');
+  const bar = document.getElementById('ibar');
+  const progWrap = document.getElementById('iprogress');
+  const ptxt = document.getElementById('itext');
+  const earned = document.getElementById('earned');
+
+  let tap = 0;            // 0 before any tap; user tap increments
+  let loading = true;     // We start in "loading" state (after first tap label)
+  let success = false;
+
+  // Initialize visual state for Step 1 loading
+  progWrap.style.display = 'block';
+  ptxt.style.display = 'block';
+  ptxt.textContent = '0%';
+  btn.disabled = false;
+
+  // Start loading animation only on first click (per brief: Tap #1 → loading ~4s)
+  let interval = null;
+  let progress = 0;
+
+  function startLoading(){
+    loading = true;
+    btn.disabled = true;
+    sfx('confirm');
+    interval = setInterval(()=>{
+      progress = Math.min(100, progress + Math.floor(Math.random()*7)+2);
+      bar.style.width = progress + '%';
+      ptxt.textContent = progress + '%';
+      if (progress >= 100){
+        clearInterval(interval);
+        setTimeout(()=>{
+          btn.disabled = false;
+          loading = false;
+          // After loading finishes, user must tap again to move to step 2
+        }, 350);
+      }
+    }, 120);
+  }
+
+  function openGift(){
+    try { window.open(GIFT, '_blank', 'noopener'); } catch(e) {}
+  }
+
+  btn.addEventListener('click', function(){
+    // If success already achieved, every tap opens gift immediately
+    if (success) { openGift(); return; }
+
+    if (tap === 0){
+      // First user tap should start loading if not started
+      if (!interval) startLoading();
+      tap = 1;
+      return;
+    }
+    if (loading) return; // ignore taps during loading
+
+    tap++; // Move to next stage after loading
+
+    // Stage routing (2..8)
+    switch (tap) {
+      case 2: { // Error flash
+        btn.textContent = copy.btn2_error;
+        btn.classList.remove('purple','sky','green');
+        btn.classList.add('error'); sfx('error');
+        inner.classList.add('flash-red','shake');
+        setTimeout(()=>{ inner.classList.remove('flash-red','shake'); btn.classList.remove('error'); }, 420);
+        break;
+      }
+      case 3: { btn.textContent = copy.btn3_tease1; btn.classList.add('purple'); break; }
+      case 4: { btn.textContent = copy.btn4_tease2; btn.classList.remove('purple'); btn.classList.add('sky'); break; }
+      case 5: { btn.textContent = copy.btn5_tease3; sfx('whoosh'); break; }
+      case 6: { btn.textContent = copy.btn6_tease4; break; }
+      case 7: { btn.textContent = copy.btn7_tease5; sfx('whoosh'); break; }
+      case 8: {
+        btn.textContent = copy.btn8_success;
+        btn.classList.remove('error','purple','sky'); btn.classList.add('green');
+        earned.classList.add('show');
+        const host = PREV ? document.querySelector('.phone') : inner;
+        
+        // Confetti overlay on host
+        const conf = document.createElement('div'); conf.className = 'confetti';
+        const EMOJI = ['🟢','🟣','🟡','💥','🎊','✨','🎉'];
+        for (let i=0;i<24;i++){ const s=document.createElement('span'); s.textContent=EMOJI[Math.floor(Math.random()*EMOJI.length)]; s.style.left=(Math.random()*100)+'%'; s.style.animationDelay=(Math.random()*0.25)+'s'; conf.appendChild(s); }
+        (PREV ? document.querySelector('.phone') : inner).appendChild(conf);
+        setTimeout(()=> conf.remove(), 2200);
+        sfx('tada');
+        success = true;
+        // After success, next tap (and any extra taps) open the gift
+        break;
+      }
+      default: {
+        // Any extra taps after 8 → open immediately
+        openGift();
+      }
+    }
+  }, false);
 }
 
 // ===== Narcissist Questions =====
