@@ -122,7 +122,6 @@ el(`
 }
 
 <!-- ===== Infinite Buttons ===== -->
-<script>
 function infinite(){
   const app = document.getElementById('app');
 
@@ -289,10 +288,7 @@ function infinite(){
       ctx.globalAlpha = 1;
       if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
-  }
 }
-</script>
-
 // ===== Narcissist Questions =====
 function narcissistQ(){
 el(`
