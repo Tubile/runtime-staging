@@ -252,12 +252,6 @@ function startLoading(){
   earned.classList.add('show');
 
   // Canvas confetti "burst" מודרני
-  confettiBurst(confettiCanvas);
-
-  sfx('tada');
-  success = true;
-  break;
-}
 function confettiBurst(canvas){
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -277,6 +271,24 @@ function confettiBurst(canvas){
       c:colors[(Math.random()*colors.length)|0],
       a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1)
     });
+  }
+  const g = 0.05; let t=0;
+  (function step(){
+    ctx.clearRect(0,0,w,h);
+    pieces.forEach(p=>{
+      p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+      ctx.globalAlpha = Math.max(p.a,0);
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+    if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+  })();
+}
+  sfx('tada');
+  success = true;
+  break;
   }
   const g = 0.05; let t=0;
   (function step(){
