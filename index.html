@@ -121,7 +121,7 @@ el(`
 `);
 }
 
-<!-- ===== Infinite Buttons ===== -->
+// ===== Infinite Buttons =====
 function infinite(){
   const app = document.getElementById('app');
 
@@ -288,6 +288,7 @@ function infinite(){
       ctx.globalAlpha = 1;
       if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
+  }
 }
 // ===== Narcissist Questions =====
 function narcissistQ(){
