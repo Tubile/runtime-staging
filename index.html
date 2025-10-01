@@ -19,6 +19,29 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1d243d;border:1px solid rgba(255,255,255,.08);font-size:12px;color:#9aa3b2;margin-bottom:10px}
 </style>
 
+<!-- Infinite UX extra classes -->
+<style id="infinite-ux">
+/* מצבי צבע לכפתור (מעבר בין שלבים) */
+.btn.alt1{background:#7c3aed;color:#fff}
+.btn.alt2{background:#0ea5e9;color:#fff}
+.btn.success{background:#10b981;color:#fff}
+
+/* אפקטים עדינים לרקע הכרטיס */
+.wrap.fx-alert{animation:infFlashRed .8s ease-in-out 2 alternate}
+@keyframes infFlashRed{0%{background:#0f1218}100%{background:#241112}}
+.wrap.fx-calm{animation:infCalm .8s ease forwards}
+@keyframes infCalm{from{background:#241112}to{background:#0f1218}}
+.wrap.fx-blue{animation:infBlue .7s ease-in-out 2 alternate}
+@keyframes infBlue{0%{box-shadow:0 0 0 0 rgba(0,144,255,.10)}100%{box-shadow:0 0 0 14px rgba(0,144,255,.08)}}
+.wrap.fx-pink{animation:infPink .7s ease-in-out 2 alternate}
+@keyframes infPink{0%{box-shadow:0 0 0 0 rgba(238,0,120,.10)}100%{box-shadow:0 0 0 14px rgba(238,0,120,.08)}}
+
+/* קונפטי "פוף" שמכסה את כל הוופורט (אבל נשאר בתוך #app) */
+.confetti-fixed{pointer-events:none;position:fixed;inset:0;z-index:999;overflow:hidden}
+.confetti-fixed span{position:absolute;top:-20px;font-size:20px;animation:infFall 1.8s linear forwards}
+@keyframes infFall{to{transform:translateY(110vh) rotate(240deg);opacity:.95}}
+</style>
+
 <div class="stage">
 <div id="phone" class="phone">
 <!-- יוזר אמיתי לא יראה את הסטטוס־בר; מוצג רק כשpreview=1 -->
@@ -121,6 +144,7 @@ function infinite(){
     <span id="itext" class="progress__text" aria-live="polite" aria-atomic="true" style="display:none">0%</span>
     <div id="earned" class="earned">${copy.earned}</div>
   `;
+  
   app.replaceChildren(inner);
 
   // Interaction logic
@@ -129,7 +153,16 @@ function infinite(){
   const progWrap = document.getElementById('iprogress');
   const ptxt = document.getElementById('itext');
   const earned = document.getElementById('earned');
-
+  
+// helpers for fun states
+function resetBtnColors(){
+  btn.classList.remove('error','purple','sky','green','alt1','alt2','success');
+}
+function resetFx(){
+  inner.classList.remove('flash-red','shake'); // מהקיים
+  inner.classList.remove('fx-alert','fx-calm','fx-blue','fx-pink'); // מהחדשים
+}
+  
   let tap = 0;            // 0 before any tap; user tap increments
   let loading = true;     // We start in "loading" state (after first tap label)
   let success = false;
@@ -183,36 +216,43 @@ function infinite(){
 
     // Stage routing (2..8)
     switch (tap) {
-      case 2: { // Error flash
-        btn.textContent = copy.btn2_error;
-        btn.classList.remove('purple','sky','green');
-        btn.classList.add('error'); sfx('error');
-        inner.classList.add('flash-red','shake');
-        setTimeout(()=>{ inner.classList.remove('flash-red','shake'); btn.classList.remove('error'); }, 420);
-        break;
-      }
-      case 3: { btn.textContent = copy.btn3_tease1; btn.classList.add('purple'); break; }
-      case 4: { btn.textContent = copy.btn4_tease2; btn.classList.remove('purple'); btn.classList.add('sky'); break; }
-      case 5: { btn.textContent = copy.btn5_tease3; sfx('whoosh'); break; }
-      case 6: { btn.textContent = copy.btn6_tease4; break; }
-      case 7: { btn.textContent = copy.btn7_tease5; sfx('whoosh'); break; }
+      case 2: {
+  btn.textContent = copy.btn2_error;
+  resetBtnColors(); btn.classList.add('error'); sfx('error');
+  resetFx(); inner.classList.add('flash-red','shake','fx-alert');
+  setTimeout(()=>{ inner.classList.remove('flash-red','shake'); }, 550);
+  break;
+}
+      case 3: { btn.textContent = copy.btn3_tease1; resetBtnColors(); btn.classList.add('alt1'); resetFx(); break; }
+      case 4: { btn.textContent = copy.btn4_tease2; resetBtnColors(); btn.classList.add('alt2'); resetFx(); inner.classList.add('fx-calm'); break; }
+      case 5: { btn.textContent = copy.btn5_tease3; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-blue'); sfx('whoosh'); break; }
+      case 6: { btn.textContent = copy.btn6_tease4; resetBtnColors(); btn.classList.add('alt2'); resetFx(); break; }
+      case 7: { btn.textContent = copy.btn7_tease5; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-pink'); sfx('whoosh'); break; }
       case 8: {
-        btn.textContent = copy.btn8_success;
-        btn.classList.remove('error','purple','sky'); btn.classList.add('green');
-        earned.classList.add('show');
-        const host = PREV ? document.querySelector('.phone') : inner;
-        
-        // Confetti overlay on host
-        const conf = document.createElement('div'); conf.className = 'confetti';
-        const EMOJI = ['🟢','🟣','🟡','💥','🎊','✨','🎉'];
-        for (let i=0;i<24;i++){ const s=document.createElement('span'); s.textContent=EMOJI[Math.floor(Math.random()*EMOJI.length)]; s.style.left=(Math.random()*100)+'%'; s.style.animationDelay=(Math.random()*0.25)+'s'; conf.appendChild(s); }
-        (PREV ? document.querySelector('.phone') : inner).appendChild(conf);
-        setTimeout(()=> conf.remove(), 2200);
-        sfx('tada');
-        success = true;
-        // After success, next tap (and any extra taps) open the gift
-        break;
-      }
+  btn.textContent = copy.btn8_success;
+  resetBtnColors(); btn.classList.add('success'); // ירוק נעים
+  resetFx(); earned.classList.add('show');
+
+  // קונפטי "פוף": הרבה חלקיקים, משכי זמן שונים, מכסה מסך — אבל נשאר בתוך #app
+  const conf = document.createElement('div');
+  conf.className = 'confetti-fixed';
+  const EMOJI = ['🎉','✨','🎊','💥','🟡','🟣','🟢'];
+  for (let i=0;i<90;i++){
+    const s = document.createElement('span');
+    s.textContent = EMOJI[(Math.random()*EMOJI.length)|0];
+    s.style.left = (Math.random()*100)+'vw';
+    s.style.animationDelay = (Math.random()*0.5)+'s';
+    s.style.animationDuration = (1.6 + Math.random()*0.6)+'s'; // 1.6–2.2s
+    conf.appendChild(s);
+  }
+  // הוסף ל-#app (fixed → מכסה וופורט), הסרה אוטומטית
+  app.appendChild(conf);
+  setTimeout(()=> conf.remove(), 2600);
+
+  sfx('tada');
+  success = true;
+  break;
+}
       default: {
         // Any extra taps after 8 → open immediately
         openGift();
