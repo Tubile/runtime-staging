@@ -5,8 +5,18 @@ body{margin:0;background:#0b1020;color:#e8ecf4;font-family:system-ui,Segoe UI,Ro
 .progress__bar{height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#a78bfa);transition:width .08s linear}
 .sub{margin:0 0 12px;color:#9aa3b2;font-size:14px}
 .stage{min-height:100vh;display:flex;align-items:center;justify-content:center}
-.phone{width:360px;height:640px;border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;border:1px solid rgba(255,255,255,.08);background:#0f152a}
-@media (max-width:420px){.phone{width:320px;height:568px}}
+.phone{
+  width:min(420px, 92vw);
+  height:calc(min(420px, 92vw) * 1.78); /* יחס נעים ~16:9 */
+  border-radius:28px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background:#0f152a;
+}
+@media (max-width:420px){
+  .phone{ height:calc(92vw * 1.78) }
+}
 
 /* status bar (preview-only) */
 .status{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;
@@ -64,6 +74,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   gap:16px;              /* ריווח נעים בין כל האלמנטים */
   justify-items:center;  /* מרכז הכל אופקית */
   text-align:center;     /* טקסט ממורכז */
+  margin-top:clamp(24px, 12vh, 96px);  /* דוחף קצת למטה */
 }
 .wrap-infinite h1{ margin:0; font-size:26px; line-height:1.25 }
 .wrap-infinite .sub{ margin:0; font-size:15px; opacity:.9 }
@@ -84,6 +95,9 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 
 /* earned – קצת רווח מעל */
 .wrap-infinite .earned{ margin-top:8px }
+  
+/* כפתור הצלחה ירוק */
+.btn.green{ background:#10b981; color:#fff }
 </style>
 
 <div class="stage">
@@ -271,11 +285,34 @@ function infinite(){
         inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
         break;
       }
-      case 3: { ilabel.textContent = copy.btn3_tease1; resetBtnColors(); btn.classList.add('alt1'); resetFx(); break; }
-      case 4: { ilabel.textContent = copy.btn4_tease2; resetBtnColors(); btn.classList.add('alt2'); resetFx(); inner.classList.add('fx-calm'); break; }
-      case 5: { ilabel.textContent = copy.btn5_tease3; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-blue'); sfx('whoosh'); break; }
-      case 6: { ilabel.textContent = copy.btn6_tease4; resetBtnColors(); btn.classList.add('alt2'); resetFx(); break; }
-      case 7: { ilabel.textContent = copy.btn7_tease5; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-pink'); sfx('whoosh'); break; }
+      case 3: {
+  ilabel.textContent = copy.btn3_tease1;
+  resetBtnColors(); btn.classList.add('alt1'); resetFx();
+  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+  break;
+}
+      case 4: {
+  ilabel.textContent = copy.btn4_tease2;
+  resetBtnColors(); btn.classList.add('alt2'); resetFx();
+  break;
+}
+      case 5: {
+  ilabel.textContent = copy.btn5_tease3;
+  resetBtnColors(); btn.classList.add('alt1'); resetFx();
+  sfx('whoosh');
+  break;
+}
+      case 6: {
+  ilabel.textContent = copy.btn6_tease4;
+  resetBtnColors(); btn.classList.add('alt2'); resetFx();
+  break;
+}
+      case 7: {
+  ilabel.textContent = copy.btn7_tease5;
+  resetBtnColors(); btn.classList.add('alt1'); resetFx();
+  sfx('whoosh');
+  break;
+}
       case 8: {
         ilabel.textContent = copy.btn8_success;
         resetBtnColors(); btn.classList.add('green'); // או .success אם הוספת CSS
