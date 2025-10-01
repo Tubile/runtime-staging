@@ -118,7 +118,8 @@ el(`
 `);
 }
 
-// ===== Infinite Buttons =====
+<!-- ===== Infinite Buttons ===== -->
+<script>
 function infinite(){
   const app = document.getElementById('app');
 
@@ -129,8 +130,8 @@ function infinite(){
   const titleOverride = qs.get('title');
 
   const copy = {
-    title: titleOverride ? titleOverride : `${NAME}, you've got a sweet susprise! 💖`,
-    subtitle: getCopy('subtitle', 'Click the button to get your gift?'),
+    title: titleOverride ? titleOverride : `${NAME}, you've got a sweet surprise! 💖`,
+    subtitle: getCopy('subtitle', 'Click the button to get your gift'),
     btn1_loading: getCopy('btn1_loading', 'Checking your surprise…'),
     btn2_error: getCopy('btn2_error', 'Oops! Try again'),
     btn3_tease1: getCopy('btn3_tease1', 'Hmm… almost 😉'),
@@ -142,158 +143,152 @@ function infinite(){
     earned: getCopy('earned', 'You earned it 🎉')
   };
 
-  // Base shell (with optional preview chrome)
-  const shell = document.createElement('div');
-  const themeClass = (ACCENT==='purple'?'theme-purple': ACCENT==='sky'?'theme-sky': ACCENT==='green'?'theme-green':'theme-dark');
-  shell.className = themeClass;
-
-  // Inner block (reused for both preview + live)
+  // Inner block
   const inner = document.createElement('div');
   inner.className = 'wrap';
-inner.innerHTML = `
-  <h1>${copy.title}</h1>
-  <p class="sub">${copy.subtitle}</p>
+  inner.innerHTML = `
+    <h1>${copy.title}</h1>
+    <p class="sub">${copy.subtitle}</p>
 
-  <button id="ibtn" class="btn">
-    <span id="ilabel" class="label">${getCopy('btn0_start','Click to get your gift')}</span>
-    <span id="ipct" class="percent" style="display:none">0%</span>
-  </button>
+    <button id="ibtn" class="btn">
+      <span id="ilabel" class="label">${getCopy('btn0_start','Click to get your gift')}</span>
+      <span id="ipct" class="percent" style="display:none">0%</span>
+    </button>
 
-  <div id="iprogress" class="progress" aria-hidden="true" style="display:none">
-    <div class="progress__bar" id="ibar"></div>
-  </div>
+    <div id="iprogress" class="progress" aria-hidden="true" style="display:none">
+      <div class="progress__bar" id="ibar"></div>
+    </div>
 
-  <div id="earned" class="earned">${copy.earned}</div>
-  <canvas id="confetti" class="confetti-canvas" width="0" height="0"></canvas>
-`;
-  
+    <div id="earned" class="earned">${copy.earned}</div>
+    <canvas id="confetti" class="confetti-canvas" width="0" height="0"></canvas>
+  `;
   app.replaceChildren(inner);
 
-  // Interaction logic
-const btn = document.getElementById('ibtn');
-const ilabel = document.getElementById('ilabel');
-const ipct = document.getElementById('ipct');
-const bar = document.getElementById('ibar');
-const progWrap = document.getElementById('iprogress');
-const earned = document.getElementById('earned');
-const confettiCanvas = document.getElementById('confetti');
-  
-// helpers for fun states
-function resetBtnColors(){
-  btn.classList.remove('error','purple','sky','green','alt1','alt2','success');
-}
-function resetFx(){
-  inner.classList.remove('shake','fx-alert','fx-calm','fx-blue','fx-pink');
-}
-  
-let tap = 0;
-let loading = false;
-let success = false;
-btn.disabled = false;
-let interval = null;
-  
-function startLoading(){
-  loading = true;
-  btn.disabled = true;
-  sfx('confirm');
+  // Refs
+  const btn = document.getElementById('ibtn');
+  const ilabel = document.getElementById('ilabel');
+  const ipct = document.getElementById('ipct');
+  const bar = document.getElementById('ibar');
+  const progWrap = document.getElementById('iprogress');
+  const earned = document.getElementById('earned');
+  const confettiCanvas = document.getElementById('confetti');
 
-  progWrap.style.display = 'block';
-  ipct.style.display = 'inline';
-  ipct.textContent = '0%';
-  bar.style.width = '0%';
+  // helpers for fun states
+  function resetBtnColors(){
+    btn.classList.remove('error','purple','sky','green','alt1','alt2','success');
+  }
+  function resetFx(){
+    inner.classList.remove('shake','fx-alert','fx-calm','fx-blue','fx-pink');
+  }
 
-  let p = 0;
-  interval = setInterval(()=>{
-    p = Math.min(100, p + Math.floor(Math.random()*7)+2);
-    bar.style.width = p + '%';
-    ipct.textContent = p + '%';
+  // state
+  let tap = 0;
+  let loading = false;
+  let success = false;
+  btn.disabled = false;
+  let interval = null;
 
-    if (p >= 100){
-      clearInterval(interval);
-      setTimeout(()=>{
-        ipct.style.display = 'none';
-        btn.disabled = false;
-        loading = false;
-      }, 300);
-    }
-  }, 120);
-}
+  function startLoading(){
+    loading = true;
+    btn.disabled = true;
+    sfx('confirm');
+
+    progWrap.style.display = 'block';
+    ipct.style.display = 'inline';
+    ipct.textContent = '0%';
+    bar.style.width = '0%';
+
+    let p = 0;
+    interval = setInterval(()=>{
+      p = Math.min(100, p + Math.floor(Math.random()*7)+2);
+      bar.style.width = p + '%';
+      ipct.textContent = p + '%';
+
+      if (p >= 100){
+        clearInterval(interval);
+        setTimeout(()=>{
+          ipct.style.display = 'none';
+          btn.disabled = false;
+          loading = false;
+        }, 300);
+      }
+    }, 120);
+  }
 
   function openGift(){
     try { window.open(GIFT, '_blank', 'noopener'); } catch(e) {}
   }
 
   btn.addEventListener('click', function(){
-    // If success already achieved, every tap opens gift immediately
     if (success) { openGift(); return; }
 
-   if (tap === 0){
-  // לחיצה ראשונה → מתגים לטקסט טעינה ומתחילים לטעון
-  ilabel.textContent = copy.btn1_loading;
-  if (!interval) startLoading();
-  tap = 1;
-  return;
-}
-    if (loading) return; // ignore taps during loading
+    if (tap === 0){
+      ilabel.textContent = copy.btn1_loading;
+      if (!interval) startLoading();
+      tap = 1;
+      return;
+    }
+    if (loading) return;
 
-    tap++; // Move to next stage after loading
+    tap++;
 
-    // Stage routing (2..8)
     switch (tap) {
       case 2: {
-  ilabel.textContent = copy.btn2_error;
-  resetBtnColors(); btn.classList.add('error'); sfx('error');
-  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
-  break;
-}
-case 3: { ilabel.textContent = copy.btn3_tease1; resetBtnColors(); btn.classList.add('alt1'); resetFx(); break; }
-case 4: { ilabel.textContent = copy.btn4_tease2; resetBtnColors(); btn.classList.add('alt2'); resetFx(); inner.classList.add('fx-calm'); break; }
-case 5: { ilabel.textContent = copy.btn5_tease3; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-blue'); sfx('whoosh'); break; }
-case 6: { ilabel.textContent = copy.btn6_tease4; resetBtnColors(); btn.classList.add('alt2'); resetFx(); break; }
-case 7: { ilabel.textContent = copy.btn7_tease5; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-pink'); sfx('whoosh'); break; }
+        ilabel.textContent = copy.btn2_error;
+        resetBtnColors(); btn.classList.add('error'); sfx('error');
+        inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+        break;
+      }
+      case 3: { ilabel.textContent = copy.btn3_tease1; resetBtnColors(); btn.classList.add('alt1'); resetFx(); break; }
+      case 4: { ilabel.textContent = copy.btn4_tease2; resetBtnColors(); btn.classList.add('alt2'); resetFx(); inner.classList.add('fx-calm'); break; }
+      case 5: { ilabel.textContent = copy.btn5_tease3; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-blue'); sfx('whoosh'); break; }
+      case 6: { ilabel.textContent = copy.btn6_tease4; resetBtnColors(); btn.classList.add('alt2'); resetFx(); break; }
+      case 7: { ilabel.textContent = copy.btn7_tease5; resetBtnColors(); btn.classList.add('alt1'); resetFx(); inner.classList.add('fx-pink'); sfx('whoosh'); break; }
       case 8: {
-  ilabel.textContent = copy.btn8_success;
-  resetBtnColors(); btn.classList.add('green'); // או .success אם הוספת
-  earned.classList.add('show');
-  confettiBurst(confettiCanvas);
-  sfx('tada');
-  success = true;
-  break;
-}
-default: {
-        // Any extra taps after 8 → open immediately
-        openGift();   
+        ilabel.textContent = copy.btn8_success;
+        resetBtnColors(); btn.classList.add('green'); // או .success אם הוספת CSS
+        earned.classList.add('show');
+        confettiBurst(confettiCanvas);
+        sfx('tada');
+        success = true;
+        break;
+      }
+      default: {
+        openGift();
       }
     }
   }, false);
-  
-function confettiBurst(canvas){
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const r = window.devicePixelRatio || 1;
-  function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
-  if (!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); window.addEventListener('resize', size); }
-  const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
-  const pieces = [];
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  for(let i=0;i<120;i++){
-    pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
-      r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+
+  // Canvas confetti (modern "poof")
+  function confettiBurst(canvas){
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const r = window.devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+    if (!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); window.addEventListener('resize', size); }
+    const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces = [];
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    for(let i=0;i<120;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    const g = 0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha = 1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
   }
-  const g = 0.05; let t=0;
-  (function step(){
-    ctx.clearRect(0,0,w,h);
-    pieces.forEach(p=>{
-      p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
-      ctx.globalAlpha = Math.max(p.a,0);
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
-      ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
-      ctx.restore();
-    });
-    ctx.globalAlpha = 1;
-    if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
-  })();
 }
+</script>
 
 // ===== Narcissist Questions =====
 function narcissistQ(){
