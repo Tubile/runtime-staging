@@ -37,6 +37,23 @@ const F = (qs.get('f')||'').trim(); // feature slug
 const NAME = (qs.get('name')||'Friend').trim();
 const GIFT = (qs.get('giftUrl')||'#').trim();
 const PREV = (qs.get('preview')||'0').trim()==='1';
+function getCopy(key, fallback) {
+  const v = qs.get(key);
+  if (!v || v.trim().length === 0) return fallback;
+  return v.trim().slice(0, 80);
+}
+function sfx(kind){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    const now = ctx.currentTime, freq = { error:180, whoosh:420, tada:880, confirm:520 }[kind] || 600;
+    o.type='sine'; o.frequency.setValueAtTime(freq, now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(now + 0.16);
+  }catch(e){}
+}
 
 // הצג סטטוס־בר רק בפריביו
 if (PREV) document.getElementById('status').style.display = 'flex';
@@ -104,32 +121,7 @@ function infinite(){
     <span id="itext" class="progress__text" aria-live="polite" aria-atomic="true" style="display:none">0%</span>
     <div id="earned" class="earned">${copy.earned}</div>
   `;
-
-  // Mount: preview chrome vs live
-  if (PREV) {
-    const phone = document.createElement('div');
-    phone.className = 'phone';
-    phone.innerHTML = `<div class="statusbar">09:41</div><div class="notch"></div>`;
-    const frame = document.createElement('div');
-    frame.className = 'frame';
-    frame.appendChild(inner);
-    const confLayer = document.createElement('div'); confLayer.className = 'confetti'; phone.appendChild(confLayer);
-    phone.appendChild(frame);
-    const chrome = document.createElement('div');
-    chrome.className = 'chrome';
-    chrome.innerHTML = `
-      <a href="#modal-customize-infinite" id="open-customize">Customize free</a>
-      <a class="secondary" href="#" id="close-preview">Close</a>
-    `;
-    shell.appendChild(phone);
-    shell.appendChild(chrome);
-    app.replaceChildren(shell);
-    // Basic close (host site might override)
-    document.getElementById('close-preview').addEventListener('click', function(ev){ ev.preventDefault(); history.replaceState({},'',location.pathname + location.search); });
-  } else {
-    app.replaceChildren(inner);
-    // Confetti layer (absolute) created on demand for live too
-  }
+  app.replaceChildren(inner);
 
   // Interaction logic
   const btn = document.getElementById('ibtn');
