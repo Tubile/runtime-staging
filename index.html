@@ -100,6 +100,39 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .btn.green{ background:#10b981; color:#fff }
 </style>
 
+<!-- CAPTCHA UX styles -->
+<style id="captcha-ux">
+  .wrap-captcha{
+    display:grid; gap:16px; justify-items:center; text-align:center;
+    margin-top:clamp(24px, 12vh, 96px);
+  }
+  .cap-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
+  .cap-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+  .cap-grid{
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;
+    width:min(360px, 100%);
+  }
+  .cap-tile{
+    position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.10); background:#12182b; cursor:pointer;
+    transition:transform .04s ease, box-shadow .12s ease;
+  }
+  .cap-tile:hover{ transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.25) }
+  .cap-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
+  .cap-filler{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:34px; filter:saturate(1.1); background:linear-gradient(135deg,#0f152a,#141a32) }
+  .cap-tile.sel::after{
+    content:"✓"; position:absolute; right:8px; top:6px; font-weight:900; font-size:16px;
+    background:#10b981; color:#062d24; border-radius:999px; padding:2px 6px;
+    box-shadow:0 2px 10px rgba(0,0,0,.25);
+  }
+  .cap-cta{ width:min(320px, 100%); min-height:48px; padding:14px 18px; font-size:16px;
+    border-radius:16px; font-weight:800; margin:0 auto }
+  .cap-cta.error{ animation:infShake .35s linear 1 }
+  .cap-cta.green{ background:#10b981; color:#fff }
+  .cap-hint{ font-size:12px; color:#9aa3b2 }
+</style>
+
 <div class="stage">
 <div id="phone" class="phone">
 <!-- יוזר אמיתי לא יראה את הסטטוס־בר; מוצג רק כשpreview=1 -->
@@ -154,12 +187,154 @@ el(`
 
 // ===== Fake Captcha =====
 function captcha(){
-el(`
-<div class="badge">Fake Captcha – demo</div>
-<h1 class="h1">Are you a human, ${NAME}? 🤖</h1>
-<p class="p">Please solve this silly puzzle…</p>
-<button class="btn btn-primary">I'm human</button>
-`);
+  const qs = new URLSearchParams(location.search);
+  const PREV = (qs.get('preview')||'0').trim() === '1';
+  const NAME = (qs.get('name')||'Friend').trim();
+  const GIFT = (qs.get('giftUrl')||'#').trim();
+
+  // טקסטים ניתנים להתאמה דרך פרמטרים
+  const copy = {
+    introTitle:  (qs.get('introTitle') || `Hey ${NAME}!`).slice(0,80),
+    introSub:    (qs.get('introSub')   || `Before your gift, quick verification.`).slice(0,80),
+    introBtn:    (qs.get('introBtn')   || `Start`).slice(0,32),
+    gridHeader:  (qs.get('gridHeader') || `Select all images with your photo`).slice(0,80),
+    verify:      (qs.get('verifyText') || `Verify`).slice(0,32),
+    continueTxt: (qs.get('continueText') || `Continue`).slice(0,32),
+    okTitle:     (qs.get('okTitle')    || `Verified!`).slice(0,80),
+    okSub:       (qs.get('okSub')      || `You’re good to go.`).slice(0,80),
+    okBtn:       (qs.get('okBtn')      || `Get the gift`).slice(0,32),
+  };
+
+  // תמונות מה‑URL (עד 3). אם חסר—נשתמש בממלאים
+  const imgs = [qs.get('img1')||'', qs.get('img2')||'', qs.get('img3')||''].filter(Boolean);
+  const targets = [2,4,7]; // עליון‑ימני, מרכז, תחתון‑מרכז (0..8)  :contentReference[oaicite:7]{index=7}
+
+  // עוזר: סאונדים קצרים (קיים בקובץ—ממחזר את sfx)
+  const app = document.getElementById('app');
+  app.classList.remove('card'); // כמו infinite – תוכן “חופשי” ונקי  :contentReference[oaicite:8]{index=8}
+
+  // מסך פתיחה
+  function screenIntro(){
+    app.innerHTML = `
+      <div class="wrap wrap-captcha">
+        <h1 class="cap-title">${copy.introTitle}</h1>
+        <p class="cap-sub">${copy.introSub}</p>
+        <button id="start" class="btn cap-cta">${copy.introBtn}</button>
+        <div class="cap-hint">Prank simulation • demo only • no data collected</div>
+      </div>
+    `;
+    document.getElementById('start').addEventListener('click', ()=>{ try{sfx('confirm')}catch(e){}; screenGrid(); });
+  }
+
+  // מסך גריד
+  function screenGrid(){
+    const fillers = ['🌵','🚗','🍩','☂️','🚀','🐶','🍕','🏀','🎧'];
+    const piece = (i)=>{
+      const isTarget = targets.includes(i);
+      if(isTarget && imgs.length){
+        const src = imgs[targets.indexOf(i) % imgs.length];
+        return `<div class="cap-tile" data-i="${i}"><img class="cap-img" src="${src}" alt=""></div>`;
+      }
+      // ממלא: ללא בקשות חוץ (אימוג׳י + גרדיאנט)
+      const emoji = fillers[i % fillers.length];
+      return `<div class="cap-tile" data-i="${i}"><div class="cap-filler">${emoji}</div></div>`;
+    };
+
+    app.innerHTML = `
+      <div class="wrap wrap-captcha">
+        <h1 class="cap-title">${copy.gridHeader}</h1>
+        <div id="grid" class="cap-grid">
+          ${Array.from({length:9}).map((_,i)=>piece(i)).join('')}
+        </div>
+        <button id="verify" class="btn cap-cta">${copy.verify}</button>
+        ${PREV ? `<div class="cap-hint">Preview mode</div>` : ``}
+        <canvas id="cap-confetti" class="confetti-canvas"></canvas>
+      </div>
+    `;
+
+    const grid = document.getElementById('grid');
+    const verifyBtn = document.getElementById('verify');
+    const confettiCanvas = document.getElementById('cap-confetti');
+
+    grid.addEventListener('click', (e)=>{
+      const tile = e.target.closest('.cap-tile');
+      if(!tile) return;
+      tile.classList.toggle('sel');
+    });
+
+    let solved = false;
+
+    verifyBtn.addEventListener('click', ()=>{
+      if(solved){ screenSuccess(); return; }
+
+      const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
+      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // חייבים בדיוק 3 היעדים  :contentReference[oaicite:9]{index=9}
+
+      if(!ok){
+        try{sfx('error')}catch(e){}
+        verifyBtn.classList.add('error'); grid.classList.add('shake');
+        setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
+        return;
+      }
+
+      // הצלחה → קונפטי + כפתור ירוק עם Continue
+      try{sfx('tada')}catch(e){}
+      confettiBurst(confettiCanvas);
+      verifyBtn.textContent = copy.continueTxt;
+      verifyBtn.classList.add('green');
+      solved = true;
+    });
+  }
+
+  // מסך הצלחה
+  function screenSuccess(){
+    app.innerHTML = `
+      <div class="wrap wrap-captcha">
+        <h1 class="cap-title">${copy.okTitle}</h1>
+        <p class="cap-sub">${copy.okSub}</p>
+        <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
+        ${PREV ? `<div class="cap-hint">Preview only — button disabled</div>` : ``}
+      </div>
+    `;
+    const btn = document.getElementById('openGift');
+    btn.addEventListener('click', ()=>{
+      if(PREV) return; // בפריביו לא פותחים מתנה  :contentReference[oaicite:10]{index=10}
+      try{sfx('confirm')}catch(e){}
+      try{ window.open((qs.get('giftUrl')||'#').trim(), '_blank', 'noopener'); }catch(e){}
+    });
+  }
+
+  // קונפטי (כמו ב‑infinite, מוכלל מקומית)  :contentReference[oaicite:11]{index=11}
+  function confettiBurst(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const r = window.devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+    if(!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); window.addEventListener('resize', size); }
+    const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces = [];
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    for(let i=0;i<120;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    const g = 0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha = 1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
+  }
+
+  // התחל
+  screenIntro();
 }
 
 // ===== Infinite Buttons =====
