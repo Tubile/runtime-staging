@@ -172,48 +172,16 @@ function getCopy(key, fallback) {
   return v.trim().slice(0, 80);
 }
 function sfx(kind){
-// --- High‑quality SFX with fallback ---
-const SFX_URL = 'https://tubile.github.io/kefpo-sfx/'; // שנה אם השתמשת בנתיב אחר
-const SFX = {
-  click:   new Audio(SFX_URL + 'click.mp3'),
-  error:   new Audio(SFX_URL + 'error.mp3'),
-  whoosh:  new Audio(SFX_URL + 'whoosh.mp3'),
-  tada:    new Audio(SFX_URL + 'tada.mp3'),
-  confirm: new Audio(SFX_URL + 'confirm.mp3')
-};
-// פרה‑לוד ונפח סביר
-Object.values(SFX).forEach(a => { try{ a.preload='auto'; a.volume=0.85; }catch(e){} });
-
-// נעילת אודיו ב‑iOS: מוותח על הלחיצה הראשונה
-let __audioUnlocked = false;
-function unlockAudio(){ if(__audioUnlocked) return;
-  try{ Object.values(SFX).forEach(a=>{ a.muted=true; a.play().catch(()=>{}); a.pause(); a.currentTime=0; a.muted=false; }); }catch(e){}
-  __audioUnlocked = true;
-}
-window.addEventListener('pointerdown', unlockAudio, { once:true });
-
-// Fallback synth beep (אם הקבצים לא זמינים)
-function beep(kind, vol=1){
   try{
-    const AC = window.AudioContext || window.webkitAudioContext;
-    const ctx = new AC(), o = ctx.createOscillator(), g = ctx.createGain();
-    const f = { error:220, whoosh:520, tada:660, confirm:880, click:990 }[kind] || 660;
-    o.type = (kind==='error') ? 'square' : 'sine';
-    const n = ctx.currentTime;
-    g.gain.setValueAtTime(0.0001, n);
-    g.gain.linearRampToValueAtTime(Math.max(.0001, Math.min(1,vol))*0.2, n+.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, n + (kind==='tada'?0.45:0.16));
-    o.frequency.setValueAtTime(f, n); o.connect(g); g.connect(ctx.destination);
-    o.start(n); o.stop(n + (kind==='tada'?0.5:0.18));
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    const now = ctx.currentTime, freq = { error:180, whoosh:420, tada:880, confirm:520 }[kind] || 600;
+    o.type='sine'; o.frequency.setValueAtTime(freq, now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(now + 0.16);
   }catch(e){}
-}
-
-// ה‑API האחיד שהקוד שלך כבר משתמש בו: sfx('click' | 'error' | 'whoosh' | 'tada' | 'confirm')
-function sfx(kind){
-  const a = SFX[kind];
-  if (a && a.play){
-    try{ a.currentTime = 0; a.play().catch(()=>{}); }catch(e){ beep(kind, .9); }
-  } else { beep(kind, .9); }
 }
 
 // הצג סטטוס־בר רק בפריביו
