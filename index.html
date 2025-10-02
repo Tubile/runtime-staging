@@ -208,7 +208,7 @@ function captcha(){
   const GIFT  = (qs.get('giftUrl')||'#').trim();
 
   const copy = {
-    introTitle:  (qs.get('introTitle') || `Hey ${NAME}!`).slice(0,80),
+    introTitle:  (qs.get('introTitle') || `You've got a sweet surprise,${NAME}!`).slice(0,80),
     introSub:    (qs.get('introSub')   || `Before your gift, quick verification.`).slice(0,80),
     introBtn:    (qs.get('introBtn')   || `Start`).slice(0,32),
     gridHeader:  (qs.get('gridHeader') || `Select all images with a CREEP 😘`).slice(0,80),
@@ -287,7 +287,7 @@ function captcha(){
         <h1 class="cap-title">${copy.introTitle}</h1>
         <p class="cap-sub">${copy.introSub}</p>
         <button id="start" class="btn cap-cta">${copy.introBtn}</button>
-        <div class="cap-hint">Prank simulation • demo only • no data collected</div>
+        <div class="cap-hint">no data will be collected</div>
       </div>
     `;
     document.getElementById('start').addEventListener('click', ()=>{ try{sfx('confirm')}catch(e){}; screenGrid(); });
