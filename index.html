@@ -171,17 +171,54 @@ function getCopy(key, fallback) {
   if (!v || v.trim().length === 0) return fallback;
   return v.trim().slice(0, 80);
 }
-function sfx(kind){
+// === High‑quality SFX (from your GitHub) with safe fallback ===
+const SFX_BASE = 'https://tubile.github.io/kefpo-sfx/';
+const SFX_FILES = {
+  click:   'click.mp3',
+  confirm: 'confirm.mp3',
+  error:   'error.mp3',
+  tada:    'tada.mp3',
+  whoosh:  'whoosh.mp3'
+};
+
+// Preload one Audio element per sound (ניצור שיבוט בכל השמעה כדי לאפשר חפיפה)
+const __SFX = {};
+for (const [k,f] of Object.entries(SFX_FILES)) {
+  const a = new Audio(SFX_BASE + f);
+  a.preload = 'auto';
+  a.crossOrigin = 'anonymous'; // בטוח גם אם תרצה WebAudio בעתיד
+  __SFX[k] = a;
+}
+
+// ניסיון “פריימינג” עדין לפתיחת אודיו במובייל בהקשה הראשונה
+document.addEventListener('pointerdown', ()=>{
   try{
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    const now = ctx.currentTime, freq = { error:180, whoosh:420, tada:880, confirm:520 }[kind] || 600;
-    o.type='sine'; o.frequency.setValueAtTime(freq, now);
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(now + 0.16);
-  }catch(e){}
+    const a = __SFX.click;
+    a.muted = true;
+    const p = a.play();
+    if (p && p.then) p.then(()=>{ a.pause(); a.currentTime = 0; a.muted = false; });
+  }catch(_){}
+}, { once:true });
+
+function sfx(kind){
+  const key = (kind in __SFX) ? kind : 'click';
+  try{
+    // מנגן שיבוט כדי לאפשר כמה צלילים זה על זה
+    const a = __SFX[key].cloneNode(true);
+    a.play().catch(()=>{ /* ייתכן בלוק אוטופליי – נתעלם בשקט */ });
+  }catch(e){
+    // Fallback – ביפ סינתטי (כמו שהיה)
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const now = ctx.currentTime, freq = { error:180, whoosh:420, tada:880, confirm:520, click:660 }[kind] || 600;
+      o.type='sine'; o.frequency.setValueAtTime(freq, now);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+      o.connect(g); g.connect(ctx.destination); o.start(); o.stop(now + 0.16);
+    }catch(_) {}
+  }
 }
 
 // הצג סטטוס־בר רק בפריביו
