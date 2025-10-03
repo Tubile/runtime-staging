@@ -524,12 +524,21 @@ function voiceVerify(){
     const errEl = document.getElementById('rec-err');
     const wrap  = document.querySelector('.wrap-voice');
     const conf  = document.getElementById('vv-confetti');
-    const toast2 = document.getElementById('vv-toast2');
-const tryAgain2 = document.getElementById('vv-tryagain2');
-tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
-    const toast = document.getElementById('vv-toast');
+    // Toast #1
+const toast = document.getElementById('vv-toast');
 const tryAgain = document.getElementById('vv-tryagain');
-tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
+
+// Toast #2 (אם הוספת אותו)
+const toast2 = document.getElementById('vv-toast2');
+const tryAgain2 = document.getElementById('vv-tryagain2');
+
+// הזזת הטוסטים מחוץ ל-wrap כדי לא להיות צאצאים של אלמנט עם transform (shake)
+if (toast && !toast.__moved){ document.body.appendChild(toast); toast.__moved = true; }
+if (toast2 && !toast2.__moved){ document.body.appendChild(toast2); toast2.__moved = true; }
+
+// חיווט כפתורי "אישור"
+if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
+if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
 
     let recording = false;
     let attempt   = 0;
@@ -631,9 +640,8 @@ tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
   return;
 }
       // נסיון שלישי — הצלחה
-      try{sfx('tada')}catch(e){}
-      confettiBurst(conf);
-      setTimeout(screenSuccess, 450);
+try{sfx('tada')}catch(e){}
+screenSuccess(); // הקונפטי ירוץ רק במסך ההצלחה
     }
 
     btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
