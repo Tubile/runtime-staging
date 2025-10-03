@@ -1270,6 +1270,37 @@ function narcissistQ(){
   
 // ===== Selfie Verify =====
 function selfieVerify(){
+  // --- 0) One-time style injection (adds overlay/blur + success layout) ---
+  (function injectCSS(){
+    if (document.getElementById('selfie-ux-extra')) return;
+    const css = `
+      /* Overlay countdown (blur background) */
+      .sf-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+        background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:1000;text-align:center;padding:24px}
+      .sf-overlay.on{display:flex}
+      .sf-count{font-size:96px;font-weight:900;line-height:1}
+      .sf-sub2{font-size:14px;color:#cbd5e1;margin-top:12px}
+      .sf-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+      /* Success screen (title + big check + image card) */
+      .sf-topline{display:flex;align-items:center;gap:10px;justify-content:center}
+      .sf-topline .check{font-size:28px;color:#10b981}
+      .sf-monkey{
+        width:min(360px,100%);aspect-ratio:1/1;overflow:hidden;border-radius:16px;
+        border:1px solid rgba(255,255,255,.10);background:#0f1324;display:flex;align-items:center;justify-content:center
+      }
+      .sf-monkey img{width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
+      .btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+      .green{background:#10b981;color:#fff}
+      .ghost{background:#0b1020;color:#9aa3b2;border:1px solid rgba(255,255,255,.12)}
+      .sf-cta{width:min(320px,100%);min-height:48px;padding:14px 18px;font-size:16px;border-radius:16px;font-weight:800;margin:0 auto}
+    `;
+    const st = document.createElement('style');
+    st.id = 'selfie-ux-extra';
+    st.textContent = css;
+    (document.head || document.documentElement).appendChild(st);
+  })();
+
+  // --- 1) Read params & setup (keeps the Runtime contract intact) ---
   const qs    = new URLSearchParams(location.search);
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim();
@@ -1277,31 +1308,39 @@ function selfieVerify(){
   const app   = document.getElementById('app');
   app.classList.remove('card');
 
-  // Texts (customizable via URL)
+  // Texts (existing keys kept + a few new optional ones for this flow)
   const copy = {
-    introTitle:  (qs.get('introTitle') || `${NAME}, a gift is waiting!`).slice(0,80),
-    introSub:    (qs.get('introSub')   || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
-    introBtn:    (qs.get('introBtn')   || `Start selfie verification`).slice(0,32),
+    introTitle:   (qs.get('introTitle')  || `${NAME}, a gift is waiting!`).slice(0,80),
+    introSub:     (qs.get('introSub')    || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
+    introBtn:     (qs.get('introBtn')    || `Start selfie verification`).slice(0,32),
 
-    camLabel:    (qs.get('camLabel')   || `Don’t close the camera. Finishing in`).slice(0,60),
-    retakeLabel: (qs.get('retakeLabel')|| `Retake`).slice(0,24),
+    camLabel:     (qs.get('camLabel')    || `המצלמה פועלת — ודא/י שהפנים במרכז המסגרת`).slice(0,60),
+    captureBtn:   (qs.get('captureBtn')  || `לצילום ואימות זהותך`).slice(0,32),       // NEW
+    overlaySub:   (qs.get('overlaySub')  || `אנא אמתן בזמן שהמערכת מאמתת את זהותך…`).slice(0,80), // NEW
 
-    okTitle:     (qs.get('okTitle')    || `Verified!`).slice(0,60),
-    okSub:       (qs.get('okSub')      || `You’re good to go.`).slice(0,80),
-    okBtn:       (qs.get('okBtn')      || `Get the real gift`).slice(0,32),
+    retakeLabel:  (qs.get('retakeLabel') || `Retake`).slice(0,24),
+
+    successTitle: (qs.get('successTitle')|| `זהותך אומתה בהצלחה!`).slice(0,60),       // NEW
+    okSub:        (qs.get('okSub')       || `You’re good to go.`).slice(0,80),
+    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `לקבלת המתנה האמיתית`).slice(0,32), // NEW (keeps okBtn fallback)
+    saveBtn:      (qs.get('saveBtn')     || `לשמירת התמונה`).slice(0,24)               // NEW
   };
 
-  const filterPreset = (qs.get('filter') || 'ugly3').toLowerCase(); // ברירת מחדל ugly3 לפי הבריף
+  // Filter preset (existing contract)
+  const filterPreset = (qs.get('filter') || 'ugly3').toLowerCase();
   const fxClass = ['ugly1','ugly2','ugly3'].includes(filterPreset) ? `fx-${filterPreset}` : 'fx-ugly3';
 
+  // Allow overriding the 5 monkey images via URL (?monkey1=...&...monkey5=...)
+  // Defaults are inline SVG data URLs (ugly monkey variants) — no network required.
+  const MONKEY_OVR = [1,2,3,4,5].map(i => (qs.get('monkey'+i)||'').trim()).filter(Boolean);
+  const MONKEY_SVGS = createDefaultMonkeySet(); // 5 data: URLs
+  const MONKEYS = MONKEY_OVR.length ? MONKEY_OVR : MONKEY_SVGS;
+
   let stream = null;
-  let timer  = null;
+  let lastShot = null; // dataURL of the captured selfie (not displayed, but we "really" capture)
+  function stopCamera(){ try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){ } stream=null; }
 
-  function stopCamera(){
-    try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch(_){}
-    stream = null;
-  }
-
+  // Confetti burst (same pattern across features)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1311,8 +1350,7 @@ function selfieVerify(){
     const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces=[]; const w=canvas.clientWidth, h=canvas.clientHeight;
     for(let i=0;i<120;i++){
-      pieces.push({x:w/2,y:h/2,vx:(Math.random()*4-2),vy:(Math.random()*-3-2),
-        r:Math.random()*6+3,c:colors[(Math.random()*colors.length)|0],a:1,spin:(Math.random()*6.28),vr:(Math.random()*0.2-0.1)});
+      pieces.push({x:w/2,y:h/2,vx:(Math.random()*4-2),vy:(Math.random()*-3-2),r:Math.random()*6+3,c:colors[(Math.random()*colors.length)|0],a:1,spin:(Math.random()*6.28),vr:(Math.random()*0.2-0.1)});
     }
     const g=0.05; let t=0;
     (function step(){
@@ -1329,6 +1367,7 @@ function selfieVerify(){
     })();
   }
 
+  // --- 2) Screens ---
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-selfie">
@@ -1336,8 +1375,7 @@ function selfieVerify(){
         <p class="sf-sub">${copy.introSub}</p>
         <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
         <div class="sf-hint">Prank simulation • demo only • no data collected</div>
-      </div>
-    `;
+      </div>`;
     document.getElementById('sfStart').addEventListener('click', ()=>{
       try{sfx('confirm')}catch(_){}
       screenCamera();
@@ -1346,56 +1384,62 @@ function selfieVerify(){
 
   function screenCamera(){
     stopCamera();
-    clearInterval(timer);
     app.innerHTML = `
       <div class="wrap wrap-selfie">
         <div id="cam" class="sf-cam ${fxClass}">
           <video id="sfVideo" autoplay playsinline muted></video>
           <div id="sfFallback" class="sf-fallback" hidden>Camera unavailable — using a fun fake frame 😅</div>
-          <div id="sfCheck" class="sf-check">✔</div>
         </div>
-        <div class="sf-status"><div class="sf-spinner"></div><div id="sfLbl">${copy.camLabel} <b id="sfN">7</b>…</div></div>
+
+        <div class="sf-status">
+          <div class="sf-spinner"></div>
+          <div id="sfLbl">${copy.camLabel}</div>
+        </div>
+
         <div class="sf-row">
+          <button id="sfCapture" class="btn sf-cta green">${copy.captureBtn}</button>
           <button id="sfRetake" class="btn ghost">${copy.retakeLabel}</button>
         </div>
+
         <canvas id="sfConfetti" class="confetti-canvas"></canvas>
         <div class="sf-hint">Camera feed isn’t saved</div>
-      </div>
-    `;
 
-    const video     = document.getElementById('sfVideo');
-    const fallback  = document.getElementById('sfFallback');
-    const check     = document.getElementById('sfCheck');
-    const confetti  = document.getElementById('sfConfetti');
-    const nEl       = document.getElementById('sfN');
+        <!-- Overlay: big 5→1 on blurred background -->
+        <div id="sfOverlay" class="sf-overlay" aria-hidden="true">
+          <div>
+            <div id="sfCount" class="sf-count">5</div>
+            <div class="sf-sub2">${copy.overlaySub}</div>
+          </div>
+        </div>
+      </div>`;
 
-    // Start camera (front)
+    const video    = document.getElementById('sfVideo');
+    const fallback = document.getElementById('sfFallback');
+    const overlay  = document.getElementById('sfOverlay');
+    const countEl  = document.getElementById('sfCount');
+
+    // Start camera
     (async ()=>{
       try{
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
         video.srcObject = stream;
         fallback.hidden = true;
-      }catch(_e){
-        // blocked / not available → fallback visible, proceed anyway
-        fallback.hidden = false;
+      }catch(_){
+        fallback.hidden = false; // proceed anyway
       }
     })();
 
-    // Countdown 7→0
-    let n = 7;
-    timer = setInterval(()=>{
-      n = Math.max(0, n-1);
-      nEl.textContent = n.toString();
-      if(n===0){
-        clearInterval(timer);
-        // Success cue
+    // Capture flow (no auto-countdown here)
+    document.getElementById('sfCapture').addEventListener('click', ()=>{
+      try{sfx('confirm')}catch(_){}
+      lastShot = trySnapshot(video) || null; // not displayed; just for realism
+      startOverlayCountdown(overlay, countEl, 5, ()=>{
         try{sfx('tada')}catch(_){}
-        check.classList.add('on');
-        setTimeout(()=>{ confettiBurst(confetti); screenSuccess(); }, 550);
-      }
-    }, 1000);
+        screenSuccess();
+      });
+    });
 
-    // Retake
+    // Retake (re-ask camera)
     document.getElementById('sfRetake').addEventListener('click', ()=>{
       try{sfx('whoosh')}catch(_){}
       screenCamera();
@@ -1404,33 +1448,133 @@ function selfieVerify(){
 
   function screenSuccess(){
     stopCamera();
+    const picked = MONKEYS[Math.floor(Math.random()*MONKEYS.length)];
     app.innerHTML = `
       <div class="wrap wrap-selfie">
-        <h1 class="sf-title">${copy.okTitle}</h1>
+        <div class="sf-topline"><span class="check">✔</span><h1 class="sf-title" style="margin:0">${copy.successTitle}</h1></div>
         <p class="sf-sub">${copy.okSub}</p>
-        <button id="sfOpen" class="btn sf-cta green">${copy.okBtn}</button>
-        ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — button disabled</div>` : ``}
+
+        <div class="sf-monkey">
+          <img id="monkeyImg" src="${picked}" alt="funny ugly monkey">
+        </div>
+
+        <div class="sf-row" style="margin-top:10px">
+          <button id="sfOpen" class="btn sf-cta green">${copy.giftBtn}</button>
+          <button id="sfSave" class="btn ghost">${copy.saveBtn}</button>
+        </div>
+
+        ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — green button disabled</div>` : ``}
         <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
-      </div>
-    `;
+      </div>`;
+
     const conf2 = document.getElementById('sfConfetti2');
     confettiBurst(conf2);
 
-    const btn = document.getElementById('sfOpen');
-    btn.addEventListener('click', ()=>{
+    // Primary CTA (open real gift)
+    document.getElementById('sfOpen').addEventListener('click', ()=>{
       if(PREV) return;
       try{sfx('confirm')}catch(_){}
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
     });
+
+    // Secondary CTA: download the monkey image
+    document.getElementById('sfSave').addEventListener('click', ()=>{
+      const img = document.getElementById('monkeyImg');
+      if(!img || !img.src) return;
+      // If data: URL → download directly; if remote → attempt direct download, fallback to open in new tab
+      try{
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'ugly-monkey.png';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }catch(_){
+        // Fallback: open image in new tab
+        try{ window.open(img.src, '_blank', 'noopener'); }catch(__){}
+      }
+    });
   }
 
-  // GO
-  screenIntro();
+  // --- 3) Helpers ---
+  function trySnapshot(videoEl){
+    try{
+      const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
+      if(!vw || !vh) return null;
+      const c = document.createElement('canvas');
+      c.width = vw; c.height = vh;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, vw, vh);
+      return c.toDataURL('image/jpeg', .9);
+    }catch(_){ return null; }
+  }
 
-  // Cleanup on page hide
+  function startOverlayCountdown(overlayEl, numEl, from, done){
+    overlayEl.classList.add('on');
+    let n = Math.max(1, from|0);
+    numEl.textContent = String(n);
+    const t = setInterval(()=>{
+      n -= 1;
+      if(n<=0){
+        clearInterval(t);
+        overlayEl.classList.remove('on');
+        done && done();
+      }else{
+        numEl.textContent = String(n);
+      }
+    }, 1000);
+  }
+
+  function createDefaultMonkeySet(){
+    // Returns 5 data:image/svg+xml; each variant is deliberately silly/ugly 🙈🙉🙊
+    function m(i){
+      // Slightly different face/eyes/teeth/colors per variant
+      const faces = ['#6b4f29','#574024','#4a3720','#6d5b3b','#5a4830'];
+      const ears  = ['#8d6a3b','#795a30','#7a5c33','#8f774a','#7c643c'];
+      const eyes  = [['#fff','#111'],['#fff','#000'],['#e6f0ff','#0b1020'],['#fff','#111'],['#fff','#111']];
+      const mouth = ['#2d1c12','#2c1a10','#1f140c','#3a2618','#2a1a12'];
+      const tongue= ['#e11d48','#dc2626','#ef4444','#f97316','#b91c1c'];
+      const tooth = ['#e5e7eb','#f3f4f6','#e2e8f0','#f8fafc','#e5e7eb'];
+      const f = faces[i], e = ears[i], eyeW=eyes[i][0], eyeB=eyes[i][1], mth=mouth[i], tng=tongue[i], th=tooth[i];
+      const svg = `
+        <svg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000'>
+          <defs>
+            <filter id='noise${i}'><feTurbulence type='fractalNoise' baseFrequency='0.${2+i}' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0.6'/></filter>
+          </defs>
+          <rect width='100%' height='100%' fill='#0f1324'/>
+          <!-- ears -->
+          <ellipse cx='250' cy='420' rx='140' ry='170' fill='${e}' filter='url(#noise${i})'/>
+          <ellipse cx='750' cy='420' rx='140' ry='170' fill='${e}' filter='url(#noise${i})'/>
+          <!-- head -->
+          <ellipse cx='500' cy='500' rx='360' ry='380' fill='${f}'/>
+          <!-- eyes -->
+          <ellipse cx='400' cy='420' rx='90' ry='100' fill='${eyeW}'/>
+          <ellipse cx='600' cy='420' rx='90' ry='100' fill='${eyeW}'/>
+          <circle cx='400' cy='430' r='34' fill='${eyeB}'/>
+          <circle cx='600' cy='405' r='38' fill='${eyeB}'/>
+          <!-- nose -->
+          <ellipse cx='500' cy='520' rx='60' ry='40' fill='${mth}'/>
+          <!-- mouth -->
+          <path d='M360 620 Q500 ${680+i*10} 640 620 Q500 700 360 620Z' fill='${mth}'/>
+          <!-- tongue/teeth (ugly/funny) -->
+          <rect x='470' y='645' width='60' height='30' fill='${th}'/>
+          <ellipse cx='510' cy='700' rx='70' ry='32' fill='${tng}' opacity='.85'/>
+          <!-- random whiskers -->
+          <path d='M220 560 l120 10 M220 590 l120 0 M220 620 l120 -10' stroke='${mth}' stroke-width='6' opacity='.7'/>
+          <path d='M780 560 l-120 10 M780 590 l-120 0 M780 620 l-120 -10' stroke='${mth}' stroke-width='6' opacity='.7'/>
+        </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+    return [0,1,2,3,4].map(m);
+  }
+
+  // --- 4) Start flow + cleanup ---
+  screenIntro();
   addEventListener('pagehide', stopCamera);
 }
-
+  
 const map = {
 'voice-verify': voiceVerify,
 'captcha': captcha,
