@@ -288,31 +288,67 @@ if (WRAP){
   requestAnimationFrame(updateScrollbar);
 }
 
-// ===== Voice Verify (placeholder עד למימוש) =====
+// ===== Voice Verify (final) =====
 function voiceVerify(){
-  const qs    = new URLSearchParams(location.search);
-  const PREV  = (qs.get('preview')||'0').trim()==='1';
-  const NAME  = (qs.get('name')||'Friend').trim();
-  const GIFT  = (qs.get('giftUrl')||'#').trim();
+  // הזרקת CSS חד‑פעמית לפיצ'ר (כדי שלא תצטרך לעדכן <style> נפרד)
+  if (!document.getElementById('voice-ux')){
+    const st = document.createElement('style');
+    st.id = 'voice-ux';
+    st.textContent = `
+      .wrap-voice{
+        display:grid; gap:16px; justify-items:center; text-align:center;
+        margin-top:clamp(24px, 10vh, 96px);
+      }
+      .vv-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
+      .vv-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+      .vv-animal{
+        width:min(360px, 100%); aspect-ratio:16/10;
+        border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.10);
+        background:#12182b; display:flex; align-items:center; justify-content:center;
+      }
+      .vv-animal img{ width:88%; height:88%; object-fit:contain; user-select:none; -webkit-user-drag:none }
+      .vv-rec{ display:grid; gap:10px; width:min(320px, 100%); }
+      .vv-meter{
+        height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.08); position:relative;
+      }
+      .vv-meter > i{
+        position:absolute; left:0; top:0; bottom:0; width:0%;
+        background:linear-gradient(90deg,#f59e0b,#ef4444);
+        transition: width .06s linear;
+      }
+      .vv-time{ font-size:12px; color:#9aa3b2 }
+      .vv-err{ font-size:14px; color:#fca5a5; min-height:18px }
+      .btn.red{ background:#ef4444; color:#fff }
+      .btn.blue{ background:#3b82f6; color:#fff }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // קריאת פרמטרים (חוזה runtime): ?f=voice-verify&name=&giftUrl=&preview=1
+  const qs   = new URLSearchParams(location.search);
+  const PREV = (qs.get('preview')||'0').trim()==='1';
+  const NAME = (qs.get('name')||'Friend').trim();
+  const GIFT = (qs.get('giftUrl')||'#').trim();
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // מסך “נקי” כמו ביתר הפיצ'רים
+  app.classList.remove('card'); // “מסך נקי” כמו בשאר הפיצ'רים
 
-  // טקסטים לפי הבריף + אפשרות אובררייד דרך ה‑URL (לא חובה)
+  // טקסטים לפי הבריף (ניתנים לאובררייד דרך URL אם תרצה)
   const copy = {
-    introTitle:   (qs.get('introTitle') || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
-    introSub:     (qs.get('introSub')   || `To claim it, please verify your identity.`).slice(0,80),
-    introBtn:     (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
+    introTitle: (qs.get('introTitle') || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
+    introSub:   (qs.get('introSub')   || `To claim it, please verify your identity.`).slice(0,80),
+    introBtn:   (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
 
-    recTitle:     (qs.get('recTitle')   || `לאימות זהותך הקלט את הצליל של החיה המוצגת`).slice(0,80),
-    errText:      (qs.get('errText')    || `לא הצלחנו לקלוט צליל, הקלט שוב חזק יותר`).slice(0,80),
+    recTitle:   (qs.get('recTitle')   || `לאימות זהותך הקלט את הצליל של החיה המוצגת`).slice(0,80),
+    errText:    (qs.get('errText')    || `לא הצלחנו לקלוט צליל, הקלט שוב חזק יותר`).slice(0,80),
 
-    okTitle:      (qs.get('okTitle')    || `הרווחת את זה ביושר 😂`).slice(0,80),
-    okSub:        (qs.get('okSub')      || `לחץ על הכפתור כדי לקבל את המתנה האמיתית שלך`).slice(0,80),
-    okBtn:        (qs.get('okBtn')      || `קבל את המתנה`).slice(0,32)
+    okTitle:    (qs.get('okTitle')    || `הרווחת את זה ביושר 😂`).slice(0,80),
+    okSub:      (qs.get('okSub')      || `לחץ על הכפתור כדי לקבל את המתנה האמיתית שלך`).slice(0,80),
+    okBtn:      (qs.get('okBtn')      || `קבל את המתנה`).slice(0,32)
   };
 
-  // תמונת “פרה” self‑contained (SVG אמוג'י) — ללא תלות ברשת
+  // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
   function cowDataURL(){
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
@@ -322,7 +358,7 @@ function voiceVerify(){
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
 
-  // קונפטי (כמו ביתר הפיצ'רים – “poof” מודרני)
+  // קונפטי (כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -351,6 +387,7 @@ function voiceVerify(){
     })();
   }
 
+  // מסך פתיחה
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
@@ -360,9 +397,13 @@ function voiceVerify(){
         <div class="vv-sub" style="font-size:12px">Prank simulation • demo only • no data collected</div>
       </div>
     `;
-    document.getElementById('vv-start').addEventListener('click', ()=>{ try{sfx('confirm')}catch(e){}; screenRecord(); });
+    document.getElementById('vv-start').addEventListener('click', ()=>{
+      try{sfx('confirm')}catch(e){}
+      screenRecord();
+    });
   }
 
+  // מסך ההקלטה (נסיון ראשון → שגיאה אמינה; נסיון שני → הצלחה)
   function screenRecord(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
@@ -376,8 +417,7 @@ function voiceVerify(){
           <div class="vv-err" id="rec-err" aria-live="polite"></div>
         </div>
 
-        ${ ( (qs.get('preview')||'0')==='1' ) ? `<div class="vv-sub">Preview mode</div>` : `` }
-
+        ${ PREV ? `<div class="vv-sub">Preview mode</div>` : `` }
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
@@ -394,28 +434,27 @@ function voiceVerify(){
     let attempt   = 0;
     let t0        = 0;
     let raf       = 0;
-    let tickTimer = 0;
+    let autoStop  = 0;
 
-    // audio graph (אם זמין) – ללא שמירת שום קובץ
+    // הגדרות אודיו (ויזואלי בלבד — בלי שמירה/שליחה)
     let stream = null, audioCtx = null, analyser = null, data = null;
 
     function fmt(ms){
       const s = Math.max(0, Math.floor(ms/1000));
-      const m = Math.floor(s/60).toString().padStart(2,'0');
-      const r = (s%60).toString().padStart(2,'0');
+      const m = String(Math.floor(s/60)).padStart(2,'0');
+      const r = String(s%60).padStart(2,'0');
       return `${m}:${r}`;
     }
 
     function meterValue(){
       if (analyser && data){
         analyser.getByteTimeDomainData(data);
-        // RMS פשוט
         let sum = 0;
         for (let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum += v*v; }
         const rms = Math.sqrt(sum / data.length);
         return Math.min(100, Math.floor(rms*180));
       }
-      // fallback “אמין”
+      // fallback אמין
       return Math.min(100, (Math.random()*65+20)|0);
     }
 
@@ -435,7 +474,7 @@ function voiceVerify(){
       t0 = performance.now();
       loop();
 
-      // נסה מיקרופון – רק לצורך ויזואלי
+      // נסיון הרשאת מיקרופון ל‑VU אמיתי (ללא הקלטה/שמירה)
       try{
         stream = await navigator.mediaDevices?.getUserMedia?.({ audio:true }) || null;
         if (stream){
@@ -446,12 +485,10 @@ function voiceVerify(){
           data = new Uint8Array(analyser.frequencyBinCount);
           src.connect(analyser);
         }
-      }catch(_){
-        // אין הרשאה/תמיכה — נישאר על fallback
-      }
+      }catch(_){ /* אין הרשאה – נשאר עם fallback */ }
 
-      // fail-safe: עצירה אוטומטית אחרי 7 שניות אם המשתמש לא לוחץ
-      tickTimer = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
+      // fail-safe: עצירה אוטומטית אחרי 7ש׳׳ אם לא עצרו ידנית
+      autoStop = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
     }
 
     function cleanupAudio(){
@@ -466,25 +503,24 @@ function voiceVerify(){
       label.textContent = 'Start recording';
       btn.classList.remove('red'); btn.classList.add('blue');
 
-      window.clearTimeout(tickTimer);
+      window.clearTimeout(autoStop);
       cancelAnimationFrame(raf);
       cleanupAudio();
 
       attempt += 1;
 
       if (attempt === 1){
-        // השגיאה האמינה בפעם הראשונה
+        // שגיאה אמינה בפעם הראשונה
         errEl.textContent = copy.errText;
         btn.classList.add('shake'); wrap.classList.add('shake');
         try{sfx('error')}catch(e){}
         setTimeout(()=>{ btn.classList.remove('shake'); wrap.classList.remove('shake'); }, 380);
-        // reset UI
         time.textContent = '00:00';
         meter.style.width = '0%';
         return;
       }
 
-      // נסיון שני – הצלחה
+      // נסיון שני — הצלחה
       try{sfx('tada')}catch(e){}
       confettiBurst(conf);
       setTimeout(screenSuccess, 450);
@@ -493,6 +529,7 @@ function voiceVerify(){
     btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
   }
 
+  // מסך הצלחה
   function screenSuccess(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
