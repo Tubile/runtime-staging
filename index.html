@@ -173,7 +173,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <style id="selfie-ux">
   .wrap-selfie{
     display:grid; gap:16px; justify-items:center; text-align:center;
-    margin-top:clamp(24px,12vh,96px);
+    margin-top: clamp(12px, 6vh, 48px);
   }
   .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
   .sf-sub{ margin:0; font-size:15px; color:#9aa3b2 }
@@ -1430,23 +1430,42 @@ function selfieVerify(){
     const overlay  = document.getElementById('sfOverlay');
     const countEl  = document.getElementById('sfCount');
 
-    // פתיחה אמינה של המצלמה (iOS Safari friendly):
-    (async ()=>{
-      await startCamera(video, fallback);
-      // אם Safari בכל זאת תקוע עד מגע ראשון – ננסה play() אחרי נגיעה
-      const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){} document.removeEventListener('pointerdown', nudge); };
-      document.addEventListener('pointerdown', nudge, { once:true });
-    })();
-
-    // צילום → ספירה 5→1 → הצלחה
-    document.getElementById('sfCapture').addEventListener('click', ()=>{
-      lastShot = trySnapshot(video) || null;          // לצורך ריאליזם בלבד
-      startOverlayCountdown(overlay, countEl, 5, ()=>{ // סאונד רק בהצלחה
-        try{ sfx('tada'); }catch(_){}                 // זה הסאונד היחיד בפיצ'ר
-        screenSuccess();
-      });
+// Start camera (front)
+(async ()=>{
+  try{
+    // Try #1: front camera at decent res (helps Safari)
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode:{ ideal:'user' }, width:{ ideal:1280 }, height:{ ideal:720 } },
+      audio:false
     });
+  }catch(e1){
+    try{
+      // Try #2: front camera any res
+      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
+    }catch(e2){
+      try{
+        // Try #3: any available camera
+        stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+      }catch(e3){
+        stream = null;
+      }
+    }
   }
+
+  if (stream){
+    video.srcObject = stream;
+    video.muted = true;                 // autoplay on iOS
+    try{ await video.play(); }catch(_){}
+
+    // Safari nudge: if it still pauses, play() again on first tap
+    const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){ } document.removeEventListener('pointerdown', nudge); };
+    document.addEventListener('pointerdown', nudge, { once:true });
+
+    fallback.hidden = true;
+  } else {
+    fallback.hidden = false;            // show the “fake frame”
+  }
+})();
 
   function screenSuccess(){
     stopCamera();
