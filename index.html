@@ -1270,17 +1270,26 @@ function narcissistQ(){
   
 // ===== Selfie Verify =====
 function selfieVerify(){
-  // --- 0) One-time style injection (adds overlay/blur + success layout) ---
+  // --- 0) One-time style injection (overrides layout to centered + RTL, adds overlay/success tweaks) ---
   (function injectCSS(){
     if (document.getElementById('selfie-ux-extra')) return;
     const css = `
+      /* מרכזים אנכית בתוך ה"טלפון" + RTL */
+      #app .wrap-selfie{
+        min-height:100%;            /* ממלא גובה ה-".wrap" (שהוא גובה ה"טלפון") */
+        display:grid;
+        place-content:center;       /* מרכז גם אנכית וגם אופקית */
+        gap:16px; text-align:center; direction:rtl; margin-top:0 !important;
+      }
+      #app .sf-status, #app .sf-row{ direction:rtl }
+
       /* Overlay countdown (blur background) */
       .sf-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
         background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:1000;text-align:center;padding:24px}
       .sf-overlay.on{display:flex}
       .sf-count{font-size:96px;font-weight:900;line-height:1}
       .sf-sub2{font-size:14px;color:#cbd5e1;margin-top:12px}
-      .sf-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
       /* Success screen (title + big check + image card) */
       .sf-topline{display:flex;align-items:center;gap:10px;justify-content:center}
       .sf-topline .check{font-size:28px;color:#10b981}
@@ -1289,6 +1298,7 @@ function selfieVerify(){
         border:1px solid rgba(255,255,255,.10);background:#0f1324;display:flex;align-items:center;justify-content:center
       }
       .sf-monkey img{width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
+
       .btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
       .green{background:#10b981;color:#fff}
       .ghost{background:#0b1020;color:#9aa3b2;border:1px solid rgba(255,255,255,.12)}
@@ -1300,47 +1310,52 @@ function selfieVerify(){
     (document.head || document.documentElement).appendChild(st);
   })();
 
-  // --- 1) Read params & setup (keeps the Runtime contract intact) ---
+  // --- 1) Read params & setup (Runtime contract) ---
   const qs    = new URLSearchParams(location.search);
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim();
   const GIFT  = (qs.get('giftUrl')||'#').trim();
   const app   = document.getElementById('app');
-  app.classList.remove('card');
+  app.classList.remove('card');  // מסך נקי כפי שמוגדר בשלד.  (Runtime)  [ref]
+  // (השלד והחוזים: מיפוי slug→פונקציה, רינדור לתוך #app בלבד)  // :contentReference[oaicite:3]{index=3}
 
-  // Texts (existing keys kept + a few new optional ones for this flow)
+  // טקסטים (+ חדשים)
   const copy = {
-    introTitle:   (qs.get('introTitle')  || `${NAME}, you've got a sweet gift! ❤️`).slice(0,80),
+    introTitle:   (qs.get('introTitle')  || `${NAME}, a gift is waiting!`).slice(0,80),
     introSub:     (qs.get('introSub')    || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
     introBtn:     (qs.get('introBtn')    || `Start selfie verification`).slice(0,32),
 
     camLabel:     (qs.get('camLabel')    || `המצלמה פועלת — ודא/י שהפנים במרכז המסגרת`).slice(0,60),
-    captureBtn:   (qs.get('captureBtn')  || `לצילום ואימות זהותך`).slice(0,32),       // NEW
-    overlaySub:   (qs.get('overlaySub')  || `אנא אמתן בזמן שהמערכת מאמתת את זהותך…`).slice(0,80), // NEW
+    captureBtn:   (qs.get('captureBtn')  || `לצילום ואימות זהותך`).slice(0,32),
+    overlaySub:   (qs.get('overlaySub')  || `אנא אמתן בזמן שהמערכת מאמתת את זהותך…`).slice(0,80),
 
-    retakeLabel:  (qs.get('retakeLabel') || `Retake`).slice(0,24),
-
-    successTitle: (qs.get('successTitle')|| `You're verified 🤣`).slice(0,60),       // NEW
-    okSub:        (qs.get('okSub')       || `Enjoy your gift!`).slice(0,80),
-    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `Claim your real gift`).slice(0,32), // NEW (keeps okBtn fallback)
-    saveBtn:      (qs.get('saveBtn')     || `לשמירת התמונה`).slice(0,24)               // NEW
+    successTitle: (qs.get('successTitle')|| `זהותך אומתה בהצלחה!`).slice(0,60),
+    okSub:        (qs.get('okSub')       || `You’re good to go.`).slice(0,80),
+    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `לקבלת המתנה האמיתית`).slice(0,32),
+    saveBtn:      (qs.get('saveBtn')     || `לשמירת התמונה`).slice(0,24)
   };
 
-  // Filter preset (existing contract)
+  // פילטרים מצחיקים (כמו בבריף)
   const filterPreset = (qs.get('filter') || 'ugly3').toLowerCase();
   const fxClass = ['ugly1','ugly2','ugly3'].includes(filterPreset) ? `fx-${filterPreset}` : 'fx-ugly3';
 
-  // Allow overriding the 5 monkey images via URL (?monkey1=...&...monkey5=...)
-  // Defaults are inline SVG data URLs (ugly monkey variants) — no network required.
+  // סט ברירת־מחדל של תמונות הקוף – הקישורים שסיפקת
+  const DEFAULT_MONKEYS = [
+    "https://i.pinimg.com/736x/04/cc/d5/04ccd55d5944df4195eccd126f729499.jpg",
+    "https://www.stockvault.net/data/2009/07/27/109625/preview16.jpg",
+    "https://e0.pxfuel.com/wallpapers/515/782/desktop-wallpaper-ugly-monkey-ugly-face.jpg",
+    "https://www.stockvault.net/data/2020/10/19/280001/preview16.jpg"
+  ];
+  // מאפשר גם לעקוף דרך פרמטרים ?monkey1..monkey5
   const MONKEY_OVR = [1,2,3,4,5].map(i => (qs.get('monkey'+i)||'').trim()).filter(Boolean);
-  const MONKEY_SVGS = createDefaultMonkeySet(); // 5 data: URLs
-  const MONKEYS = MONKEY_OVR.length ? MONKEY_OVR : MONKEY_SVGS;
+  const MONKEYS = (MONKEY_OVR.length ? MONKEY_OVR : DEFAULT_MONKEYS);
 
   let stream = null;
-  let lastShot = null; // dataURL of the captured selfie (not displayed, but we "really" capture)
+  let lastShot = null; // dataURL של הסלפי (לריאליזם; לא שומרים/לא שולחים)
+
   function stopCamera(){ try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){ } stream=null; }
 
-  // Confetti burst (same pattern across features)
+  // קונפטי (כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1367,19 +1382,17 @@ function selfieVerify(){
     })();
   }
 
-  // --- 2) Screens ---
+  // ---- 2) Screens ----
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-selfie">
         <h1 class="sf-title">${copy.introTitle}</h1>
         <p class="sf-sub">${copy.introSub}</p>
         <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
-        <div class="sf-hint">no data collected</div>
+        <div class="sf-hint">Prank simulation • demo only • no data collected</div>
       </div>`;
-    document.getElementById('sfStart').addEventListener('click', ()=>{
-      try{sfx('confirm')}catch(_){}
-      screenCamera();
-    });
+    // אין צליל לחיצה כאן (לפי הבקשה)
+    document.getElementById('sfStart').addEventListener('click', screenCamera, { once:true });
   }
 
   function screenCamera(){
@@ -1398,7 +1411,6 @@ function selfieVerify(){
 
         <div class="sf-row">
           <button id="sfCapture" class="btn sf-cta green">${copy.captureBtn}</button>
-          <button id="sfRetake" class="btn ghost">${copy.retakeLabel}</button>
         </div>
 
         <canvas id="sfConfetti" class="confetti-canvas"></canvas>
@@ -1418,31 +1430,21 @@ function selfieVerify(){
     const overlay  = document.getElementById('sfOverlay');
     const countEl  = document.getElementById('sfCount');
 
-    // Start camera
+    // פתיחה אמינה של המצלמה (iOS Safari friendly):
     (async ()=>{
-      try{
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
-        video.srcObject = stream;
-        fallback.hidden = true;
-      }catch(_){
-        fallback.hidden = false; // proceed anyway
-      }
+      await startCamera(video, fallback);
+      // אם Safari בכל זאת תקוע עד מגע ראשון – ננסה play() אחרי נגיעה
+      const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){} document.removeEventListener('pointerdown', nudge); };
+      document.addEventListener('pointerdown', nudge, { once:true });
     })();
 
-    // Capture flow (no auto-countdown here)
+    // צילום → ספירה 5→1 → הצלחה
     document.getElementById('sfCapture').addEventListener('click', ()=>{
-      try{sfx('confirm')}catch(_){}
-      lastShot = trySnapshot(video) || null; // not displayed; just for realism
-      startOverlayCountdown(overlay, countEl, 5, ()=>{
-        try{sfx('tada')}catch(_){}
+      lastShot = trySnapshot(video) || null;          // לצורך ריאליזם בלבד
+      startOverlayCountdown(overlay, countEl, 5, ()=>{ // סאונד רק בהצלחה
+        try{ sfx('tada'); }catch(_){}                 // זה הסאונד היחיד בפיצ'ר
         screenSuccess();
       });
-    });
-
-    // Retake (re-ask camera)
-    document.getElementById('sfRetake').addEventListener('click', ()=>{
-      try{sfx('whoosh')}catch(_){}
-      screenCamera();
     });
   }
 
@@ -1454,12 +1456,10 @@ function selfieVerify(){
         <div class="sf-topline"><span class="check">✔</span><h1 class="sf-title" style="margin:0">${copy.successTitle}</h1></div>
         <p class="sf-sub">${copy.okSub}</p>
 
-        <div class="sf-monkey">
-          <img id="monkeyImg" src="${picked}" alt="funny ugly monkey">
-        </div>
+        <div class="sf-monkey"><img id="monkeyImg" src="${picked}" alt="funny ugly monkey"></div>
 
         <div class="sf-row" style="margin-top:10px">
-          <button id="sfOpen" class="btn sf-cta green">${copy.giftBtn}</button>
+          <button id="sfOpen" class="btn sf-cta green"${PREV?' disabled':''}>${copy.giftBtn}</button>
           <button id="sfSave" class="btn ghost">${copy.saveBtn}</button>
         </div>
 
@@ -1467,38 +1467,56 @@ function selfieVerify(){
         <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
       </div>`;
 
-    const conf2 = document.getElementById('sfConfetti2');
-    confettiBurst(conf2);
+    confettiBurst(document.getElementById('sfConfetti2'));
 
-    // Primary CTA (open real gift)
+    // כפתור ירוק (אין סאונד כאן לפי בקשה)
     document.getElementById('sfOpen').addEventListener('click', ()=>{
       if(PREV) return;
-      try{sfx('confirm')}catch(_){}
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
     });
 
-    // Secondary CTA: download the monkey image
+    // כפתור שמירה
     document.getElementById('sfSave').addEventListener('click', ()=>{
       const img = document.getElementById('monkeyImg');
       if(!img || !img.src) return;
-      // If data: URL → download directly; if remote → attempt direct download, fallback to open in new tab
       try{
         const a = document.createElement('a');
         a.href = img.src;
-        a.download = 'ugly-monkey.png';
+        a.download = 'ugly-monkey.jpg';
         a.target = '_blank';
         a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        document.body.appendChild(a); a.click(); a.remove();
       }catch(_){
-        // Fallback: open image in new tab
         try{ window.open(img.src, '_blank', 'noopener'); }catch(__){}
       }
     });
   }
 
-  // --- 3) Helpers ---
+  // ---- 3) Helpers ----
+  async function startCamera(videoEl, fallbackEl){
+    // נסיונות ברצף – חלק עוזר במיוחד בספארי
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      fallbackEl.hidden = false; return false;
+    }
+    const tries = [
+      { video:{ facingMode:{ ideal:'user' }, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false },
+      { video:{ facingMode:'user' }, audio:false },
+      { video:true, audio:false }
+    ];
+    for(const c of tries){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia(c);
+        videoEl.srcObject = stream;
+        videoEl.muted = true;
+        await videoEl.play().catch(()=>{});
+        fallbackEl.hidden = true;
+        return true;
+      }catch(_){ /* נמשיך לניסיון הבא */ }
+    }
+    fallbackEl.hidden = false;
+    return false;
+  }
+
   function trySnapshot(videoEl){
     try{
       const vw = videoEl.videoWidth, vh = videoEl.videoHeight;
@@ -1527,50 +1545,7 @@ function selfieVerify(){
     }, 1000);
   }
 
-  function createDefaultMonkeySet(){
-    // Returns 5 data:image/svg+xml; each variant is deliberately silly/ugly 🙈🙉🙊
-    function m(i){
-      // Slightly different face/eyes/teeth/colors per variant
-      const faces = ['#6b4f29','#574024','#4a3720','#6d5b3b','#5a4830'];
-      const ears  = ['#8d6a3b','#795a30','#7a5c33','#8f774a','#7c643c'];
-      const eyes  = [['#fff','#111'],['#fff','#000'],['#e6f0ff','#0b1020'],['#fff','#111'],['#fff','#111']];
-      const mouth = ['#2d1c12','#2c1a10','#1f140c','#3a2618','#2a1a12'];
-      const tongue= ['#e11d48','#dc2626','#ef4444','#f97316','#b91c1c'];
-      const tooth = ['#e5e7eb','#f3f4f6','#e2e8f0','#f8fafc','#e5e7eb'];
-      const f = faces[i], e = ears[i], eyeW=eyes[i][0], eyeB=eyes[i][1], mth=mouth[i], tng=tongue[i], th=tooth[i];
-      const svg = `
-        <svg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000'>
-          <defs>
-            <filter id='noise${i}'><feTurbulence type='fractalNoise' baseFrequency='0.${2+i}' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0.6'/></filter>
-          </defs>
-          <rect width='100%' height='100%' fill='#0f1324'/>
-          <!-- ears -->
-          <ellipse cx='250' cy='420' rx='140' ry='170' fill='${e}' filter='url(#noise${i})'/>
-          <ellipse cx='750' cy='420' rx='140' ry='170' fill='${e}' filter='url(#noise${i})'/>
-          <!-- head -->
-          <ellipse cx='500' cy='500' rx='360' ry='380' fill='${f}'/>
-          <!-- eyes -->
-          <ellipse cx='400' cy='420' rx='90' ry='100' fill='${eyeW}'/>
-          <ellipse cx='600' cy='420' rx='90' ry='100' fill='${eyeW}'/>
-          <circle cx='400' cy='430' r='34' fill='${eyeB}'/>
-          <circle cx='600' cy='405' r='38' fill='${eyeB}'/>
-          <!-- nose -->
-          <ellipse cx='500' cy='520' rx='60' ry='40' fill='${mth}'/>
-          <!-- mouth -->
-          <path d='M360 620 Q500 ${680+i*10} 640 620 Q500 700 360 620Z' fill='${mth}'/>
-          <!-- tongue/teeth (ugly/funny) -->
-          <rect x='470' y='645' width='60' height='30' fill='${th}'/>
-          <ellipse cx='510' cy='700' rx='70' ry='32' fill='${tng}' opacity='.85'/>
-          <!-- random whiskers -->
-          <path d='M220 560 l120 10 M220 590 l120 0 M220 620 l120 -10' stroke='${mth}' stroke-width='6' opacity='.7'/>
-          <path d='M780 560 l-120 10 M780 590 l-120 0 M780 620 l-120 -10' stroke='${mth}' stroke-width='6' opacity='.7'/>
-        </svg>`;
-      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-    }
-    return [0,1,2,3,4].map(m);
-  }
-
-  // --- 4) Start flow + cleanup ---
+  // ---- 4) Start flow + cleanup ----
   screenIntro();
   addEventListener('pagehide', stopCamera);
 }
