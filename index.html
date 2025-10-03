@@ -245,12 +245,12 @@ function captcha(){
   const GIFT  = (qs.get('giftUrl')||'#').trim();
 
   const copy = {
-    introTitle:  (qs.get('introTitle') || `You've got a sweet surprise,${NAME}!`).slice(0,80),
-    introSub:    (qs.get('introSub')   || `Before your gift, quick verification.`).slice(0,80),
-    introBtn:    (qs.get('introBtn')   || `Start`).slice(0,32),
+    introTitle:  (qs.get('introTitle') || `A special gift is waiting, ${NAME}!`).slice(0,80),
+    introSub:    (qs.get('introSub')   || `To unlock it, please verify your identity`).slice(0,80),
+    introBtn:    (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
     gridHeader:  (qs.get('gridHeader') || `Select all images with a CREEP 😘`).slice(0,80),
     verify:      (qs.get('verifyText') || `Verify`).slice(0,32),
-    continueTxt: (qs.get('continueText') || `Continue`).slice(0,32),
+    continueTxt: (qs.get('continueText') || `Success! get your gift`).slice(0,32),
     okTitle:     (qs.get('okTitle')    || `Verified!`).slice(0,80),
     okSub:       (qs.get('okSub')      || `You’re good to go.`).slice(0,80),
     okBtn:       (qs.get('okBtn')      || `Get the gift`).slice(0,32),
