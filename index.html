@@ -173,7 +173,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <style id="selfie-ux">
   .wrap-selfie{
     display:grid; gap:16px; justify-items:center; text-align:center;
-    margin-top: clamp(12px, 6vh, 48px);
+    margin-top: clamp(24px, 10vh, 96px);
   }
   .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
   .sf-sub{ margin:0; font-size:15px; color:#9aa3b2 }
@@ -1437,44 +1437,20 @@ function selfieVerify(){
     const overlay  = document.getElementById('sfOverlay');
     const countEl  = document.getElementById('sfCount');
 
-// Start camera (front)
-(async ()=>{
-  try{
-    // Try #1: front camera at decent res (helps Safari)
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:{ ideal:'user' }, width:{ ideal:1280 }, height:{ ideal:720 } },
-      audio:false
-    });
-  }catch(e1){
-    try{
-      // Try #2: front camera any res
-      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
-    }catch(e2){
-      try{
-        // Try #3: any available camera
-        stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-      }catch(e3){
-        stream = null;
-      }
-    }
+// ✅ Start camera via helper (handles Safari + retries)
+startCamera(video, fallback);
+    // ✅ Capture → overlay countdown 5→1 → success
+document.getElementById('sfCapture').addEventListener('click', ()=>{
+  lastShot = trySnapshot(video) || null; // צילום “אמיתי” לווייב; לא נשמר/לא נשלח
+  const ov = document.getElementById('sfOverlay');
+  const n  = document.getElementById('sfCount');
+  startOverlayCountdown(ov, n, 5, ()=>{
+    try{sfx('tada')}catch(_){}
+    screenSuccess();
+  });
+});
   }
-
-  if (stream){
-    video.srcObject = stream;
-    video.muted = true;                 // autoplay on iOS
-    try{ await video.play(); }catch(_){}
-
-    // Safari nudge: if it still pauses, play() again on first tap
-    const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){ } document.removeEventListener('pointerdown', nudge); };
-    document.addEventListener('pointerdown', nudge, { once:true });
-
-    fallback.hidden = true;
-  } else {
-    fallback.hidden = false;            // show the “fake frame”
-  }
-})();
-
-  function screenSuccess(){
+   function screenSuccess(){
     stopCamera();
     const picked = MONKEYS[Math.floor(Math.random()*MONKEYS.length)];
     app.innerHTML = `
@@ -1501,23 +1477,6 @@ function selfieVerify(){
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
     });
     } // <-- close screenCamera()
-
-    // כפתור שמירה
-    document.getElementById('sfSave').addEventListener('click', ()=>{
-      const img = document.getElementById('monkeyImg');
-      if(!img || !img.src) return;
-      try{
-        const a = document.createElement('a');
-        a.href = img.src;
-        a.download = 'ugly-monkey.jpg';
-        a.target = '_blank';
-        a.rel = 'noopener';
-        document.body.appendChild(a); a.click(); a.remove();
-      }catch(_){
-        try{ window.open(img.src, '_blank', 'noopener'); }catch(__){}
-      }
-    });
-  }
 
   // ---- 3) Helpers ----
   async function startCamera(videoEl, fallbackEl){
