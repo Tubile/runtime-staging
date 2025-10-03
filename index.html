@@ -1185,125 +1185,13 @@ function narcissistQ(){
   
 // ===== Selfie Verify =====
 function selfieVerify(){
-    const app = document.getElementById('app');
-    app.classList.remove('card');
-
-    const copy = {
-      introTitle:  getCopy('introTitle',  `${NAME}, a gift is waiting!`),
-      introSub:    getCopy('introSub',    `To claim it, please verify your identity with a quick selfie.`),
-      introBtn:    getCopy('introBtn',    `Start selfie verification`),
-      camLabel:    getCopy('camLabel',    `Don’t close the camera. Finishing in`),
-      retakeLabel: getCopy('retakeLabel', `Retake`),
-      okTitle:     getCopy('okTitle',     `Verified!`),
-      okSub:       getCopy('okSub',       `You’re good to go.`),
-      okBtn:       getCopy('okBtn',       `Get the real gift`)
-    };
-
-    const filterPreset = (qs.get('filter') || 'ugly3').toLowerCase();
-    const fxClass = ['ugly1','ugly2','ugly3'].includes(filterPreset) ? `fx-${filterPreset}` : 'fx-ugly3';
-
-    let stream=null, timer=null;
-
-    function stopCamera(){ try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch(_){} stream=null; }
-
-    function confettiBurst(canvas){
-      if(!canvas) return;
-      const ctx=canvas.getContext('2d'); const r=devicePixelRatio||1;
-      function size(){ canvas.width=canvas.clientWidth*r; canvas.height=canvas.clientHeight*r; ctx.setTransform(r,0,0,r,0,0); }
-      if(!canvas.__sized){ canvas.__sized=true; canvas.style.display='block'; size(); addEventListener('resize', size); }
-      const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b']; const pieces=[]; const w=canvas.clientWidth,h=canvas.clientHeight;
-      for(let i=0;i<120;i++){ pieces.push({x:w/2,y:h/2,vx:(Math.random()*4-2),vy:(Math.random()*-3-2),r:Math.random()*6+3,c:colors[(Math.random()*colors.length)|0],a:1,spin:(Math.random()*6.28),vr:(Math.random()*0.2-0.1)}); }
-      const g=0.05; let t=0; (function step(){
-        ctx.clearRect(0,0,w,h);
-        pieces.forEach(p=>{ p.vy+=g; p.x+=p.vx; p.y+=p.vy; p.spin+=p.vr; p.a-=0.008;
-          ctx.globalAlpha=Math.max(p.a,0); ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
-          ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r); ctx.restore(); });
-        ctx.globalAlpha=1; if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
-      })();
-    }
-
-    function screenIntro(){
-      app.innerHTML = `
-        <div class="wrap wrap-selfie">
-          <h1 class="sf-title">${copy.introTitle}</h1>
-          <p class="sf-sub">${copy.introSub}</p>
-          <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
-          <div class="sf-hint">Prank simulation • demo only • no data collected</div>
-        </div>`;
-      document.getElementById('sfStart').addEventListener('click', ()=>{
-        try{sfx('confirm')}catch(_){}
-        screenCamera();
-      });
-    }
-
-    function screenCamera(){
-      stopCamera(); clearInterval(timer);
-      app.innerHTML = `
-        <div class="wrap wrap-selfie">
-          <div id="cam" class="sf-cam ${fxClass}">
-            <video id="sfVideo" autoplay playsinline muted></video>
-            <div id="sfFallback" class="sf-fallback" hidden>Camera unavailable — using a fun fake frame 😅</div>
-            <div id="sfCheck" class="sf-check">✔</div>
-          </div>
-          <div class="sf-status"><div class="sf-spinner"></div><div id="sfLbl">${copy.camLabel} <b id="sfN">7</b>…</div></div>
-          <div class="sf-row">
-            <button id="sfRetake" class="btn ghost">${copy.retakeLabel}</button>
-          </div>
-          <canvas id="sfConfetti" class="confetti-canvas"></canvas>
-          <div class="sf-hint">Camera feed isn’t saved</div>
-        </div>`;
-
-      const video    = document.getElementById('sfVideo');
-      const fallback = document.getElementById('sfFallback');
-      const check    = document.getElementById('sfCheck');
-      const confetti = document.getElementById('sfConfetti');
-      const nEl      = document.getElementById('sfN');
-
-      (async ()=>{
-        try{
-          stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
-          video.srcObject = stream; fallback.hidden = true;
-        }catch(_){ fallback.hidden = false; }
-      })();
-
-      let n=7;
-      timer=setInterval(()=>{
-        n=Math.max(0,n-1); nEl.textContent=String(n);
-        if(n===0){
-          clearInterval(timer);
-          try{sfx('tada')}catch(_){}
-          check.classList.add('on');
-          setTimeout(()=>{ confettiBurst(confetti); screenSuccess(); }, 550);
-        }
-      },1000);
-
-      document.getElementById('sfRetake').addEventListener('click', ()=>{
-        try{sfx('whoosh')}catch(_){}
-        screenCamera();
-      });
-    }
-
-    function screenSuccess(){
-      stopCamera();
-      app.innerHTML = `
-        <div class="wrap wrap-selfie">
-          <h1 class="sf-title">${copy.okTitle}</h1>
-          <p class="sf-sub">${copy.okSub}</p>
-          <button id="sfOpen" class="btn sf-cta green">${copy.okBtn}</button>
-          ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — button disabled</div>` : ``}
-          <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
-        </div>`;
-      const conf2=document.getElementById('sfConfetti2'); confettiBurst(conf2);
-      document.getElementById('sfOpen').addEventListener('click', ()=>{
-        if(PREV) return; try{sfx('confirm')}catch(_){}
-        try{ window.open(GIFT,'_blank','noopener'); }catch(_){}
-      });
-    }
-
-    // Start + cleanup
-    screenIntro();
-    addEventListener('pagehide', stopCamera);
-  }
+el(`
+<div class="badge">Selfie Verify – demo</div>
+<h1 class="h1">${NAME}, snap a quick selfie 📸</h1>
+<p class="p">This is a demo screen. Real flow will ask for permissions.</p>
+<button class="btn btn-primary">Open camera</button>
+`);
+}
 
 const map = {
 'voice-verify': voiceVerify,
