@@ -14,16 +14,13 @@ body{margin:0;background:#0b1020;color:#e8ecf4;font-family:system-ui,Segoe UI,Ro
   overflow:hidden;
   border:1px solid rgba(255,255,255,.08);
   background:#0f152a;
-  display: flex;           /* חדש */
-  flex-direction: column;  /* חדש */
+  display:flex;               /* חשוב: מאפשר לילד למלא גובה */
+  flex-direction:column;      /* כותרת סטטוס למעלה, תוכן מתחת */
 }
 @media (max-width: 480px){
   .stage{ min-height:100svh; align-items:stretch; justify-content:stretch; }
   .phone{ width:100vw; height:100svh; border-radius:0; border:0; box-shadow:none; }
   .wrap{ padding:clamp(16px,4vw,24px); }
-}
-@media (max-width:420px){
-  .phone{ height:calc(92vw * 1.78) }
 }
 
 /* status bar (preview-only) */
@@ -33,11 +30,10 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .status .dot{width:6px;height:6px;border-radius:50%;background:#aeb7c8;opacity:.85}
 .wrap{
   padding:16px;
-  flex: 1;                          /* חדש: ימלא את כל גובה ה"טלפון" שמתחת לסטטוס */
-  overflow: auto;                    /* חדש: גלילה פנימית */
-  -webkit-overflow-scrolling: touch; /* חשוב לאייפון - גלילת אינרציה חלקה */
-  overscroll-behavior: contain;      /* לא "מושך" את המסך מסביב */
-  position: relative;               /* ← מוסיף: כדי למקם את הפס בתוך ה-wrap */
+  flex:1;                           /* ימלא את כל גובה ה"טלפון" */
+  overflow:auto;                     /* כאן הגלילה מתבצעת */
+  -webkit-overflow-scrolling: touch; /* אינרציה חלקה באייפון */
+  overscroll-behavior: contain;      /* לא מושך את העמוד שמסביב */
 }
 .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
 .h1{font-size:22px;font-weight:800;margin:0 0 6px}
