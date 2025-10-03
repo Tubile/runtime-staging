@@ -168,6 +168,59 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   .cap-cta.error{ animation:infShake .35s linear 1 }
   .cap-cta.green{ background:#10b981; color:#fff }
   .cap-hint{ font-size:12px; color:#9aa3b2 }
+
+<!-- SELFIE UX (styles) -->
+<style id="selfie-ux">
+  .wrap-selfie{
+    display:grid; gap:16px; justify-items:center; text-align:center;
+    margin-top:clamp(24px,12vh,96px);
+  }
+  .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
+  .sf-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+  .sf-cta{ width:min(320px,100%); min-height:48px; padding:14px 18px; font-size:16px;
+           border-radius:16px; font-weight:800; margin:0 auto }
+  .sf-hint{ font-size:12px; color:#9aa3b2 }
+  .sf-phone-only{ opacity:.9 }
+
+  .sf-cam{
+    position:relative; width:min(360px,100%); aspect-ratio:3/4;
+    background:#0f152a; border:1px solid rgba(255,255,255,.10); border-radius:16px; overflow:hidden;
+  }
+  .sf-cam video, .sf-cam .sf-fallback{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  }
+  .sf-fallback{
+    display:flex; align-items:center; justify-content:center; padding:16px;
+    background:repeating-linear-gradient(135deg,#12182b 0 16px,#0e1326 16px 32px);
+    color:#9aa3b2; font-weight:700; font-size:18px;
+  }
+
+  .sf-status{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    font-size:14px; color:#9aa3b2;
+  }
+  .sf-spinner{ width:18px; height:18px; border:3px solid rgba(255,255,255,.15);
+               border-top-color:#a78bfa; border-radius:50%; animation:sfSpin 1s linear infinite }
+  @keyframes sfSpin{ to{ transform:rotate(360deg) } }
+
+  .sf-check{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:72px; color:#10b981; text-shadow:0 6px 24px rgba(0,0,0,.35);
+    pointer-events:none; opacity:0; transform:scale(.9); transition:.25s ease;
+  }
+  .sf-check.on{ opacity:1; transform:scale(1) }
+
+  /* Filters */
+  .fx-ugly1 video{ filter:hue-rotate(120deg) saturate(2) contrast(1.2); transform:scaleX(-1) }
+  .fx-ugly2 video{ filter:hue-rotate(260deg) saturate(2.4) contrast(1.15) brightness(1.08); transform:scaleX(-1) }
+  .fx-ugly3 video{ filter:hue-rotate(180deg) saturate(2.2) contrast(1.2) drop-shadow(0 4px 22px rgba(0,0,0,.25)); transform:scaleX(-1) }
+
+  .green{ background:#10b981; color:#fff }
+  .ghost{ background:#0b1020; color:#9aa3b2; border:1px solid rgba(255,255,255,.12) }
+  .sf-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center }
+
+  /* Confetti canvas */
+  .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999; display:none }
 </style>
 
 <div class="stage">
@@ -1185,12 +1238,165 @@ function narcissistQ(){
   
 // ===== Selfie Verify =====
 function selfieVerify(){
-el(`
-<div class="badge">Selfie Verify – demo</div>
-<h1 class="h1">${NAME}, snap a quick selfie 📸</h1>
-<p class="p">This is a demo screen. Real flow will ask for permissions.</p>
-<button class="btn btn-primary">Open camera</button>
-`);
+  const qs    = new URLSearchParams(location.search);
+  const PREV  = (qs.get('preview')||'0').trim()==='1';
+  const NAME  = (qs.get('name')||'Friend').trim();
+  const GIFT  = (qs.get('giftUrl')||'#').trim();
+  const app   = document.getElementById('app');
+  app.classList.remove('card');
+
+  // Texts (customizable via URL)
+  const copy = {
+    introTitle:  (qs.get('introTitle') || `${NAME}, a gift is waiting!`).slice(0,80),
+    introSub:    (qs.get('introSub')   || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
+    introBtn:    (qs.get('introBtn')   || `Start selfie verification`).slice(0,32),
+
+    camLabel:    (qs.get('camLabel')   || `Don’t close the camera. Finishing in`).slice(0,60),
+    retakeLabel: (qs.get('retakeLabel')|| `Retake`).slice(0,24),
+
+    okTitle:     (qs.get('okTitle')    || `Verified!`).slice(0,60),
+    okSub:       (qs.get('okSub')      || `You’re good to go.`).slice(0,80),
+    okBtn:       (qs.get('okBtn')      || `Get the real gift`).slice(0,32),
+  };
+
+  const filterPreset = (qs.get('filter') || 'ugly3').toLowerCase(); // ברירת מחדל ugly3 לפי הבריף
+  const fxClass = ['ugly1','ugly2','ugly3'].includes(filterPreset) ? `fx-${filterPreset}` : 'fx-ugly3';
+
+  let stream = null;
+  let timer  = null;
+
+  function stopCamera(){
+    try{ stream?.getTracks()?.forEach(t=>t.stop()); }catch(_){}
+    stream = null;
+  }
+
+  function confettiBurst(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const r   = devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+    if(!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); addEventListener('resize', size); }
+    const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces=[]; const w=canvas.clientWidth, h=canvas.clientHeight;
+    for(let i=0;i<120;i++){
+      pieces.push({x:w/2,y:h/2,vx:(Math.random()*4-2),vy:(Math.random()*-3-2),
+        r:Math.random()*6+3,c:colors[(Math.random()*colors.length)|0],a:1,spin:(Math.random()*6.28),vr:(Math.random()*0.2-0.1)});
+    }
+    const g=0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy+=g; p.x+=p.vx; p.y+=p.vy; p.spin+=p.vr; p.a-=0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha=1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
+  }
+
+  function screenIntro(){
+    app.innerHTML = `
+      <div class="wrap wrap-selfie">
+        <h1 class="sf-title">${copy.introTitle}</h1>
+        <p class="sf-sub">${copy.introSub}</p>
+        <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
+        <div class="sf-hint">Prank simulation • demo only • no data collected</div>
+      </div>
+    `;
+    document.getElementById('sfStart').addEventListener('click', ()=>{
+      try{sfx('confirm')}catch(_){}
+      screenCamera();
+    });
+  }
+
+  function screenCamera(){
+    stopCamera();
+    clearInterval(timer);
+    app.innerHTML = `
+      <div class="wrap wrap-selfie">
+        <div id="cam" class="sf-cam ${fxClass}">
+          <video id="sfVideo" autoplay playsinline muted></video>
+          <div id="sfFallback" class="sf-fallback" hidden>Camera unavailable — using a fun fake frame 😅</div>
+          <div id="sfCheck" class="sf-check">✔</div>
+        </div>
+        <div class="sf-status"><div class="sf-spinner"></div><div id="sfLbl">${copy.camLabel} <b id="sfN">7</b>…</div></div>
+        <div class="sf-row">
+          <button id="sfRetake" class="btn ghost">${copy.retakeLabel}</button>
+        </div>
+        <canvas id="sfConfetti" class="confetti-canvas"></canvas>
+        <div class="sf-hint">Camera feed isn’t saved</div>
+      </div>
+    `;
+
+    const video     = document.getElementById('sfVideo');
+    const fallback  = document.getElementById('sfFallback');
+    const check     = document.getElementById('sfCheck');
+    const confetti  = document.getElementById('sfConfetti');
+    const nEl       = document.getElementById('sfN');
+
+    // Start camera (front)
+    (async ()=>{
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio:false });
+        video.srcObject = stream;
+        fallback.hidden = true;
+      }catch(_e){
+        // blocked / not available → fallback visible, proceed anyway
+        fallback.hidden = false;
+      }
+    })();
+
+    // Countdown 7→0
+    let n = 7;
+    timer = setInterval(()=>{
+      n = Math.max(0, n-1);
+      nEl.textContent = n.toString();
+      if(n===0){
+        clearInterval(timer);
+        // Success cue
+        try{sfx('tada')}catch(_){}
+        check.classList.add('on');
+        setTimeout(()=>{ confettiBurst(confetti); screenSuccess(); }, 550);
+      }
+    }, 1000);
+
+    // Retake
+    document.getElementById('sfRetake').addEventListener('click', ()=>{
+      try{sfx('whoosh')}catch(_){}
+      screenCamera();
+    });
+  }
+
+  function screenSuccess(){
+    stopCamera();
+    app.innerHTML = `
+      <div class="wrap wrap-selfie">
+        <h1 class="sf-title">${copy.okTitle}</h1>
+        <p class="sf-sub">${copy.okSub}</p>
+        <button id="sfOpen" class="btn sf-cta green">${copy.okBtn}</button>
+        ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — button disabled</div>` : ``}
+        <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
+      </div>
+    `;
+    const conf2 = document.getElementById('sfConfetti2');
+    confettiBurst(conf2);
+
+    const btn = document.getElementById('sfOpen');
+    btn.addEventListener('click', ()=>{
+      if(PREV) return;
+      try{sfx('confirm')}catch(_){}
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+    });
+  }
+
+  // GO
+  screenIntro();
+
+  // Cleanup on page hide
+  addEventListener('pagehide', stopCamera);
 }
 
 const map = {
