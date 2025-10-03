@@ -1423,7 +1423,6 @@ function selfieVerify(){
           </div>
         </div>
       </div>`;
-    } // <-- close screenCamera()
 
     const video    = document.getElementById('sfVideo');
     const fallback = document.getElementById('sfFallback');
@@ -1493,6 +1492,7 @@ function selfieVerify(){
       if(PREV) return;
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
     });
+    } // <-- close screenCamera()
 
     // כפתור שמירה
     document.getElementById('sfSave').addEventListener('click', ()=>{
