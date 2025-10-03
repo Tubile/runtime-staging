@@ -504,6 +504,15 @@ function voiceVerify(){
     <button id="vv-tryagain" class="btn btn-primary">אישור</button>
   </div>
 </div>
+<!-- Error toast #2 (same style, texts reveal the prank) -->
+<div class="toast" id="vv-toast2">
+  <div class="box">
+    <h3>יש לך כישרון לזה</h3>
+    <p>נסה שוב, רק כי זה גורם לי לצחוק.</p>
+    <div style="height:10px"></div>
+    <button id="vv-tryagain2" class="btn btn-primary">יאללה, ננסה שוב</button>
+  </div>
+</div>
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
@@ -515,6 +524,9 @@ function voiceVerify(){
     const errEl = document.getElementById('rec-err');
     const wrap  = document.querySelector('.wrap-voice');
     const conf  = document.getElementById('vv-confetti');
+    const toast2 = document.getElementById('vv-toast2');
+const tryAgain2 = document.getElementById('vv-tryagain2');
+tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
     const toast = document.getElementById('vv-toast');
 const tryAgain = document.getElementById('vv-tryagain');
 tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
@@ -608,8 +620,17 @@ tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
         meter.style.width = '0%';
         return;
       }
-
-      // נסיון שני — הצלחה
+      if (attempt === 2){
+  // שגיאה שנייה ואחרונה (טוסט #2)
+  toast2.classList.add('show');
+  btn.classList.add('shake'); wrap.classList.add('shake');
+  try{sfx('error')}catch(e){}
+  setTimeout(()=>{ btn.classList.remove('shake'); wrap.classList.remove('shake'); }, 380);
+  time.textContent = '00:00';
+  meter.style.width = '0%';
+  return;
+}
+      // נסיון שלישי — הצלחה
       try{sfx('tada')}catch(e){}
       confettiBurst(conf);
       setTimeout(screenSuccess, 450);
