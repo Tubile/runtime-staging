@@ -1402,82 +1402,107 @@ function selfieVerify(){
     // אין צליל לחיצה כאן (לפי הבקשה)
     document.getElementById('sfStart').addEventListener('click', screenCamera, { once:true });
   }
-  function screenCamera(){
-    stopCamera();
-    app.innerHTML = `
-      <div class="wrap wrap-selfie">
-        <div id="cam" class="sf-cam ${fxClass}">
-          <video id="sfVideo" autoplay playsinline muted></video>
-          <div id="sfFallback" class="sf-fallback" hidden>Camera unavailable — using a fun fake frame 😅</div>
+function screenCamera(){
+  stopCamera();
+  app.innerHTML = `
+    <div class="wrap wrap-selfie">
+      <div id="cam" class="sf-cam ${fxClass}">
+        <video id="sfVideo" autoplay playsinline muted></video>
+        <div id="sfFallback" class="sf-fallback" hidden>
+          Camera unavailable — using a fun fake frame 😅
         </div>
+      </div>
 
-        <div class="sf-status">
-          <div class="sf-spinner"></div>
-          <div id="sfLbl">${copy.camLabel}</div>
+      <div class="sf-status">
+        <div class="sf-spinner"></div>
+        <div id="sfLbl">${copy.camLabel}</div>
+      </div>
+
+      <div class="sf-row">
+        <button id="sfCapture" class="btn sf-cta green">${copy.captureBtn}</button>
+      </div>
+
+      <canvas id="sfConfetti" class="confetti-canvas"></canvas>
+      <div class="sf-hint">Camera feed isn’t saved</div>
+
+      <!-- Overlay: big 5→1 on blurred background -->
+      <div id="sfOverlay" class="sf-overlay" aria-hidden="true">
+        <div>
+          <div id="sfCount" class="sf-count">5</div>
+          <div class="sf-sub2">${copy.overlaySub}</div>
         </div>
+      </div>
+    </div>`;
 
-        <div class="sf-row">
-          <button id="sfCapture" class="btn sf-cta green">${copy.captureBtn}</button>
-        </div>
+  const video    = document.getElementById('sfVideo');
+  const fallback = document.getElementById('sfFallback');
 
-        <canvas id="sfConfetti" class="confetti-canvas"></canvas>
-        <div class="sf-hint">Camera feed isn’t saved</div>
+  // ✅ פתיחת מצלמה אמינה (ספארי/כרום) דרך פונקציית העזר שכבר קיימת אצלך
+  startCamera(video, fallback);
 
-        <!-- Overlay: big 5→1 on blurred background -->
-        <div id="sfOverlay" class="sf-overlay" aria-hidden="true">
-          <div>
-            <div id="sfCount" class="sf-count">5</div>
-            <div class="sf-sub2">${copy.overlaySub}</div>
-          </div>
-        </div>
-      </div>`;
-
-    const video    = document.getElementById('sfVideo');
-    const fallback = document.getElementById('sfFallback');
-    const overlay  = document.getElementById('sfOverlay');
-    const countEl  = document.getElementById('sfCount');
-
-// ✅ Start camera via helper (handles Safari + retries)
-startCamera(video, fallback);
-    // ✅ Capture → overlay countdown 5→1 → success
-document.getElementById('sfCapture').addEventListener('click', ()=>{
-  lastShot = trySnapshot(video) || null; // צילום “אמיתי” לווייב; לא נשמר/לא נשלח
-  const ov = document.getElementById('sfOverlay');
-  const n  = document.getElementById('sfCount');
-  startOverlayCountdown(ov, n, 5, ()=>{
-    try{sfx('tada')}catch(_){}
-    screenSuccess();
-  });
-});
-  }
-   function screenSuccess(){
-    stopCamera();
-    const picked = MONKEYS[Math.floor(Math.random()*MONKEYS.length)];
-    app.innerHTML = `
-      <div class="wrap wrap-selfie">
-        <div class="sf-topline"><span class="check">✔</span><h1 class="sf-title" style="margin:0">${copy.successTitle}</h1></div>
-        <p class="sf-sub">${copy.okSub}</p>
-
-        <div class="sf-monkey"><img id="monkeyImg" src="${picked}" alt="funny ugly monkey"></div>
-
-        <div class="sf-row" style="margin-top:10px">
-          <button id="sfOpen" class="btn sf-cta green"${PREV?' disabled':''}>${copy.giftBtn}</button>
-          <button id="sfSave" class="btn ghost">${copy.saveBtn}</button>
-        </div>
-
-        ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — green button disabled</div>` : ``}
-        <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
-      </div>`;
-
-    confettiBurst(document.getElementById('sfConfetti2'));
-
-    // כפתור ירוק (אין סאונד כאן לפי בקשה)
-    document.getElementById('sfOpen').addEventListener('click', ()=>{
-      if(PREV) return;
-      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+  // ✅ כפתור “לצילום ואימות זהותך”
+  document.getElementById('sfCapture').addEventListener('click', ()=>{
+    lastShot = trySnapshot(video) || null;
+    const ov = document.getElementById('sfOverlay');
+    const n  = document.getElementById('sfCount');
+    startOverlayCountdown(ov, n, 5, ()=>{
+      try{sfx('tada')}catch(_){}
+      screenSuccess();
     });
-    } // <-- close screenCamera()
+  });
+}
+   function screenSuccess(){
+  stopCamera();
+  const picked = (typeof MONKEYS!=='undefined' && MONKEYS.length)
+    ? MONKEYS[Math.floor(Math.random()*MONKEYS.length)]
+    : '';
 
+  app.innerHTML = `
+    <div class="wrap wrap-selfie">
+      <div class="sf-topline">
+        <span class="check">✔</span>
+        <h1 class="sf-title" style="margin:0">${copy.successTitle}</h1>
+      </div>
+      <p class="sf-sub">${copy.okSub}</p>
+
+      ${picked ? `<div class="sf-monkey"><img id="monkeyImg" src="${picked}" alt="funny ugly monkey"></div>` : ''}
+
+      <div class="sf-row" style="margin-top:10px">
+        <button id="sfOpen" class="btn sf-cta green"${PREV?' disabled':''}>${copy.giftBtn}</button>
+        ${picked ? `<button id="sfSave" class="btn ghost">${copy.saveBtn}</button>` : ''}
+      </div>
+
+      ${PREV ? `<div class="sf-hint sf-phone-only">Preview only — green button disabled</div>` : ``}
+      <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
+    </div>`;
+
+  // קונפטי
+  confettiBurst(document.getElementById('sfConfetti2'));
+
+  // כפתור ירוק
+  document.getElementById('sfOpen').addEventListener('click', ()=>{
+    if(PREV) return;
+    try{sfx('confirm')}catch(_){}
+    try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+  });
+
+  // כפתור שמירת התמונה (רק אם יש תמונה)
+  const saveBtn = document.getElementById('sfSave');
+  if (saveBtn){
+    saveBtn.addEventListener('click', ()=>{
+      const img = document.getElementById('monkeyImg');
+      if(!img || !img.src) return;
+      try{
+        const a = document.createElement('a');
+        a.href = img.src; a.download = 'ugly-monkey.jpg';
+        a.target = '_blank'; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+      }catch(_){
+        try{ window.open(img.src, '_blank', 'noopener'); }catch(__){}
+      }
+    });
+  }
+}
   // ---- 3) Helpers ----
   async function startCamera(videoEl, fallbackEl){
     // נסיונות ברצף – חלק עוזר במיוחד בספארי
