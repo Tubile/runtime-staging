@@ -1119,7 +1119,7 @@ function narcissistQ(){
 
   // Copy / defaults (from brief)
   const copy = {
-    introTitle: (qs.get('introTitle') || `${NAME}, a gift is waiting!`).slice(0,80),
+    introTitle: (qs.get('introTitle') || `${NAME}, you've got a sweet gift!`).slice(0,80),
     introSub:   (qs.get('introSub')   || `To claim it, answer 3 quick questions.`).slice(0,80),
     startBtn:   (qs.get('startBtn')   || `Verify identity to get the gift`).slice(0,40),
     okTitle:    (qs.get('okTitle')    || `You've earned it 🤣`).slice(0,80),
@@ -1320,9 +1320,9 @@ function selfieVerify(){
 
     retakeLabel:  (qs.get('retakeLabel') || `Retake`).slice(0,24),
 
-    successTitle: (qs.get('successTitle')|| `זהותך אומתה בהצלחה!`).slice(0,60),       // NEW
-    okSub:        (qs.get('okSub')       || `You’re good to go.`).slice(0,80),
-    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `לקבלת המתנה האמיתית`).slice(0,32), // NEW (keeps okBtn fallback)
+    successTitle: (qs.get('successTitle')|| `You're verified 🤣`).slice(0,60),       // NEW
+    okSub:        (qs.get('okSub')       || `Enjoy your gift!`).slice(0,80),
+    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `Claim your real gift`).slice(0,32), // NEW (keeps okBtn fallback)
     saveBtn:      (qs.get('saveBtn')     || `לשמירת התמונה`).slice(0,24)               // NEW
   };
 
@@ -1374,7 +1374,7 @@ function selfieVerify(){
         <h1 class="sf-title">${copy.introTitle}</h1>
         <p class="sf-sub">${copy.introSub}</p>
         <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
-        <div class="sf-hint">Prank simulation • demo only • no data collected</div>
+        <div class="sf-hint">no data collected</div>
       </div>`;
     document.getElementById('sfStart').addEventListener('click', ()=>{
       try{sfx('confirm')}catch(_){}
