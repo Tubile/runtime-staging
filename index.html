@@ -698,14 +698,203 @@ function infinite(){
 }
 // ===== Narcissist Questions =====
 function narcissistQ(){
-el(`
-<div class="badge">Narcissist Q – demo</div>
-<h1 class="h1">Quick personality check for ${NAME}</h1>
-<p class="p">Answer a few oddly self-centric questions…</p>
-<button class="btn btn-primary">Start</button>
-`);
-}
+  // Params
+  const qs    = new URLSearchParams(location.search);
+  const PREV  = (qs.get('preview')||'0').trim()==='1';
+  const NAME  = (qs.get('name')||'Friend').trim().slice(0,24);
+  const GIFT  = (qs.get('giftUrl')||'#').trim();
+  const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase(); // optional: dark|blue|green|purple
 
+  // Style (scoped)
+  if(!document.getElementById('nq-css')){
+    document.head.insertAdjacentHTML('beforeend', `
+      <style id="nq-css">
+        .wrap-nq{ display:grid; gap:16px; justify-items:center; text-align:center; margin-top:clamp(12px,6vh,48px) }
+        .nq-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
+        .nq-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+        .nq-steps{ font-size:12px; color:#9aa3b2; opacity:.9 }
+        .nq-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; width:min(360px,100%) }
+        @media (max-width:380px){ .nq-grid{ grid-template-columns:1fr } }
+        .nq-card{
+          position:relative; border-radius:14px; padding:14px 12px; text-align:left; cursor:pointer;
+          background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10);
+          transition:transform .055s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+          touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none;
+        }
+        .nq-card:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,.25) }
+        .nq-card:active{ transform:translateY(0) scale(.995) }
+        .nq-letter{ display:inline-block; font-weight:900; font-size:12px; color:#9aa3b2; margin-right:6px }
+        .nq-text{ font-size:15px; }
+        .nq-card.ok{ box-shadow:0 10px 28px rgba(16,185,129,.25); border-color:rgba(16,185,129,.45) }
+        .nq-card.err{ box-shadow:0 10px 28px rgba(239,68,68,.25); border-color:rgba(239,68,68,.55); background:linear-gradient(0deg,rgba(239,68,68,.10),transparent) }
+        .nq-toast{ font-size:12px; color:#9aa3b2; min-height:16px }
+        .nq-hint{ font-size:12px; color:#9aa3b2 }
+        .nq-green{ background:#10b981 !important; color:#fff !important }
+        .nq-btn{ width:min(320px,100%); min-height:48px; padding:14px 18px; font-size:16px; border-radius:16px; font-weight:800 }
+        .nq-confetti{ position:fixed; inset:0; pointer-events:none; z-index:999; display:block }
+        /* Accent (optional) */
+        .nq-theme-blue .nq-card:hover{ border-color:#38bdf8 }
+        .nq-theme-purple .nq-card:hover{ border-color:#a78bfa }
+        .nq-theme-green .nq-card:hover{ border-color:#10b981 }
+      </style>
+    `);
+  }
+
+  // Remove "card chrome" for clean runtime
+  const app = document.getElementById('app');
+  app.classList.remove('card');
+
+  // Copy / defaults (from brief)
+  const copy = {
+    introTitle: (qs.get('introTitle') || `${NAME}, a gift is waiting!`).slice(0,80),
+    introSub:   (qs.get('introSub')   || `To claim it, answer 3 quick questions.`).slice(0,80),
+    startBtn:   (qs.get('startBtn')   || `Verify identity to get the gift`).slice(0,40),
+    okTitle:    (qs.get('okTitle')    || `You've earned it 🤣`).slice(0,80),
+    okSub:      (qs.get('okSub')      || `You're officially verified.`).slice(0,80),
+    okBtn:      (qs.get('okBtn')      || `Get the real gift`).slice(0,40),
+  };
+
+  // Defaults per the brief (escape defaults to D)
+  const defaults = [
+    { q:`Why am I the main character today?`,
+      a:`Because you're iconic`, b:`Remember that legendary trip?`, c:`Your charm is undefeatable`,
+      d:`Just give me the gift already! 😂`, esc:'d' },
+    { q:`You’ll name your kid after me because…`,
+      a:`I’m a genius`, b:`Obviously—I’m iconic`, c:`You adore me`,
+      d:`Set me free already!`, esc:'d' },
+    { q:`One word that best describes me:`,
+      a:`Legend`, b:`Masterpiece`, c:`Unforgettable`,
+      d:`Skip to the gift`, esc:'d' }
+  ];
+
+  function take(n,k,fb){ return (qs.get(`q${n}${k}`) || fb).toString().slice(0,80) }
+  function getQ(n){
+    const def = defaults[n-1];
+    let esc = (qs.get(`q${n}esc`) || qs.get(`esc${n}`) || def.esc || 'd').toLowerCase();
+    if(!['a','b','c','d'].includes(esc)) esc='d';
+    return {
+      q: take(n,'', def.q),
+      a: take(n,'a', def.a),
+      b: take(n,'b', def.b),
+      c: take(n,'c', def.c),
+      d: take(n,'d', def.d),
+      esc
+    };
+  }
+  const Q = [getQ(1), getQ(2), getQ(3)];
+
+  // Accent class on wrapper
+  const themeClass = (ACCENT==='blue')?'nq-theme-blue':(ACCENT==='green')?'nq-theme-green':(ACCENT==='purple')?'nq-theme-purple':'';
+
+  // Render helpers
+  function render(html){ app.innerHTML = html; }
+
+  function toast(el, text){ if(!el) return; el.textContent = text||''; }
+
+  function confettiBurst(){
+    // Canvas confetti (like in other features)
+    const canvas = document.createElement('canvas');
+    canvas.className = 'nq-confetti';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const r = window.devicePixelRatio||1;
+    function size(){ canvas.width = innerWidth*r; canvas.height = innerHeight*r; ctx.setTransform(r,0,0,r,0,0); }
+    size(); const onR=()=>size(); window.addEventListener('resize', onR, { once:true });
+    const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces=[]; const w=innerWidth, h=innerHeight;
+    for(let i=0;i<140;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    const g=0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy+=g; p.x+=p.vx; p.y+=p.vy; p.spin+=p.vr; p.a-=0.008;
+        ctx.globalAlpha=Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha=1;
+      if(t++<260) requestAnimationFrame(step); else { ctx.clearRect(0,0,w,h); canvas.remove(); }
+    })();
+  }
+
+  function screenIntro(){
+    render(`
+      <div class="wrap wrap-nq ${themeClass}">
+        <h1 class="nq-title">${copy.introTitle}</h1>
+        <p class="nq-sub">${copy.introSub}</p>
+        <button id="nqStart" class="btn nq-btn">${copy.startBtn}</button>
+        <div class="nq-hint">Prank simulation • demo only • no data collected</div>
+      </div>
+    `);
+    document.getElementById('nqStart')?.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
+  }
+
+  function qCard(letter, text){
+    return `<button class="nq-card" data-letter="${letter}">
+      <span class="nq-letter">${letter.toUpperCase()}</span>
+      <span class="nq-text">${text}</span>
+    </button>`;
+  }
+
+  function screenQ(i){
+    const d = Q[i-1];
+    render(`
+      <div class="wrap wrap-nq ${themeClass}">
+        <div class="nq-steps">Question ${i} of 3</div>
+        <h1 class="nq-title">${d.q}</h1>
+        <div class="nq-grid" id="nqGrid">
+          ${qCard('a', d.a)}
+          ${qCard('b', d.b)}
+          ${qCard('c', d.c)}
+          ${qCard('d', d.d)}
+        </div>
+        <div class="nq-toast" id="nqToast"></div>
+        ${PREV ? `<div class="nq-hint">Preview mode</div>` : ``}
+      </div>
+    `);
+
+    const grid = document.getElementById('nqGrid');
+    const tip  = document.getElementById('nqToast');
+    grid.addEventListener('pointerdown', (e)=>{
+      const card = e.target.closest('.nq-card'); if(!card) return;
+      const letter = card.getAttribute('data-letter');
+      if(letter === d.esc){
+        try{sfx('error')}catch(_){}
+        card.classList.add('err','shake'); toast(tip, 'Oops, try again!');
+        setTimeout(()=> card.classList.remove('shake'), 350);
+      } else {
+        card.classList.add('ok');
+        setTimeout(()=>{ if(i<3) screenQ(i+1); else screenSuccess(); }, 180);
+      }
+    }, { passive:true });
+  }
+
+  function screenSuccess(){
+    render(`
+      <div class="wrap wrap-nq ${themeClass}">
+        <h1 class="nq-title">${copy.okTitle}</h1>
+        <p class="nq-sub">${copy.okSub}</p>
+        <button id="nqOpen" class="btn nq-btn nq-green"${PREV?' disabled':''}>${copy.okBtn}</button>
+        ${PREV ? `<div class="nq-hint">Preview only — button disabled</div>` : ``}
+      </div>
+    `);
+    try{sfx('tada')}catch(_){}
+    confettiBurst();
+    const btn = document.getElementById('nqOpen');
+    btn?.addEventListener('click', ()=>{
+      if(PREV) return;
+      try{sfx('confirm')}catch(_){}
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+    });
+  }
+
+  screenIntro();
+}
+  
 // ===== Selfie Verify =====
 function selfieVerify(){
 el(`
