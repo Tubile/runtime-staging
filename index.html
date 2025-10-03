@@ -290,13 +290,232 @@ if (WRAP){
 
 // ===== Voice Verify (placeholder עד למימוש) =====
 function voiceVerify(){
-el(`
-<div class="badge">Voice Verify – demo</div>
-<h1 class="h1">${NAME}, a special gift is waiting! 🎁</h1>
-<p class="p">Fun verification challenge.</p>
-<button class="btn btn-primary">Verify & get the gift</button>
-<p class="p" style="margin-top:12px">Gift link (hidden in real flow): <a href="${GIFT}" target="_blank">${GIFT}</a></p>
-`);
+  const qs    = new URLSearchParams(location.search);
+  const PREV  = (qs.get('preview')||'0').trim()==='1';
+  const NAME  = (qs.get('name')||'Friend').trim();
+  const GIFT  = (qs.get('giftUrl')||'#').trim();
+
+  const app = document.getElementById('app');
+  app.classList.remove('card'); // מסך “נקי” כמו ביתר הפיצ'רים
+
+  // טקסטים לפי הבריף + אפשרות אובררייד דרך ה‑URL (לא חובה)
+  const copy = {
+    introTitle:   (qs.get('introTitle') || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
+    introSub:     (qs.get('introSub')   || `To claim it, please verify your identity.`).slice(0,80),
+    introBtn:     (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
+
+    recTitle:     (qs.get('recTitle')   || `לאימות זהותך הקלט את הצליל של החיה המוצגת`).slice(0,80),
+    errText:      (qs.get('errText')    || `לא הצלחנו לקלוט צליל, הקלט שוב חזק יותר`).slice(0,80),
+
+    okTitle:      (qs.get('okTitle')    || `הרווחת את זה ביושר 😂`).slice(0,80),
+    okSub:        (qs.get('okSub')      || `לחץ על הכפתור כדי לקבל את המתנה האמיתית שלך`).slice(0,80),
+    okBtn:        (qs.get('okBtn')      || `קבל את המתנה`).slice(0,32)
+  };
+
+  // תמונת “פרה” self‑contained (SVG אמוג'י) — ללא תלות ברשת
+  function cowDataURL(){
+    const svg =
+      `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
+         <rect width='100%' height='100%' fill='#0f1324'/>
+         <text x='50%' y='55%' text-anchor='middle' font-size='180'>🐮</text>
+       </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+
+  // קונפטי (כמו ביתר הפיצ'רים – “poof” מודרני)
+  function confettiBurst(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const r = window.devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+    if(!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); window.addEventListener('resize', size); }
+    const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces = [];
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    for(let i=0;i<120;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    const g = 0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha = 1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
+  }
+
+  function screenIntro(){
+    app.innerHTML = `
+      <div class="wrap wrap-voice">
+        <h1 class="vv-title">${copy.introTitle}</h1>
+        <p class="vv-sub">${copy.introSub}</p>
+        <button id="vv-start" class="btn btn-primary">${copy.introBtn}</button>
+        <div class="vv-sub" style="font-size:12px">Prank simulation • demo only • no data collected</div>
+      </div>
+    `;
+    document.getElementById('vv-start').addEventListener('click', ()=>{ try{sfx('confirm')}catch(e){}; screenRecord(); });
+  }
+
+  function screenRecord(){
+    app.innerHTML = `
+      <div class="wrap wrap-voice">
+        <h1 class="vv-title">${copy.recTitle}</h1>
+        <div class="vv-animal"><img src="${cowDataURL()}" alt="cow"></div>
+
+        <div class="vv-rec">
+          <button id="rec-btn" class="btn blue"><span id="rec-label">Start recording</span></button>
+          <div class="vv-meter" aria-hidden="true"><i id="rec-meter"></i></div>
+          <div class="vv-time" id="rec-time">00:00</div>
+          <div class="vv-err" id="rec-err" aria-live="polite"></div>
+        </div>
+
+        ${ ( (qs.get('preview')||'0')==='1' ) ? `<div class="vv-sub">Preview mode</div>` : `` }
+
+        <canvas id="vv-confetti" class="confetti-canvas"></canvas>
+      </div>
+    `;
+
+    const btn   = document.getElementById('rec-btn');
+    const label = document.getElementById('rec-label');
+    const meter = document.getElementById('rec-meter');
+    const time  = document.getElementById('rec-time');
+    const errEl = document.getElementById('rec-err');
+    const wrap  = document.querySelector('.wrap-voice');
+    const conf  = document.getElementById('vv-confetti');
+
+    let recording = false;
+    let attempt   = 0;
+    let t0        = 0;
+    let raf       = 0;
+    let tickTimer = 0;
+
+    // audio graph (אם זמין) – ללא שמירת שום קובץ
+    let stream = null, audioCtx = null, analyser = null, data = null;
+
+    function fmt(ms){
+      const s = Math.max(0, Math.floor(ms/1000));
+      const m = Math.floor(s/60).toString().padStart(2,'0');
+      const r = (s%60).toString().padStart(2,'0');
+      return `${m}:${r}`;
+    }
+
+    function meterValue(){
+      if (analyser && data){
+        analyser.getByteTimeDomainData(data);
+        // RMS פשוט
+        let sum = 0;
+        for (let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum += v*v; }
+        const rms = Math.sqrt(sum / data.length);
+        return Math.min(100, Math.floor(rms*180));
+      }
+      // fallback “אמין”
+      return Math.min(100, (Math.random()*65+20)|0);
+    }
+
+    function loop(){
+      meter.style.width = meterValue() + '%';
+      time.textContent = fmt(performance.now() - t0);
+      raf = requestAnimationFrame(loop);
+    }
+
+    async function start(){
+      try{sfx('confirm')}catch(e){}
+      recording = true;
+      label.textContent = 'Stop recording';
+      btn.classList.remove('blue'); btn.classList.add('red');
+      errEl.textContent = '';
+
+      t0 = performance.now();
+      loop();
+
+      // נסה מיקרופון – רק לצורך ויזואלי
+      try{
+        stream = await navigator.mediaDevices?.getUserMedia?.({ audio:true }) || null;
+        if (stream){
+          audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+          const src = audioCtx.createMediaStreamSource(stream);
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 1024;
+          data = new Uint8Array(analyser.frequencyBinCount);
+          src.connect(analyser);
+        }
+      }catch(_){
+        // אין הרשאה/תמיכה — נישאר על fallback
+      }
+
+      // fail-safe: עצירה אוטומטית אחרי 7 שניות אם המשתמש לא לוחץ
+      tickTimer = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
+    }
+
+    function cleanupAudio(){
+      try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){}
+      try{ audioCtx?.close?.(); }catch(_){}
+      stream = null; audioCtx = null; analyser = null; data = null;
+    }
+
+    function stop(){
+      try{sfx('click')}catch(e){}
+      recording = false;
+      label.textContent = 'Start recording';
+      btn.classList.remove('red'); btn.classList.add('blue');
+
+      window.clearTimeout(tickTimer);
+      cancelAnimationFrame(raf);
+      cleanupAudio();
+
+      attempt += 1;
+
+      if (attempt === 1){
+        // השגיאה האמינה בפעם הראשונה
+        errEl.textContent = copy.errText;
+        btn.classList.add('shake'); wrap.classList.add('shake');
+        try{sfx('error')}catch(e){}
+        setTimeout(()=>{ btn.classList.remove('shake'); wrap.classList.remove('shake'); }, 380);
+        // reset UI
+        time.textContent = '00:00';
+        meter.style.width = '0%';
+        return;
+      }
+
+      // נסיון שני – הצלחה
+      try{sfx('tada')}catch(e){}
+      confettiBurst(conf);
+      setTimeout(screenSuccess, 450);
+    }
+
+    btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
+  }
+
+  function screenSuccess(){
+    app.innerHTML = `
+      <div class="wrap wrap-voice">
+        <h1 class="vv-title">${copy.okTitle}</h1>
+        <p class="vv-sub">${copy.okSub}</p>
+        <button id="vv-open" class="btn green">${copy.okBtn}</button>
+        ${ PREV ? `<div class="vv-sub">Preview only — button disabled</div>` : `` }
+        <canvas id="vv-confetti" class="confetti-canvas"></canvas>
+      </div>
+    `;
+    const btn = document.getElementById('vv-open');
+    const canvas = document.getElementById('vv-confetti');
+    confettiBurst(canvas);
+
+    btn.addEventListener('click', ()=>{
+      if(PREV) return;
+      try{sfx('confirm')}catch(e){}
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(e){}
+    });
+  }
+
+  // GO
+  screenIntro();
 }
 
 // ===== Fake Captcha =====
@@ -717,8 +936,6 @@ function narcissistQ(){
           transition:transform .055s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
           touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none;
         }
-        .nq-card{ color:#e8ecf4; }
-        .nq-text{ color:inherit; }
         .nq-card:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,.25) }
         .nq-card:active{ transform:translateY(0) scale(.995) }
         .nq-letter{ display:inline-block; font-weight:900; font-size:12px; color:#9aa3b2; margin-right:6px }
