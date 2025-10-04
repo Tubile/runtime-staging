@@ -194,6 +194,10 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
     background:repeating-linear-gradient(135deg,#12182b 0 16px,#0e1326 16px 32px);
     color:#9aa3b2; font-weight:700; font-size:18px;
   }
+  /* make hidden actually hide + keep video on top */
+#app .sf-fallback[hidden]{ display:none !important; }
+#app .sf-cam video{ z-index:2 }
+#app .sf-cam .sf-fallback{ z-index:1 }
 
   .sf-status{
     display:flex; align-items:center; gap:10px; justify-content:center;
@@ -1527,6 +1531,7 @@ async function startCamera(videoEl, fallbackEl){
       videoEl.srcObject = stream;
       // עוזר לאוטופליי/ספארי
       videoEl.setAttribute('playsinline',''); 
+      videoEl.playsInline = true;
       videoEl.setAttribute('autoplay','');
       videoEl.muted = true;
       await videoEl.play().catch(()=>{});
