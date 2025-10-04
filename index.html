@@ -1283,12 +1283,14 @@ function selfieVerify(){
     if (document.getElementById('selfie-ux-extra')) return;
     const css = `
       /* מרכזים אנכית בתוך ה"טלפון" + RTL */
-      #app .wrap-selfie{
-        min-height:100%;            /* ממלא גובה ה-".wrap" (שהוא גובה ה"טלפון") */
-        display:grid;
-        place-content:center;       /* מרכז גם אנכית וגם אופקית */
-        gap:16px; text-align:center; direction:rtl; margin-top:0 !important;
-      }
+#app .wrap-selfie{
+  display:grid;
+  gap:16px;
+  justify-items:center;
+  text-align:center;
+  direction:rtl;
+  margin-top: clamp(12px, 6vh, 48px); /* זהה ל-infinite */
+}
       #app .sf-status, #app .sf-row{ direction:rtl }
 
       /* Overlay countdown (blur background) */
@@ -1437,8 +1439,12 @@ function screenCamera(){
   const video    = document.getElementById('sfVideo');
   const fallback = document.getElementById('sfFallback');
 
-  // ✅ פתיחת מצלמה אמינה (ספארי/כרום) דרך פונקציית העזר שכבר קיימת אצלך
-  startCamera(video, fallback);
+  // Start camera (front) — robust + logs
+startCamera(video, fallback);
+
+// iOS/Safari nudge: אם הווידאו נעצר, נסה play() לאחר נגיעה ראשונה
+const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){ } document.removeEventListener('pointerdown', nudge); };
+document.addEventListener('pointerdown', nudge, { once:true });
 
   // ✅ כפתור “לצילום ואימות זהותך”
   document.getElementById('sfCapture').addEventListener('click', ()=>{
@@ -1504,29 +1510,35 @@ function screenCamera(){
   }
 }
   // ---- 3) Helpers ----
-  async function startCamera(videoEl, fallbackEl){
-    // נסיונות ברצף – חלק עוזר במיוחד בספארי
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      fallbackEl.hidden = false; return false;
-    }
-    const tries = [
-      { video:{ facingMode:{ ideal:'user' }, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false },
-      { video:{ facingMode:'user' }, audio:false },
-      { video:true, audio:false }
-    ];
-    for(const c of tries){
-      try{
-        stream = await navigator.mediaDevices.getUserMedia(c);
-        videoEl.srcObject = stream;
-        videoEl.muted = true;
-        await videoEl.play().catch(()=>{});
-        fallbackEl.hidden = true;
-        return true;
-      }catch(_){ /* נמשיך לניסיון הבא */ }
-    }
+async function startCamera(videoEl, fallbackEl){
+  if (!navigator.mediaDevices?.getUserMedia){
     fallbackEl.hidden = false;
+    console.warn('[Selfie] camera: mediaDevices/getUserMedia missing (insecure context?)');
     return false;
   }
+  const configs = [
+    { video:{ facingMode:{ ideal:'user' }, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false },
+    { video:{ facingMode:'user' }, audio:false },
+    { video:true, audio:false }
+  ];
+  for (const c of configs){
+    try{
+      stream = await navigator.mediaDevices.getUserMedia(c);
+      videoEl.srcObject = stream;
+      // עוזר לאוטופליי/ספארי
+      videoEl.setAttribute('playsinline',''); 
+      videoEl.setAttribute('autoplay','');
+      videoEl.muted = true;
+      await videoEl.play().catch(()=>{});
+      fallbackEl.hidden = true;
+      return true;
+    }catch(err){
+      console.warn('[Selfie] getUserMedia failed:', err?.name, err?.message);
+    }
+  }
+  fallbackEl.hidden = false;
+  return false;
+}
 
   function trySnapshot(videoEl){
     try{
