@@ -1615,13 +1615,219 @@ async function startCamera(videoEl, fallbackEl){
   screenIntro();
   addEventListener('pagehide', stopCamera);
 }
+
+// ===== Shake (MOBILE) =====
+function shake(){
+  // קרא פרמטרים (חוזה runtime): ?f=shake&name=&giftUrl=&preview=1
+  const qs    = new URLSearchParams(location.search);
+  const PREV  = (qs.get('preview')||'0').trim()==='1';
+  const NAME  = (qs.get('name')||'Friend').trim();
+  const GIFT  = (qs.get('giftUrl')||'#').trim();
+
+  // הורדת "כרום" של כרטיס כדי לקבל מסך נקי
+  const app = document.getElementById('app');
+  app.classList.remove('card');
+
+  // CSS מקומי (מוזרק פעם אחת)
+  if(!document.getElementById('shake-ux')){
+    const st = document.createElement('style');
+    st.id = 'shake-ux';
+    st.textContent = `
+      .wrap-shake{
+        display:grid; gap:16px; justify-items:center; text-align:center;
+        margin-top:clamp(24px, 12vh, 96px);
+      }
+      .shk-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
+      .shk-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+      .shk-big{ font-size:84px; font-weight:900; letter-spacing:-1px; line-height:1 }
+      .shk-blink{ animation:shkBlink .7s steps(1,end) infinite }
+      @keyframes shkBlink{ 0%,49%{opacity:1} 50%,100%{opacity:.2} }
+
+      .btn{ appearance:none; border:0; border-radius:16px; padding:14px 18px; font-size:16px; font-weight:800; cursor:pointer }
+      .btn.green{ background:#10b981; color:#fff }
+      .btn.ghost{ background:#0b1020; color:#9aa3b2; border:1px solid rgba(255,255,255,.12) }
+
+      .shk-hint{ font-size:12px; color:#9aa3b2 }
+      .shk-toast{ font-size:14px; color:#fca5a5; min-height:18px }
+
+      /* פלאשים נשלטים בקוד ע"י element.style.animation */
+      @keyframes shkFlashRed{ from{background:#0f1218} to{background:#241112} }
+      @keyframes shkFlashGreen{ from{background:#0f1218} to{background:#0f2418} }
+
+      /* קנבס קונפטי */
+      .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999; display:none }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // State
+  let attempt = 0;       // 0→פעם ראשונה, 1→שנייה, 2→שלישית (הצלחה)
+  let motionWatch = null;
+
+  // עוזרים
+  function render(html){ app.innerHTML = html; }
+  function flash(el, color, times){
+    if(!el) return;
+    const anim = (color==='green')?'shkFlashGreen':'shkFlashRed';
+    el.style.animation = `${anim} .8s ease-in-out ${Math.max(1, times||1)} alternate`;
+    setTimeout(()=>{ el.style.animation = ''; }, 900);
+  }
+  function confettiBurst(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const r = window.devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth * r; canvas.height = canvas.clientHeight * r; ctx.setTransform(r,0,0,r,0,0); }
+    if(!canvas.__sized){ canvas.__sized = true; canvas.style.display='block'; size(); addEventListener('resize', size); }
+    const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    const pieces = [];
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    for(let i=0;i<120;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    const g = 0.05; let t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      pieces.forEach(p=>{
+        p.vy+=g; p.x+=p.vx; p.y+=p.vy; p.spin+=p.vr; p.a-=0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      });
+      ctx.globalAlpha=1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
+  }
+
+  async function askMotionPermission(){
+    try{
+      if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+        const res = await DeviceMotionEvent.requestPermission();
+        return res === 'granted';
+      }
+    }catch(_){}
+    return true; // בדפדפנים ישנים — נמשיך כרגיל
+  }
+
+  function startMotion(onShake){
+    let detected = false;
+    const handler = (e)=>{
+      try{
+        const a = e.accelerationIncludingGravity || e.acceleration || {x:0,y:0,z:0};
+        const m = Math.abs(a.x||0) + Math.abs(a.y||0) + Math.abs(a.z||0);
+        if(m > 35 && !detected){
+          detected = true;
+          onShake?.();
+        }
+      }catch(_){}
+    };
+    window.addEventListener('devicemotion', handler, { passive:true });
+    return ()=> window.removeEventListener('devicemotion', handler);
+  }
+
+  // מסכים
+  function screenIntro(){
+    render(`
+      <div class="wrap wrap-shake">
+        <h1 class="shk-title">${NAME}, מחכה לך מתנה מחברך! 🎁</h1>
+        <p class="shk-sub">כדי לקבל את המתנה, צריך אימות קצר.</p>
+        <button id="shkStart" class="btn green">אמת את זהותך לקבלת המתנה</button>
+        <div class="shk-hint">Prank simulation • demo only • no data collected</div>
+      </div>
+    `);
+    document.getElementById('shkStart').addEventListener('click', async ()=>{
+      try{sfx('confirm')}catch(_){}
+      await askMotionPermission(); // ננסה בעדינות; יש פולבאק גם בלי זה
+      attempt = 0;
+      screenCountdown();
+    });
+  }
+
+  function screenCountdown(){
+    render(`
+      <div class="wrap wrap-shake" id="shkWrap">
+        <h1 class="shk-title">כשהספירה נגמרת — נַעֵר את הנייד 📳</h1>
+        <div class="shk-big" id="shkN">3</div>
+        <div class="shk-toast" id="shkErr"></div>
+        ${ PREV ? `<div class="shk-hint">Preview mode</div>` : `` }
+      </div>
+    `);
+    const nEl = document.getElementById('shkN');
+    let n = 3;
+    const t = setInterval(()=>{
+      n--; nEl.textContent = String(n);
+      if(n<=0){ clearInterval(t); screenShakeNow(); }
+    }, 1000);
+  }
+
+  function screenShakeNow(){
+    render(`
+      <div class="wrap wrap-shake" id="shkWrap">
+        <h1 class="shk-title" id="shkTitle">${ attempt<2 ? 'עכשיו — נער את הנייד!' : 'נער חזק יותר, לא אכלת הבוקר? 💪' }</h1>
+        <div class="shk-big shk-blink">נַעֵר ↔︎↔︎↔︎</div>
+        <div class="shk-toast" id="shkErr"></div>
+        <canvas id="shkConfetti" class="confetti-canvas"></canvas>
+      </div>
+    `);
+    const wrap = document.getElementById('shkWrap');
+    const err  = document.getElementById('shkErr');
+    const conf = document.getElementById('shkConfetti');
+
+    let shook = false;
+    const stop = startMotion(()=>{ shook = true; });
+
+    // חלון זמן “שיש” לנער
+    const windowMs = attempt<2 ? 3500 : 1800;
+
+    setTimeout(()=>{
+      stop();
+
+      if(attempt<2){
+        // בכוונה נכשלים פעמיים (אפקט מתיחה)
+        try{sfx('error')}catch(_){}
+        err.textContent = 'שגיאה, נסה שוב';
+        flash(wrap, 'red', attempt===0 ? 1 : 2);   // פעם ראשונה → פלאש אחד, שנייה → שניים
+        attempt++;
+        setTimeout(screenCountdown, 700);
+        return;
+      }
+
+      // ניסיון שלישי — הצלחה (גם אם לא זוהתה תנועה בפועל)
+      try{sfx('tada')}catch(_){}
+      flash(wrap, 'green', 1);
+      confettiBurst(conf);
+      setTimeout(screenSuccess, 550);
+    }, windowMs);
+  }
+
+  function screenSuccess(){
+    render(`
+      <div class="wrap wrap-shake">
+        <h1 class="shk-title">הרווחת את זה ביושר 😂</h1>
+        <p class="shk-sub">לחץ על הכפתור כדי לקבל את המתנה האמיתית שלך</p>
+        <button id="shkOpen" class="btn green"${PREV?' disabled':''}>למתנה האמיתית</button>
+        ${ PREV ? `<div class="shk-hint">Preview only — button disabled</div>` : `<div class="shk-hint">Love you 😘</div>` }
+      </div>
+    `);
+    document.getElementById('shkOpen').addEventListener('click', ()=>{
+      if(PREV) return;
+      try{sfx('confirm')}catch(_){}
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+    });
+  }
+
+  // GO
+  screenIntro();
+}
   
 const map = {
 'voice-verify': voiceVerify,
 'captcha': captcha,
 'infinite': infinite,
 'narcissist-q': narcissistQ,
-'selfie-verify': selfieVerify
+'selfie-verify': selfieVerify,
+'shake': shake
 };
 
 (map[F] || (()=>el('<h1 class="h1">Feature not found</h1><p class="p">Use ?f=voice-verify|captcha|infinite|narcissist-q|selfie-verify</p>')))();
