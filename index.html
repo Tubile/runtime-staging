@@ -1673,7 +1673,7 @@ function shake(){
     countTitle: (qs.get('countTitle') || `When the countdown ends, shake your phone`).slice(0,80),
     shakeHint:  (qs.get('shakeHint')  || `Shake now!`).slice(0,40),
 
-    err1Title:  (qs.get('err1Title')  || `Error`).slice(0,40),
+    err1Title:  (qs.get('err1Title')  || `Error ⚠️`).slice(0,40),
     err1Text:   (qs.get('err1Text')   || `We couldn’t verify it. Try again.`).slice(0,120),
 
     err2Title:  (qs.get('err2Title')  || `Hmm… still not it`).slice(0,40),
@@ -1841,7 +1841,7 @@ function runAttempt(){
 
   app.innerHTML = `
     <div class="wrap wrap-shake">
-      <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake your phone now'}</h1>
+      <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake it harder, hero'}</h1>
       <div id="shCount" class="sh-count" style="${showCountdown ? '' : 'display:none'}">5</div>
 
       <div class="sh-zone" id="shZone" style="${showCountdown ? 'display:none' : 'display:grid'}">
