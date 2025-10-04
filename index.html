@@ -495,7 +495,7 @@ function sfx(kind){
         <h1 class="vv-title">${copy.introTitle}</h1>
         <p class="vv-sub">${copy.introSub}</p>
         <button id="vv-start" class="btn btn-primary">${copy.introBtn}</button>
-        <div class="vv-sub" style="font-size:12px">Prank simulation • demo only • no data collected</div>
+        <div class="vv-sub" style="font-size:12px">no data collected</div>
       </div>
     `;
     document.getElementById('vv-start').addEventListener('click', ()=>{
@@ -1223,7 +1223,7 @@ function narcissistQ(){
         <h1 class="nq-title">${copy.introTitle}</h1>
         <p class="nq-sub">${copy.introSub}</p>
         <button id="nqStart" class="btn nq-btn">${copy.startBtn}</button>
-        <div class="nq-hint">Prank simulation • demo only • no data collected</div>
+        <div class="nq-hint">no data collected</div>
       </div>
     `);
     document.getElementById('nqStart')?.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
@@ -1439,7 +1439,7 @@ const fxClass = ['ugly1','ugly2','ugly3','none'].includes(filterPreset) ? `fx-${
         <h1 class="sf-title">${copy.introTitle}</h1>
         <p class="sf-sub">${copy.introSub}</p>
         <button id="sfStart" class="btn sf-cta green">${copy.introBtn}</button>
-        <div class="sf-hint">Prank simulation • demo only • no data collected</div>
+        <div class="sf-hint">no data collected</div>
       </div>`;
     // אין צליל לחיצה כאן (לפי הבקשה)
     document.getElementById('sfStart').addEventListener('click', screenCamera, { once:true });
@@ -1786,7 +1786,7 @@ function shake(){
         <h1 class="sh-title">${copy.introTitle}</h1>
         <p class="sh-sub">${copy.introSub}</p>
         <button id="shStart" class="btn sh-cta green">${copy.introBtn}</button>
-        <div class="sh-sub" style="font-size:12px">Prank simulation • demo only • no data collected</div>
+        <div class="sh-sub" style="font-size:12px">no data collected</div>
       </div>
     `;
     document.getElementById('shStart')?.addEventListener('click', ()=>{ runAttempt(); }, { once:true });
