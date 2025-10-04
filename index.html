@@ -56,6 +56,26 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 /* confetti canvas */
 .confetti-canvas{position:fixed; inset:0; pointer-events:none; z-index:999}
 .confetti-canvas{ width:100vw; height:100vh }
+  /* Kefpo brand badge (runtime-only) */
+.kf-badge{
+  position: sticky;         /* נדבק לראש אזור הגלילה של .wrap */
+  top: 8px;
+  align-self: center;
+  display: inline-flex; gap: 8px; align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  color: #9aa3b2; font-size: 12px; font-weight: 800;
+  text-decoration: none;
+  z-index: 5;
+}
+.kf-badge:hover{ border-color: rgba(255,255,255,.18); transform: translateY(-1px); }
+.kf-badge i{ width: 8px; height: 8px; border-radius: 50%;
+  background: linear-gradient(90deg,#60a5fa,#a78bfa);
+  box-shadow: 0 0 10px rgba(167,139,250,.6);
+}
   /* Custom scrollbar for touch devices (mobile only) */
 @media (hover:none) and (pointer:coarse){
   .custom-scrollbar{
@@ -315,6 +335,21 @@ function sfx(kind){
 
 // הצג סטטוס־בר רק בפריביו
 if (PREV) document.getElementById('status').style.display = 'flex';
+  // Runtime-only brand badge (hide in preview)
+if (!PREV) {
+  const wrap = document.querySelector('.wrap');
+  const appEl = document.getElementById('app');
+  if (wrap && appEl && !document.getElementById('kfBadge')) {
+    const a = document.createElement('a');
+    a.id = 'kfBadge';
+    a.className = 'kf-badge';
+    a.href = 'https://kefpo.co';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.innerHTML = '<i aria-hidden="true"></i><span>Made by Kefpo.co</span>';
+    wrap.insertBefore(a, appEl);   // חשוב: מחוץ ל-#app כדי שלא ימחק בהחלפת מסכים
+  }
+}
 
 function el(html){ document.getElementById('app').innerHTML = html; }
   // ----- Custom mobile scrollbar logic -----
