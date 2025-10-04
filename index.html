@@ -704,15 +704,15 @@ function captcha(){
   const GIFT  = (qs.get('giftUrl')||'#').trim();
 
   const copy = {
-    introTitle:  (qs.get('introTitle') || `A special gift is waiting, ${NAME}!`).slice(0,80),
+    introTitle:  (qs.get('introTitle') || `A special gift is waiting for you, ${NAME}!`).slice(0,80),
     introSub:    (qs.get('introSub')   || `To unlock it, please verify your identity`).slice(0,80),
     introBtn:    (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
     gridHeader:  (qs.get('gridHeader') || `Select all images with a CREEP 😘`).slice(0,80),
     verify:      (qs.get('verifyText') || `Verify`).slice(0,32),
     continueTxt: (qs.get('continueText') || `Success! get your gift`).slice(0,32),
-    okTitle:     (qs.get('okTitle')    || `Verified!`).slice(0,80),
-    okSub:       (qs.get('okSub')      || `You’re good to go.`).slice(0,80),
-    okBtn:       (qs.get('okBtn')      || `Get the gift`).slice(0,32),
+    okTitle:     (qs.get('okTitle')    || `You're verified! 🤣`).slice(0,80),
+    okSub:       (qs.get('okSub')      || `Enjoy your gift!`).slice(0,80),
+    okBtn:       (qs.get('okBtn')      || `Claim your gift`).slice(0,32),
   };
 
   // שלושת היעדים הקבועים (0..8): ימני‑עליון, מרכז, תחתון‑מרכז
@@ -907,13 +907,13 @@ function infinite(){
   const copy = {
     title: titleOverride ? titleOverride : `${NAME}, you've got a sweet surprise! 💖`,
     subtitle: getCopy('subtitle', 'Click the button to get your gift'),
-    btn1_loading: getCopy('btn1_loading', 'Checking your surprise…'),
+    btn1_loading: getCopy('btn1_loading', 'Loading... hold on'),
     btn2_error: getCopy('btn2_error', 'Oops! Try again'),
-    btn3_tease1: getCopy('btn3_tease1', 'Hmm… almost 😉'),
-    btn4_tease2: getCopy('btn4_tease2', 'Keep going…'),
-    btn5_tease3: getCopy('btn5_tease3', 'Patience, hero!'),
-    btn6_tease4: getCopy('btn6_tease4', 'So close…'),
-    btn7_tease5: getCopy('btn7_tease5', 'Last one!'),
+    btn3_tease1: getCopy('btn3_tease1', 'Error! Click again'),
+    btn4_tease2: getCopy('btn4_tease2', 'Try to click harder'),
+    btn5_tease3: getCopy('btn5_tease3', 'You love being trolled?'),
+    btn6_tease4: getCopy('btn6_tease4', 'Admit it, this is fun 😈'),
+    btn7_tease5: getCopy('btn7_tease5', 'Almost there... or not? 🤭'),
     btn8_success: getCopy('btn8_success', 'Unlocked! Tap to open'),
     earned: getCopy('earned', 'You earned it 🎉')
   };
@@ -926,7 +926,7 @@ function infinite(){
     <p class="sub">${copy.subtitle}</p>
 
     <button id="ibtn" class="btn">
-      <span id="ilabel" class="label">${getCopy('btn0_start','Click to get your gift')}</span>
+      <span id="ilabel" class="label">${getCopy('btn0_start','Claim your gift')}</span>
       <span id="ipct" class="percent" style="display:none">0%</span>
     </button>
 
