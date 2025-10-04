@@ -1832,34 +1832,42 @@ function shake(){
     document.getElementById('shStart')?.addEventListener('click', ()=>{ runAttempt(); }, { once:true });
   }
 
-  function runAttempt(){
-    attempt += 1;
-    stopMotion(); // reset any previous
-    app.innerHTML = `
-      <div class="wrap wrap-shake">
-        <h1 class="sh-title">${copy.countTitle}</h1>
-        <div id="shCount" class="sh-count">5</div>
-        <div class="sh-zone" id="shZone" style="display:none">
-  <div class="sh-phone wobble" aria-hidden="true">
-    <div id="shHintIn" class="sh-hint-in">${copy.shakeHint}</div>
-    <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? '🤣' : '📱'}</div>
-  </div>
-  <div class="sh-meter"><i id="shBar"></i></div>
-</div>
-        ${ PREV ? `<div class="sh-sub">Preview mode</div>` : `` }
-        <canvas id="shConfetti" class="confetti-canvas"></canvas>
+function runAttempt(){
+  attempt += 1;
+  stopMotion(); // reset any previous
+
+  // חדש: האם להציג ספירה לאחור? לא בניסיון האחרון (אחרי הטעות השלישית)
+  const showCountdown = attempt <= 3;
+
+  app.innerHTML = `
+    <div class="wrap wrap-shake">
+      <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake your phone now'}</h1>
+      <div id="shCount" class="sh-count" style="${showCountdown ? '' : 'display:none'}">5</div>
+
+      <div class="sh-zone" id="shZone" style="${showCountdown ? 'display:none' : 'display:grid'}">
+        <div class="sh-phone wobble" aria-hidden="true">
+          <div id="shHintIn" class="sh-hint-in">${copy.shakeHint}</div>
+          <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? '🤣' : '📱'}</div>
+        </div>
+        <div class="sh-meter"><i id="shBar"></i></div>
       </div>
-      <!-- three toasts (errors) -->
-      <div id="shErr1" class="sh-toast"><div class="box"><h3>${copy.err1Title}</h3><p>${copy.err1Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
-      <div id="shErr2" class="sh-toast"><div class="box"><h3>${copy.err2Title}</h3><p>${copy.err2Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
-      <div id="shErr3" class="sh-toast"><div class="box"><h3>${copy.err3Title}</h3><p>${copy.err3Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again, hero!</button></div></div>
-    `;
 
-    // countdown 5→1
-    const cnt = document.getElementById('shCount');
-    const zone = document.getElementById('shZone');
-    const bar  = document.getElementById('shBar');
+      ${ PREV ? `<div class="sh-sub">Get ready to shake your phone!</div>` : `` }
+      <canvas id="shConfetti" class="confetti-canvas"></canvas>
+    </div>
 
+    <!-- three toasts (errors) -->
+    <div id="shErr1" class="sh-toast"><div class="box"><h3>${copy.err1Title}</h3><p>${copy.err1Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
+    <div id="shErr2" class="sh-toast"><div class="box"><h3>${copy.err2Title}</h3><p>${copy.err2Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
+    <div id="shErr3" class="sh-toast"><div class="box"><h3>${copy.err3Title}</h3><p>${copy.err3Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again, hero!</button></div></div>
+  `;
+
+  const cnt = document.getElementById('shCount');
+  const zone = document.getElementById('shZone');
+  const bar  = document.getElementById('shBar');
+
+  if (showCountdown){
+    // (כמו קודם) ספירה לאחור → ואז מצב Shake
     let n = 5;
     cnt.textContent = String(n);
     const t = setInterval(()=>{
@@ -1868,17 +1876,15 @@ function shake(){
         clearInterval(t);
         cnt.style.display='none';
         zone.style.display='grid';
-        // start sensor (visual only)
         startMotion(level => { if(bar) bar.style.width = level + '%'; });
-        // after 5s → either error (1..3) or success (4+)
+
+        // אחרי ~5ש׳׳: טעות או הצלחה
         setTimeout(()=>{
           stopMotion();
           if (attempt <= 3){
-            // subtle error shake
             document.querySelector('.wrap-shake')?.classList.add('shake');
             setTimeout(()=>document.querySelector('.wrap-shake')?.classList.remove('shake'), 380);
             (document.getElementById('shErr'+attempt)).classList.add('show');
-            // ok handlers
             document.querySelectorAll('#shErr'+attempt+' [data-ok]').forEach(btn=>{
               btn.addEventListener('click', ()=>{
                 (document.getElementById('shErr'+attempt)).classList.remove('show');
@@ -1893,7 +1899,15 @@ function shake(){
         cnt.textContent = String(n);
       }
     }, 1000);
+  } else {
+    // חדש: אין ספירה לאחור בניסיון האחרון — ישר מצב Shake
+    startMotion(level => { if(bar) bar.style.width = level + '%'; });
+    setTimeout(()=>{
+      stopMotion();
+      screenSuccess();
+    }, 5000);
   }
+}
 
   function screenSuccess(){
     app.innerHTML = `
