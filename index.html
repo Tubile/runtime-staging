@@ -399,11 +399,11 @@ function voiceVerify(){
     st.id = 'voice-ux';
     st.textContent = `
       .wrap-voice{
-        display:grid; gap:24px; justify-items:center; text-align:center;
-        margin-top:clamp(12px, 6vh, 96px);
+        display:grid; gap:30px; justify-items:center; text-align:center;
+        margin-top:clamp(12px, 6vh, 48px);
 }
 .vv-cow{
-  width:min(360px, 100%);
+  width:min(280px, 100%);
   border-radius:16px;
   background:linear-gradient(180deg,#1b1f34,#111528);
   display:flex; align-items:center; justify-content:center;
@@ -449,6 +449,11 @@ function voiceVerify(){
       .vv-err{ font-size:14px; color:#fca5a5; min-height:18px }
       .btn.red{ background:#ef4444; color:#fff }
       .btn.blue{ background:#3b82f6; color:#fff }
+      #vv-start {
+  width: 280px; /* רוחב הכפתור, שנה ל-400px אם רוצה גדול יותר */
+  min-height: 48px; /* גובה מינימלי, שנה ל-60px לגדול יותר */
+  padding: 14px 18px; /* רווח פנימי, הגדל ל-16px 20px לעבה יותר */
+}
     `;
     document.head.appendChild(st);
   }
