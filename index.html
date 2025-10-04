@@ -193,7 +193,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <style id="selfie-ux">
   .wrap-selfie{
     display:grid; gap:24px; justify-items:center; text-align:center;
-    margin-top: clamp(24px, 10vh, 96px);
+    margin-top: clamp(24px, 12vh, 96px);
   }
   .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
   .sf-sub{ margin:0; font-size:15px; color:#9aa3b2 }
@@ -1340,7 +1340,7 @@ function selfieVerify(){
       /* מרכזים אנכית בתוך ה"טלפון" + RTL */
 #app .wrap-selfie{
   display:grid;
-  gap:24px;
+  gap:30px;
   justify-items:center;
   text-align:center;
   direction:rtl;
@@ -1392,7 +1392,7 @@ function selfieVerify(){
       .btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
       .green{background:#10b981;color:#fff}
       .ghost{background:#0b1020;color:#9aa3b2;border:1px solid rgba(255,255,255,.12)}
-      .sf-cta{width:min(320px,100%);min-height:48px;padding:14px 18px;font-size:16px;border-radius:16px;font-weight:800;margin:0 auto}
+      .sf-cta{width:min(280px,100%);min-height:48px;padding:14px 18px;font-size:15px;border-radius:0px;font-weight:700;margin:0 auto}
     `;
     const st = document.createElement('style');
     st.id = 'selfie-ux-extra';
