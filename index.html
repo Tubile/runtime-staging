@@ -486,7 +486,7 @@ function sfx(kind){
 
     okTitle:    (qs.get('okTitle')    || `You've earned it 😂`).slice(0,80),
     okSub:      (qs.get('okSub')      || `Click to get your real gift`).slice(0,80),
-    okBtn:      (qs.get('okBtn')      || `Claim your gift now`).slice(0,32)
+    okBtn:      (qs.get('okBtn')      || `Claim your gift!`).slice(0,32)
   };
 
   // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
@@ -562,9 +562,9 @@ function sfx(kind){
 <div class="toast" id="vv-toast">
   <div class="box">
     <h3>We couldn't pick up a sound ⚠️</h3>
-    <p>Try again - louder and clearer this time.</p>
+    <p>Try again - louder and clearer.</p>
     <div style="height:10px"></div>
-    <button id="vv-tryagain" class="btn btn-primary">אישור</button>
+    <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
   </div>
 </div>
 <!-- Error toast #2 (same style, texts reveal the prank) -->
@@ -1166,7 +1166,7 @@ function narcissistQ(){
         .nq-toast{ font-size:12px; color:#9aa3b2; min-height:16px }
         .nq-hint{ font-size:12px; color:#9aa3b2 }
         .nq-green{ background:#10b981 !important; color:#fff !important }
-        .nq-btn{ width:min(320px,100%); min-height:48px; padding:14px 18px; font-size:16px; border-radius:16px; font-weight:800 }
+        .nq-btn{ width:min(280px,100%); min-height:48px; padding:14px 18px; font-size:15px; border-radius:0px; font-weight:700 }
         .nq-confetti{ position:fixed; inset:0; pointer-events:none; z-index:999; display:block }
         /* Accent (optional) */
         .nq-theme-blue .nq-card:hover{ border-color:#38bdf8 }
@@ -1192,15 +1192,15 @@ function narcissistQ(){
 
   // Defaults per the brief (escape defaults to D)
   const defaults = [
-    { q:`Why am I the main character today?`,
-      a:`Because you're iconic`, b:`Remember that legendary trip?`, c:`Your charm is undefeatable`,
-      d:`Just give me the gift already! 😂`, esc:'d' },
+    { q:`What's the most beautiful thing about me?`,
+      a:`My quiet presence`, b:`My eyes`, c:`My truth`,
+      d:`SKIP TO THE GIFT! 😂`, esc:'d' },
     { q:`You’ll name your kid after me because…`,
-      a:`I’m a genius`, b:`Obviously—I’m iconic`, c:`You adore me`,
-      d:`Set me free already!`, esc:'d' },
+      a:`I’m a genius`, b:`There's no one like me`, c:`I'll never do that`,
+      d:`You adore me`, esc:'c' },
     { q:`One word that best describes me:`,
       a:`Legend`, b:`Masterpiece`, c:`Unforgettable`,
-      d:`Skip to the gift`, esc:'d' }
+      d:`Idiot`, esc:'d' }
   ];
 
   function take(n,k,fb){ return (qs.get(`q${n}${k}`) || fb).toString().slice(0,80) }
