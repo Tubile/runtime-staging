@@ -1371,7 +1371,7 @@ function selfieVerify(){
 
   // טקסטים (+ חדשים)
   const copy = {
-    introTitle:   (qs.get('introTitle')  || `${NAME}, a gift is waiting!`).slice(0,80),
+    introTitle:   (qs.get('introTitle')  || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
     introSub:     (qs.get('introSub')    || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
     introBtn:     (qs.get('introBtn')    || `Start selfie verification`).slice(0,32),
 
@@ -1686,6 +1686,14 @@ async function startCamera(videoEl, fallbackEl){
   animation: shPulse 1.2s ease-in-out infinite alternate;
 }
 @keyframes shPulse{ from{ transform:translateY(0) scale(1) } to{ transform:translateY(-2px) scale(1.02) } }
+@keyframes wobble {
+  0%,100%{transform:translateX(0) rotate(0)}
+  15%{transform:translateX(-6px) rotate(-2deg)}
+  30%{transform:translateX(6px) rotate(2deg)}
+  45%{transform:translateX(-4px) rotate(-1deg)}
+  60%{transform:translateX(4px) rotate(1deg)}
+  75%{transform:translateX(-2px) rotate(-1deg)}
+}
       .wobble{ animation:wobble .9s ease-in-out infinite }
 
       /* reuse gentle shake keyframes from skeleton (.shake class) */
