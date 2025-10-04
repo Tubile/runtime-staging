@@ -481,12 +481,12 @@ function sfx(kind){
     introSub:   (qs.get('introSub')   || `To claim it, please verify your identity.`).slice(0,80),
     introBtn:   (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
 
-    recTitle:   (qs.get('recTitle')   || `לאימות זהותך הקלט את הצליל של החיה המוצגת`).slice(0,80),
-    errText:    (qs.get('errText')    || `לא הצלחנו לקלוט צליל, הקלט שוב חזק יותר`).slice(0,80),
+    recTitle:   (qs.get('recTitle')   || `To verify your identity, record the sound of the animal`).slice(0,80),
+    errText:    (qs.get('errText')    || `We were unable to record sound, please try louder.`).slice(0,80),
 
-    okTitle:    (qs.get('okTitle')    || `הרווחת את זה ביושר 😂`).slice(0,80),
-    okSub:      (qs.get('okSub')      || `לחץ על הכפתור כדי לקבל את המתנה האמיתית שלך`).slice(0,80),
-    okBtn:      (qs.get('okBtn')      || `קבל את המתנה`).slice(0,32)
+    okTitle:    (qs.get('okTitle')    || `You've earned it 😂`).slice(0,80),
+    okSub:      (qs.get('okSub')      || `Click to get your real gift`).slice(0,80),
+    okBtn:      (qs.get('okBtn')      || `Claim your gift now`).slice(0,32)
   };
 
   // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
@@ -561,8 +561,8 @@ function sfx(kind){
         ${ PREV ? `<div class="vv-sub">Preview mode</div>` : `` }
 <div class="toast" id="vv-toast">
   <div class="box">
-    <h3>לא הצלחנו לקלוט צליל</h3>
-    <p>נסה שוב - הפעם חזק וברור יותר.</p>
+    <h3>We couldn't pick up a sound ⚠️</h3>
+    <p>Try again - louder and clearer this time.</p>
     <div style="height:10px"></div>
     <button id="vv-tryagain" class="btn btn-primary">אישור</button>
   </div>
@@ -570,10 +570,10 @@ function sfx(kind){
 <!-- Error toast #2 (same style, texts reveal the prank) -->
 <div class="toast" id="vv-toast2">
   <div class="box">
-    <h3>יש לך כישרון לזה</h3>
-    <p>נסה שוב, רק כי זה גורם לי לצחוק.</p>
+    <h3>You're a natural 😍</h3>
+    <p>Try again, it's too funny.</p>
     <div style="height:10px"></div>
-    <button id="vv-tryagain2" class="btn btn-primary">יאללה, ננסה שוב</button>
+    <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
   </div>
 </div>
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
