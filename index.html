@@ -151,7 +151,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <!-- CAPTCHA UX styles (clean + tap improvements) -->
 <style id="captcha-ux">
   .wrap-captcha{
-    display:grid; gap:16px; justify-items:center; text-align:center;
+    display:grid; gap:24px; justify-items:center; text-align:center;
     margin-top:clamp(24px, 12vh, 96px);
   }
   .cap-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
@@ -192,7 +192,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <!-- SELFIE UX (styles) -->
 <style id="selfie-ux">
   .wrap-selfie{
-    display:grid; gap:16px; justify-items:center; text-align:center;
+    display:grid; gap:24px; justify-items:center; text-align:center;
     margin-top: clamp(24px, 10vh, 96px);
   }
   .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
@@ -399,7 +399,7 @@ function voiceVerify(){
     st.id = 'voice-ux';
     st.textContent = `
       .wrap-voice{
-        display:grid; gap:16px; justify-items:center; text-align:center;
+        display:grid; gap:24px; justify-items:center; text-align:center;
         margin-top:clamp(24px, 10vh, 96px);
 }
 .vv-cow{
@@ -1137,7 +1137,7 @@ function narcissistQ(){
   if(!document.getElementById('nq-css')){
     document.head.insertAdjacentHTML('beforeend', `
       <style id="nq-css">
-        .wrap-nq{ display:grid; gap:16px; justify-items:center; text-align:center; margin-top:clamp(12px,6vh,48px) }
+        .wrap-nq{ display:grid; gap:24px; justify-items:center; text-align:center; margin-top:clamp(12px,6vh,48px) }
         .nq-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
         .nq-sub{ margin:0; font-size:15px; color:#9aa3b2 }
         .nq-steps{ font-size:12px; color:#9aa3b2; opacity:.9 }
@@ -1335,7 +1335,7 @@ function selfieVerify(){
       /* מרכזים אנכית בתוך ה"טלפון" + RTL */
 #app .wrap-selfie{
   display:grid;
-  gap:16px;
+  gap:24px;
   justify-items:center;
   text-align:center;
   direction:rtl;
@@ -1691,7 +1691,7 @@ function shake(){
       body, .phone, .wrap, #app { font-family: 'Assistant', system-ui, Segoe UI, Roboto, Helvetica, Arial; }
 
       .wrap-shake{
-        display:grid; gap:16px; justify-items:center; text-align:center;
+        display:grid; gap:24px; justify-items:center; text-align:center;
         margin-top:clamp(24px, 10vh, 96px);
       }
       .sh-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
