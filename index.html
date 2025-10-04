@@ -1412,17 +1412,17 @@ function selfieVerify(){
   // טקסטים (+ חדשים)
   const copy = {
     introTitle:   (qs.get('introTitle')  || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
-    introSub:     (qs.get('introSub')    || `To claim it, please verify your identity with a quick selfie.`).slice(0,80),
-    introBtn:     (qs.get('introBtn')    || `Start selfie verification`).slice(0,32),
+    introSub:     (qs.get('introSub')    || `To claim it, take a selfie to verify your identity.`).slice(0,80),
+    introBtn:     (qs.get('introBtn')    || `Verify your identity`).slice(0,32),
 
-    camLabel:     (qs.get('camLabel')    || `המצלמה פועלת — ודא/י שהפנים במרכז המסגרת`).slice(0,60),
-    captureBtn:   (qs.get('captureBtn')  || `לצילום ואימות זהותך`).slice(0,32),
-    overlaySub:   (qs.get('overlaySub')  || `אנא אמתן בזמן שהמערכת מאמתת את זהותך…`).slice(0,80),
+    camLabel:     (qs.get('camLabel')    || `Camera is on — fit your face in the center of the frame`).slice(0,60),
+    captureBtn:   (qs.get('captureBtn')  || `Take a selfie`).slice(0,32),
+    overlaySub:   (qs.get('overlaySub')  || `Please wait while the system verifies your identity…`).slice(0,80),
 
-    successTitle: (qs.get('successTitle')|| `זהותך אומתה בהצלחה!`).slice(0,60),
-    okSub:        (qs.get('okSub')       || `You’re good to go.`).slice(0,80),
-    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `לקבלת המתנה האמיתית`).slice(0,32),
-    saveBtn:      (qs.get('saveBtn')     || `לשמירת התמונה`).slice(0,24)
+    successTitle: (qs.get('successTitle')|| `You're verified!`).slice(0,60),
+    okSub:        (qs.get('okSub')       || `Enjoy your gift :)`).slice(0,80),
+    giftBtn:      (qs.get('giftBtn')     || qs.get('okBtn') || `Claim your real gift`).slice(0,32),
+    saveBtn:      (qs.get('saveBtn')     || `Save your selfie`).slice(0,24)
   };
 
   // פילטרים מצחיקים (כמו בבריף)
