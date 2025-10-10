@@ -1657,17 +1657,6 @@ async function startCamera(videoEl, fallbackEl){
 
 // ===== Shake (MOBILE) =====
 function shake(){
-  function primeMotionPermission(){
-  try{
-    if (typeof DeviceMotionEvent !== 'undefined' &&
-        typeof DeviceMotionEvent.requestPermission === 'function'){
-      // MUST be called from a user gesture (tap)
-      DeviceMotionEvent.requestPermission()
-        .then(()=>{/* ok */})
-        .catch(()=>{/* ignore */});
-    }
-  }catch(_){/* no-op */}
-}
   // --- Params & setup (Runtime contract) ---
   const qs   = new URLSearchParams(location.search);
   const PREV = (qs.get('preview')||'0').trim()==='1';
@@ -1839,7 +1828,7 @@ function shake(){
         <div class="sh-sub" style="font-size:12px">no data collected</div>
       </div>
     `;
-    document.getElementById('shStart')?.addEventListener('click', ()=>{ primeMotionPermission(); runAttempt(); }, { once:true });
+    document.getElementById('shStart')?.addEventListener('click', ()=>{ runAttempt(); }, { once:true });
   }
 
 function runAttempt(){
@@ -1898,7 +1887,6 @@ function runAttempt(){
             document.querySelectorAll('#shErr'+attempt+' [data-ok]').forEach(btn=>{
               btn.addEventListener('click', ()=>{
                 (document.getElementById('shErr'+attempt)).classList.remove('show');
-                primeMotionPermission();
                 runAttempt();
               }, { once:true });
             });
