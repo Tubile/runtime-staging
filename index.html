@@ -954,40 +954,47 @@ function captcha(){
     let solved = false;
 
     verifyBtn.addEventListener('click', ()=>{
-      if(solved){ screenSuccess(); return; }
-      const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
-      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
-      if(!ok){
-        try{sfx('error')}catch(e){}
-        verifyBtn.classList.add('error'); grid.classList.add('shake');
-        setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
-        return;
-      }
-      try{sfx('tada')}catch(e){}
-      confettiBurst(confettiCanvas);
-      verifyBtn.textContent = copy.continueTxt;
-      verifyBtn.classList.add('green');
-      solved = true;
-    });
+  if(solved){ screenSuccess(); return; }
+
+  const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
+  const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b));
+
+  if(!ok){
+    try{sfx('error')}catch(e){}
+    verifyBtn.classList.add('error'); grid.classList.add('shake');
+    setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
+    return;
   }
 
+  // ===== הצלחה (חדש) =====
+  try{sfx('tada')}catch(e){}
+  solved = true;           // אפשר להשאיר, לא מזיק
+  screenSuccess();         // מעבר מיידי למסך הסופי
+});
+
   function screenSuccess(){
-    app.innerHTML = `
-      <div class="wrap wrap-captcha">
-        <div class="cap-success-icon" aria-hidden="true">💝</div>
-        <h1 class="cap-title">${copy.okTitle}</h1>
-        <p class="cap-sub">${copy.okSub}</p>
-        <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
-        ${PREV ? `<div class="cap-hint">Preview only – button disabled</div>` : ``}
-      </div>
-    `;
-    const btn = document.getElementById('openGift');
-    btn.addEventListener('click', ()=>{
-      if(PREV) return;
-      try{sfx('confirm')}catch(e){}
-      try{ window.open(GIFT, '_blank', 'noopener'); }catch(e){}
-    });
-  }
+  const html = `
+    <div class="wrap wrap-captcha">
+      <h1 class="cap-title">${copy.okTitle}</h1>
+      <p class="cap-sub">${copy.okSub}</p>
+      <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
+      ${PREV ? `<div class="cap-hint">Preview only — button disabled</div>` : ``}
+      <canvas id="cap-confetti-final" class="confetti-canvas"></canvas>
+    </div>
+  `;
+  app.innerHTML = html;
+
+  // קונפטי — עכשיו רק כאן
+  const finalCanvas = document.getElementById('cap-confetti-final');
+  confettiBurst(finalCanvas);
+
+  const btn = document.getElementById('openGift');
+  btn.addEventListener('click', ()=>{
+    if(PREV) return; // בפריביו לא פותחים מתנה
+    try{sfx('confirm')}catch(e){}
+    try{ window.open(GIFT, '_blank', 'noopener'); }catch(e){}
+  });
+}
 
   // קונפטי
   function confettiBurst(canvas){
