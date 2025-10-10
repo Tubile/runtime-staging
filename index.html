@@ -928,54 +928,41 @@ function captcha(){
   }
 
   function screenGrid(){
-  app.innerHTML = `
-    <div class="wrap wrap-captcha">
-      <h1 class="cap-title">${copy.gridHeader}</h1>
-      <div id="grid" class="cap-grid">
-        ${Array.from({length:9}).map((_,i)=>tileHtml(i)).join('')}
+    app.innerHTML = `
+      <div class="wrap wrap-captcha">
+        <h1 class="cap-title">${copy.gridHeader}</h1>
+        <div id="grid" class="cap-grid">
+          ${Array.from({length:9}).map((_,i)=>tileHtml(i)).join('')}
+        </div>
+        <button id="verify" class="btn cap-cta brand">${copy.verify}</button>
+        ${PREV ? `<div class="cap-hint">Preview mode</div>` : ``}
+        <canvas id="cap-confetti" class="confetti-canvas"></canvas>
       </div>
-      <button id="verify" class="btn cap-cta brand">${copy.verify}</button>
-      ${PREV ? `<div class="cap-hint">Preview mode</div>` : ``}
-    </div>
-  `;
+    `;
 
-  const grid = document.getElementById('grid');
-  const verifyBtn = document.getElementById('verify');
+    const grid = document.getElementById('grid');
+    const verifyBtn = document.getElementById('verify');
+    const confettiCanvas = document.getElementById('cap-confetti');
 
-  // Tap מיידי במקום click
-  grid.addEventListener('pointerdown', (e)=>{
-    const tile = e.target.closest('.cap-tile');
-    if(!tile) return;
-    tile.classList.toggle('sel');
-  });
+    // Tap מיידי במקום click
+    grid.addEventListener('pointerdown', (e)=>{
+      const tile = e.target.closest('.cap-tile');
+      if(!tile) return;
+      tile.classList.toggle('sel');
+    });
 
-  let solved = false;
+    let solved = false;
 
-  verifyBtn.addEventListener('click', ()=>{
-    if(solved){ screenSuccess(); return; }
-
-    // בחירות משתמש
-    const selected = [...grid.querySelectorAll('.cap-tile.sel')]
-      .map(t=>+t.dataset.i).sort((a,b)=>a-b);
-
-    // השוואה ליעדים
-    const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b));
-
-    if(!ok){
-      // ✗ טעות
-      try{sfx('error')}catch(e){}
-      verifyBtn.classList.add('error'); grid.classList.add('shake');
-      setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
-      return; // חשוב לעצור
-    }
-
-    // ✓ הצלחה: מעבר מיידי למסך הסופי (בלי קונפטי בגריד)
-    try{sfx('tada')}catch(e){}
-    solved = true;
-    screenSuccess();
-  });
-}
-
+    verifyBtn.addEventListener('click', ()=>{
+      if(solved){ screenSuccess(); return; }
+      const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
+      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
+      if(!ok){
+        try{sfx('error')}catch(e){}
+        verifyBtn.classList.add('error'); grid.classList.add('shake');
+        setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
+        return;
+      }
       try{sfx('tada')}catch(e){}
       confettiBurst(confettiCanvas);
       verifyBtn.textContent = copy.continueTxt;
@@ -994,8 +981,6 @@ function captcha(){
         ${PREV ? `<div class="cap-hint">Preview only – button disabled</div>` : ``}
       </div>
     `;
-    const confettiCanvas = document.getElementById('cap-confetti');
-    confettiBurst(confettiCanvas);
     const btn = document.getElementById('openGift');
     btn.addEventListener('click', ()=>{
       if(PREV) return;
