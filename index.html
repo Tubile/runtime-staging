@@ -203,11 +203,44 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 <!-- CAPTCHA UX styles (clean + tap improvements) -->
 <style id="captcha-ux">
   .wrap-captcha{
-    display:grid; gap:30px; justify-items:center; text-align:center;
-    margin-top:clamp(12px, 6vh, 48px);
+    display:grid; gap:32px; justify-items:center; text-align:center;
+    margin-top: clamp(32px, 8vh, 64px);
+    padding-bottom: 24px;
   }
-  .cap-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
-  .cap-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+  
+  /* אייקון מתנה מעל הכותרת */
+  .cap-gift-icon{
+    width:56px; height:56px; border-radius:16px;
+    background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
+    border:1px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px; line-height:1;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
+    animation:capIconFloat 3s ease-in-out infinite;
+  }
+  @keyframes capIconFloat{
+    0%, 100%{ transform:translateY(0px) }
+    50%{ transform:translateY(-6px) }
+  }
+  
+  /* אייקון הצלחה */
+  .cap-success-icon{
+    width:64px; height:64px; border-radius:20px;
+    background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
+    border:1px solid rgba(16,185,129,.2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:32px; line-height:1;
+    box-shadow:0 8px 32px rgba(16,185,129,.2);
+    animation:capSuccessPop .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  @keyframes capSuccessPop{
+    0%{ transform:scale(0) rotate(-45deg); opacity:0 }
+    100%{ transform:scale(1) rotate(0); opacity:1 }
+  }
+  
+  .cap-title{ margin:0; font-size:28px; line-height:1.3; font-weight:800; letter-spacing:-0.02em }
+  .cap-sub{ margin:0; font-size:16px; color:#9aa3b2; line-height:1.5; opacity:.85 }
+  
   .cap-grid{
     display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;
     width:min(360px, 100%);
@@ -216,8 +249,6 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
     position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden;
     border:1px solid rgba(255,255,255,.10); background:#12182b; cursor:pointer;
     transition:transform .04s ease, box-shadow .12s ease;
-
-    /* tap fast + no highlight on mobile */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -235,79 +266,21 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
     background:#10b981; color:#062d24; border-radius:999px; padding:2px 6px;
     box-shadow:0 2px 10px rgba(0,0,0,.25);
   }
-  .cap-cta{ width:min(280px, 100%); min-height:48px; padding:14px 18px; font-size:16px;
-    border-radius:0px; font-weight:700; margin:0 auto }
+  .cap-cta{ 
+    width:min(300px, 100%); min-height:52px; padding:16px 20px; font-size:16px;
+    border-radius:12px; font-weight:700; margin:0 auto;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 4px 16px rgba(0,0,0,.2);
+  }
+  .cap-cta:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,.3);
+  }
+  .cap-cta:active{ transform:translateY(0) }
   .cap-cta.error{ animation:infShake .35s linear 1 }
+  .cap-cta.brand{ background:#282D3F; color:#fff; border:1px solid rgba(255,255,255,.1) }
   .cap-cta.green{ background:#10b981; color:#fff }
   .cap-hint{ font-size:12px; color:#9aa3b2 }
-</style>
-<!-- SELFIE UX (styles) -->
-<style id="selfie-ux">
-  .wrap-selfie{
-    display:grid; gap:24px; justify-items:center; text-align:center;
-    margin-top: clamp(24px, 12vh, 96px);
-  }
-  .sf-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
-  .sf-sub{ margin:0; font-size:15px; color:#9aa3b2 }
-  .sf-cta{ width:min(280px,100%); min-height:48px; padding:14px 18px; font-size:16px;
-           border-radius:0px; font-weight:700; margin:0 auto }
-  .sf-hint{ font-size:12px; color:#9aa3b2 }
-  .sf-phone-only{ opacity:.9 }
-
-  .sf-cam{
-    position:relative; width:min(360px,100%); aspect-ratio:3/4;
-    background:#0f152a; border:1px solid rgba(255,255,255,.10); border-radius:16px; overflow:hidden;
-  }
-  .sf-cam video, .sf-cam .sf-fallback{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  }
-  .sf-fallback{
-    display:flex; align-items:center; justify-content:center; padding:16px;
-    background:repeating-linear-gradient(135deg,#12182b 0 16px,#0e1326 16px 32px);
-    color:#9aa3b2; font-weight:700; font-size:18px;
-  }
-  /* make hidden actually hide + keep video on top */
-#app .sf-fallback[hidden]{ display:none !important; }
-#app .sf-cam video{ z-index:2 }
-#app .sf-cam .sf-fallback{ z-index:1 }
-
-  .sf-status{
-    display:flex; align-items:center; gap:10px; justify-content:center;
-    font-size:14px; color:#9aa3b2;
-  }
-  .sf-spinner{ width:18px; height:18px; border:3px solid rgba(255,255,255,.15);
-               border-top-color:#a78bfa; border-radius:50%; animation:sfSpin 1s linear infinite }
-  @keyframes sfSpin{ to{ transform:rotate(360deg) } }
-
-  .sf-check{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-size:72px; color:#10b981; text-shadow:0 6px 24px rgba(0,0,0,.35);
-    pointer-events:none; opacity:0; transform:scale(.9); transition:.25s ease;
-  }
-  .sf-check.on{ opacity:1; transform:scale(1) }
-
-  /* Filters */
-/* Neutral selfie – no color filter, mirror only */
-.fx-none video{ filter:none !important; transform:scaleX(-1); }
-  .fx-ugly1 video{ filter:hue-rotate(120deg) saturate(2) contrast(1.2); transform:scaleX(-1) }
-  .fx-ugly2 video{ filter:hue-rotate(260deg) saturate(2.4) contrast(1.15) brightness(1.08); transform:scaleX(-1) }
-  .fx-ugly3 video{ filter:hue-rotate(180deg) saturate(2.2) contrast(1.2) drop-shadow(0 4px 22px rgba(0,0,0,.25)); transform:scaleX(-1) }
-
-  .green{ background:#10b981; color:#fff }
-  .ghost{ background:#0b1020; color:#9aa3b2; border:1px solid rgba(255,255,255,.12) }
-  .sf-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center }
-
-  /* Confetti canvas */
-  .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999; display:none }
-  /* Kill LED only (keep everything else) */
-#app .sf-led,
-#app .sf-monkey.led::before,
-#app .sf-monkey.led::after,
-#app .sf-monkey::before,
-#app .sf-monkey::after{
-  display:none !important;
-  animation:none !important;
-}
 </style>
 
 <div class="stage">
@@ -872,9 +845,10 @@ function captcha(){
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-captcha">
+        <div class="cap-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="cap-title">${copy.introTitle}</h1>
         <p class="cap-sub">${copy.introSub}</p>
-        <button id="start" class="btn cap-cta">${copy.introBtn}</button>
+        <button id="start" class="btn cap-cta brand">${copy.introBtn}</button>
         <div class="cap-hint">no data will be collected</div>
       </div>
     `;
@@ -899,7 +873,7 @@ function captcha(){
         <div id="grid" class="cap-grid">
           ${Array.from({length:9}).map((_,i)=>tileHtml(i)).join('')}
         </div>
-        <button id="verify" class="btn cap-cta">${copy.verify}</button>
+        <button id="verify" class="btn cap-cta brand">${copy.verify}</button>
         ${PREV ? `<div class="cap-hint">Preview mode</div>` : ``}
         <canvas id="cap-confetti" class="confetti-canvas"></canvas>
       </div>
@@ -939,10 +913,11 @@ function captcha(){
   function screenSuccess(){
     app.innerHTML = `
       <div class="wrap wrap-captcha">
+        <div class="cap-success-icon" aria-hidden="true">💝</div>
         <h1 class="cap-title">${copy.okTitle}</h1>
         <p class="cap-sub">${copy.okSub}</p>
         <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
-        ${PREV ? `<div class="cap-hint">Preview only — button disabled</div>` : ``}
+        ${PREV ? `<div class="cap-hint">Preview only – button disabled</div>` : ``}
       </div>
     `;
     const btn = document.getElementById('openGift');
