@@ -8,14 +8,14 @@ body{margin:0;background:#0b1020;color:#e8ecf4;font-family:'Assistant',system-ui
 .stage{min-height:100vh;display:flex;align-items:center;justify-content:center}
 .phone{
   width:min(420px, 92vw);
-  height:calc(min(420px, 92vw) * 1.78); /* ×™×—×¡ × ×¢×™× ~16:9 */
+  height:calc(min(420px, 92vw) * 1.78); /* יחס נעים ~16:9 */
   border-radius:28px;
   box-shadow:0 20px 60px rgba(0,0,0,.35);
   overflow:hidden;
   border:1px solid rgba(255,255,255,.08);
   background:#0f152a;
-  display:flex;               /* ×—×©×•×‘: ×ž××¤×©×¨ ×œ×™×œ×“ ×œ×ž×œ× ×’×•×‘×” */
-  flex-direction:column;      /* ×›×•×ª×¨×ª ×¡×˜×˜×•×¡ ×œ×ž×¢×œ×”, ×ª×•×›×Ÿ ×ž×ª×—×ª */
+  display:flex;               /* חשוב: מאפשר לילד למלא גובה */
+  flex-direction:column;      /* כותרת סטטוס למעלה, תוכן מתחת */
 }
 @media (max-width: 480px){
   .stage{ min-height:100svh; align-items:stretch; justify-content:stretch; }
@@ -30,10 +30,10 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .status .dot{width:6px;height:6px;border-radius:50%;background:#aeb7c8;opacity:.85}
 .wrap{
   padding:16px;
-  flex:1;                           /* ×™×ž×œ× ××ª ×›×œ ×’×•×‘×” ×”"×˜×œ×¤×•×Ÿ" */
-  overflow:auto;                     /* ×›××Ÿ ×”×’×œ×™×œ×” ×ž×ª×‘×¦×¢×ª */
-  -webkit-overflow-scrolling: touch; /* ××™× ×¨×¦×™×” ×—×œ×§×” ×‘××™×™×¤×•×Ÿ */
-  overscroll-behavior: contain;      /* ×œ× ×ž×•×©×š ××ª ×”×¢×ž×•×“ ×©×ž×¡×‘×™×‘ */
+  flex:1;                           /* ימלא את כל גובה ה"טלפון" */
+  overflow:auto;                     /* כאן הגלילה מתבצעת */
+  -webkit-overflow-scrolling: touch; /* אינרציה חלקה באייפון */
+  overscroll-behavior: contain;      /* לא מושך את העמוד שמסביב */
 }
 .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
 .h1{font-size:22px;font-weight:800;margin:0 0 6px}
@@ -58,7 +58,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .confetti-canvas{ width:100vw; height:100vh }
   /* Kefpo brand badge (runtime-only) */
 .kf-badge{
-  position: sticky;         /* × ×“×‘×§ ×œ×¨××© ××–×•×¨ ×”×’×œ×™×œ×” ×©×œ .wrap */
+  position: sticky;         /* נדבק לראש אזור הגלילה של .wrap */
   top: 8px;
   align-self: center;
   display: inline-flex; gap: 8px; align-items: center;
@@ -81,28 +81,28 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   .custom-scrollbar{
     position:absolute; top:10px; bottom:10px; right:6px;
     width:3px; border-radius:999px;
-    background:rgba(255,255,255,.08);   /* ×ž×¡×™×œ×” ×“×§×” ×•×¡×˜×˜×™×ª */
-    pointer-events:none;                 /* ×œ× ×—×•×¡× × ×’×™×¢×•×ª ×‘×ª×•×›×Ÿ */
-    display:none;                        /* ×™×•×¦×’ ×¨×§ ×›×©×™×© ×ž×” ×œ×’×œ×•×œ */
+    background:rgba(255,255,255,.08);   /* מסילה דקה וסטטית */
+    pointer-events:none;                 /* לא חוסם נגיעות בתוכן */
+    display:none;                        /* יוצג רק כשיש מה לגלול */
   }
   .custom-scrollbar .thumb{
     position:absolute; left:0; top:0; width:100%;
     height:36px; border-radius:999px;
-    background:rgba(255,255,255,.50);   /* ×”××’×•×“×œ */
+    background:rgba(255,255,255,.50);   /* האגודל */
     opacity:0; transition:opacity .25s;
   }
-  .wrap.scrolling .custom-scrollbar .thumb{ opacity:.9; }  /* ×ž×•×“×’×© ×‘×–×ž×Ÿ ×’×œ×™×œ×” */
+  .wrap.scrolling .custom-scrollbar .thumb{ opacity:.9; }  /* מודגש בזמן גלילה */
 }
 </style>
 
 <!-- Infinite UX extra classes -->
 <style id="infinite-ux">
-/* ×ž×¦×‘×™ ×¦×‘×¢ ×œ×›×¤×ª×•×¨ (×ž×¢×‘×¨ ×‘×™×Ÿ ×©×œ×‘×™×) */
+/* מצבי צבע לכפתור (מעבר בין שלבים) */
 .btn.alt1{background:#7c3aed;color:#fff}
 .btn.alt2{background:#0ea5e9;color:#fff}
 .btn.success{background:#10b981;color:#fff}
 
-/* ××¤×§×˜×™× ×¢×“×™× ×™× ×œ×¨×§×¢ ×”×›×¨×˜×™×¡ */
+/* אפקטים עדינים לרקע הכרטיס */
 .wrap.fx-alert{animation:infFlashRed .8s ease-in-out 2 alternate}
 @keyframes infFlashRed{0%{background:#0f1218}100%{background:#241112}}
 .wrap.fx-calm{animation:infCalm .8s ease forwards}
@@ -112,23 +112,23 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 .wrap.fx-pink{animation:infPink .7s ease-in-out 2 alternate}
 @keyframes infPink{0%{box-shadow:0 0 0 0 rgba(238,0,120,.10)}100%{box-shadow:0 0 0 14px rgba(238,0,120,.08)}}
 
-/* ×§×•× ×¤×˜×™ "×¤×•×£" ×©×ž×›×¡×” ××ª ×›×œ ×”×•×•×¤×•×¨×˜ (××‘×œ × ×©××¨ ×‘×ª×•×š #app) */
+/* קונפטי "פוף" שמכסה את כל הוופורט (אבל נשאר בתוך #app) */
 .confetti-fixed{pointer-events:none;position:fixed;inset:0;z-index:999;overflow:hidden}
 .confetti-fixed span{position:absolute;top:-20px;font-size:20px;animation:infFall 1.8s linear forwards}
 @keyframes infFall{to{transform:translateY(110vh) rotate(240deg);opacity:.95}}
 /* Infinite-only layout & sizing */
 .wrap-infinite{
   display:grid;
-  gap:32px;              /* ×¨×™×•×•×— ××œ×’× ×˜×™ ×•×ž××•×–×Ÿ */
-  justify-items:center;  /* ×ž×¨×›×– ×”×›×œ ××•×¤×§×™×ª */
-  text-align:center;     /* ×˜×§×¡×˜ ×ž×ž×•×¨×›×– */
-  margin-top: clamp(32px, 8vh, 64px); /* ×¨×™×•×•×— ×ž×•×“×¨× ×™ ×ž×¨××© ×”×¢×ž×•×“ */
-  padding-bottom: 24px;  /* ×¨×™×•×•×— ×ž×ª×—×ª */
+  gap:32px;              /* ריווח אלגנטי ומאוזן */
+  justify-items:center;  /* מרכז הכל אופקית */
+  text-align:center;     /* טקסט ממורכז */
+  margin-top: clamp(32px, 8vh, 64px); /* ריווח מודרני מראש העמוד */
+  padding-bottom: 24px;  /* ריווח מתחת */
 }
 .wrap-infinite h1{ margin:0; font-size:28px; line-height:1.3; font-weight:800; letter-spacing:-0.02em }
 .wrap-infinite .sub{ margin:0; font-size:16px; opacity:.85; line-height:1.5; color:#9aa3b2 }
 
-/* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª ×”×¨××©×™×ª */
+/* אייקון מתנה מעל הכותרת הראשית */
 .inf-icon{
   width:56px; height:56px; border-radius:16px;
   background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -143,7 +143,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   50%{ transform:translateY(-6px) }
 }
 
-/* ×›×¤×ª×•×¨ ×’×“×•×œ ×•××ž×™×Ÿ (××—×™×“ ×œ×›×œ ×”×ž×¦×‘×™×) */
+/* כפתור גדול ואמין (אחיד לכל המצבים) */
 .wrap-infinite .btn{
   width:min(300px, 100%);
   min-height:52px;
@@ -163,22 +163,22 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   transform:translateY(0);
 }
 
-/* ×‘×¨Ö¾×”×ª×§×“×ž×•×ª ×ž×™×•×©×¨ ×œ×¨×•×—×‘ ×”×›×¤×ª×•×¨ */
+/* בר־התקדמות מיושר לרוחב הכפתור */
 .wrap-infinite .progress{ width:min(320px, 100%); margin-top:4px; height:10px; border-radius:999px }
 
-/* earned â€“ ×§×¦×ª ×¨×•×•×— ×ž×¢×œ */
+/* earned – קצת רווח מעל */
 .wrap-infinite .earned{ margin-top:12px; font-size:17px; font-weight:700; color:#10b981 }
   
-/* ×›×¤×ª×•×¨ ×¨××©×™ â€“ ×¦×‘×¢ ×ž×•×ª×’ */
+/* כפתור ראשי – צבע מותג */
 .btn.brand{ background:#282D3F; color:#fff; border:1px solid rgba(255,255,255,.1) }
 
-/* ×›×¤×ª×•×¨×™ ×©×’×™××” â€“ ××“×•× */
+/* כפתורי שגיאה – אדום */
 .btn.error-red{ background:#ef4444; color:#fff }
 
-/* ×›×¤×ª×•×¨ ×”×¦×œ×—×” ×™×¨×•×§ */
+/* כפתור הצלחה ירוק */
 .btn.green{ background:#10b981; color:#fff }
 
-/* ××™×™×§×•×Ÿ ×”×¦×œ×—×” ×ž×¢×œ ×”×ž×¡×š ×”××—×¨×•×Ÿ */
+/* אייקון הצלחה מעל המסך האחרון */
 .inf-success-icon{
   width:64px; height:64px; border-radius:20px;
   background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -193,10 +193,10 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   100%{ transform:scale(1) rotate(0); opacity:1 }
 }
 
-/* earned â€“ ×§×¦×ª ×¨×•×•×— ×ž×¢×œ */
+/* earned – קצת רווח מעל */
 .wrap-infinite .earned{ margin-top:8px }
   
-/* ×›×¤×ª×•×¨ ×”×¦×œ×—×” ×™×¨×•×§ */
+/* כפתור הצלחה ירוק */
 .btn.green{ background:#10b981; color:#fff }
 </style>
 
@@ -208,7 +208,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
     padding-bottom: 24px;
   }
   
-  /* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª */
+  /* אייקון מתנה מעל הכותרת */
   .cap-gift-icon{
     width:56px; height:56px; border-radius:16px;
     background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -223,7 +223,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
     50%{ transform:translateY(-6px) }
   }
   
-  /* ××™×™×§×•×Ÿ ×”×¦×œ×—×” */
+  /* אייקון הצלחה */
   .cap-success-icon{
     width:64px; height:64px; border-radius:20px;
     background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -262,7 +262,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   .cap-filler{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-size:34px; filter:saturate(1.1); background:linear-gradient(135deg,#0f152a,#141a32) }
   .cap-tile.sel::after{
-    content:"âœ“"; position:absolute; right:8px; top:6px; font-weight:900; font-size:16px;
+    content:"✓"; position:absolute; right:8px; top:6px; font-weight:900; font-size:16px;
     background:#10b981; color:#062d24; border-radius:999px; padding:2px 6px;
     box-shadow:0 2px 10px rgba(0,0,0,.25);
   }
@@ -285,7 +285,7 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 
 <div class="stage">
 <div id="phone" class="phone">
-<!-- ×™×•×–×¨ ××ž×™×ª×™ ×œ× ×™×¨××” ××ª ×”×¡×˜×˜×•×¡Ö¾×‘×¨; ×ž×•×¦×’ ×¨×§ ×›×©preview=1 -->
+<!-- יוזר אמיתי לא יראה את הסטטוס־בר; מוצג רק כשpreview=1 -->
 <div id="status" class="status" style="display:none">
 <div>9:41</div>
 <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
@@ -308,7 +308,7 @@ function getCopy(key, fallback) {
   if (!v || v.trim().length === 0) return fallback;
   return v.trim().slice(0, 80);
 }
-// === Highâ€‘quality SFX (from your GitHub) with safe fallback ===
+// === High‑quality SFX (from your GitHub) with safe fallback ===
 const SFX_BASE = 'https://tubile.github.io/kefpo-sfx/';
 const SFX_FILES = {
   click:   'click.mp3',
@@ -318,16 +318,16 @@ const SFX_FILES = {
   whoosh:  'whoosh.mp3'
 };
 
-// Preload one Audio element per sound (× ×™×¦×•×¨ ×©×™×‘×•×˜ ×‘×›×œ ×”×©×ž×¢×” ×›×“×™ ×œ××¤×©×¨ ×—×¤×™×¤×”)
+// Preload one Audio element per sound (ניצור שיבוט בכל השמעה כדי לאפשר חפיפה)
 const __SFX = {};
 for (const [k,f] of Object.entries(SFX_FILES)) {
   const a = new Audio(SFX_BASE + f);
   a.preload = 'auto';
-  a.crossOrigin = 'anonymous'; // ×‘×˜×•×— ×’× ×× ×ª×¨×¦×” WebAudio ×‘×¢×ª×™×“
+  a.crossOrigin = 'anonymous'; // בטוח גם אם תרצה WebAudio בעתיד
   __SFX[k] = a;
 }
 
-// × ×™×¡×™×•×Ÿ â€œ×¤×¨×™×™×ž×™× ×’â€ ×¢×“×™×Ÿ ×œ×¤×ª×™×—×ª ××•×“×™×• ×‘×ž×•×‘×™×™×œ ×‘×”×§×©×” ×”×¨××©×•× ×”
+// ניסיון “פריימינג” עדין לפתיחת אודיו במובייל בהקשה הראשונה
 document.addEventListener('pointerdown', ()=>{
   try{
     const a = __SFX.click;
@@ -340,11 +340,11 @@ document.addEventListener('pointerdown', ()=>{
 function sfx(kind){
   const key = (kind in __SFX) ? kind : 'click';
   try{
-    // ×ž× ×’×Ÿ ×©×™×‘×•×˜ ×›×“×™ ×œ××¤×©×¨ ×›×ž×” ×¦×œ×™×œ×™× ×–×” ×¢×œ ×–×”
+    // מנגן שיבוט כדי לאפשר כמה צלילים זה על זה
     const a = __SFX[key].cloneNode(true);
-    a.play().catch(()=>{ /* ×™×™×ª×›×Ÿ ×‘×œ×•×§ ××•×˜×•×¤×œ×™×™ â€“ × ×ª×¢×œ× ×‘×©×§×˜ */ });
+    a.play().catch(()=>{ /* ייתכן בלוק אוטופליי – נתעלם בשקט */ });
   }catch(e){
-    // Fallback â€“ ×‘×™×¤ ×¡×™× ×ª×˜×™ (×›×ž×• ×©×”×™×”)
+    // Fallback – ביפ סינתטי (כמו שהיה)
     try{
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator(), g = ctx.createGain();
@@ -358,7 +358,7 @@ function sfx(kind){
   }
 }
 
-// ×”×¦×’ ×¡×˜×˜×•×¡Ö¾×‘×¨ ×¨×§ ×‘×¤×¨×™×‘×™×•
+// הצג סטטוס־בר רק בפריביו
 if (PREV) document.getElementById('status').style.display = 'flex';
   // Runtime-only brand badge (hide in preview)
 if (!PREV) {
@@ -372,7 +372,7 @@ if (!PREV) {
     a.target = '_blank';
     a.rel = 'noopener';
     a.innerHTML = '<i aria-hidden="true"></i><span>Made by Kefpo.co</span>';
-    wrap.insertBefore(a, appEl);   // ×—×©×•×‘: ×ž×—×•×¥ ×œ-#app ×›×“×™ ×©×œ× ×™×ž×—×§ ×‘×”×—×œ×¤×ª ×ž×¡×›×™×
+    wrap.insertBefore(a, appEl);   // חשוב: מחוץ ל-#app כדי שלא ימחק בהחלפת מסכים
   }
 }
 
@@ -385,11 +385,11 @@ const TH   = SB ? SB.querySelector('.thumb') : null;
 function updateScrollbar(){
   if(!WRAP || !SB || !TH) return;
   const sh = WRAP.scrollHeight, ch = WRAP.clientHeight, st = WRAP.scrollTop;
-  // ×× ××™×Ÿ ×¢×•×“×£ ×’×•×‘×” â€“ ×œ× ×œ×”×¦×™×’ ××ª ×”×¤×¡
+  // אם אין עודף גובה – לא להציג את הפס
   if (sh <= ch + 1){ SB.style.display = 'none'; return; }
-  SB.style.display = ''; // ×™×© ×’×œ×™×œ×” â†’ ×œ×”×¦×™×’
+  SB.style.display = ''; // יש גלילה → להציג
 
-  // ×—×™×©×•×‘ ×’×•×‘×” ×”××’×•×“×œ ×•×ž×™×§×•×ž×•
+  // חישוב גובה האגודל ומיקומו
   const track = SB.clientHeight;
   const minThumb = 28;
   const thumbH = Math.max(minThumb, Math.round(track * (ch / sh)));
@@ -407,18 +407,18 @@ if (WRAP){
     hideTimer = setTimeout(()=> WRAP.classList.remove('scrolling'), 400);
   }, {passive:true});
 
-  // ×›×©×ž×ª×—×œ×£ ×ž×¡×š ×‘×¤×™×¦'×¨ (×× ×—× ×• ×ž×©× ×™× innerHTML ×¢×œ #app) â€“ ×œ×—×©×‘ ×ž×—×“×©
+  // כשמתחלף מסך בפיצ'ר (אנחנו משנים innerHTML על #app) – לחשב מחדש
   const obs = new MutationObserver(()=> requestAnimationFrame(updateScrollbar));
   obs.observe(document.getElementById('app'), { childList:true, subtree:true });
 
   window.addEventListener('resize', updateScrollbar);
-  // ×—×™×©×•×‘ ×¨××©×•×Ÿ
+  // חישוב ראשון
   requestAnimationFrame(updateScrollbar);
 }
 
 // ===== Voice Verify (final) =====
 function voiceVerify(){
-  // ×”×–×¨×§×ª CSS ×—×“â€‘×¤×¢×ž×™×ª ×œ×¤×™×¦'×¨ (×›×“×™ ×©×œ× ×ª×¦×˜×¨×š ×œ×¢×“×›×Ÿ <style> × ×¤×¨×“)
+  // הזרקת CSS חד‑פעמית לפיצ'ר (כדי שלא תצטרך לעדכן <style> נפרד)
   if (!document.getElementById('voice-ux')){
     const st = document.createElement('style');
     st.id = 'voice-ux';
@@ -428,7 +428,7 @@ function voiceVerify(){
         margin-top:clamp(32px, 8vh, 64px); padding-bottom:24px;
       }
       
-      /* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª */
+      /* אייקון מתנה מעל הכותרת */
       .vv-gift-icon{
         width:56px; height:56px; border-radius:16px;
         background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -443,7 +443,7 @@ function voiceVerify(){
         50%{ transform:translateY(-6px) }
       }
       
-      /* ××™×™×§×•×Ÿ ×”×¦×œ×—×” */
+      /* אייקון הצלחה */
       .vv-success-icon{
         width:64px; height:64px; border-radius:20px;
         background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -474,7 +474,7 @@ function voiceVerify(){
         user-select:none; -webkit-user-drag:none;
       }
 
-      /* Alert toast overlay â€“ identical look to the reference */
+      /* Alert toast overlay – identical look to the reference */
       .toast{
         position:fixed; inset:0; display:none; place-items:center;
         background:rgba(10,12,22,.6); backdrop-filter:blur(3px);
@@ -510,7 +510,7 @@ function voiceVerify(){
       .btn.brand{ background:#282D3F; color:#fff; border:1px solid rgba(255,255,255,.1) }
       .btn.green{ background:#10b981; color:#fff }
       
-      /* ×›×¤×ª×•×¨×™× ×ž×©×•×¤×¨×™× */
+      /* כפתורים משופרים */
       .vv-cta{
         width:min(300px, 100%); min-height:52px; padding:16px 20px; font-size:16px;
         border-radius:12px; font-weight:700;
@@ -542,48 +542,48 @@ function voiceVerify(){
     document.head.appendChild(st);
   }
 
-  // ×§×¨×™××ª ×¤×¨×ž×˜×¨×™× (×—×•×–×” runtime): ?f=voice-verify&name=&giftUrl=&preview=1
+  // קריאת פרמטרים (חוזה runtime): ?f=voice-verify&name=&giftUrl=&preview=1
   const qs   = new URLSearchParams(location.search);
   const PREV = (qs.get('preview')||'0').trim()==='1';
   const NAME = (qs.get('name')||'Friend').trim();
   const GIFT = (qs.get('giftUrl')||'#').trim();
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // â€œ×ž×¡×š × ×§×™â€ ×›×ž×• ×‘×©××¨ ×”×¤×™×¦'×¨×™×
+  app.classList.remove('card'); // “מסך נקי” כמו בשאר הפיצ'רים
   // --- SFX gate (voice-verify only): allow only 'error' and 'tada'
-const __sfxGlobal = window.sfx; // ×©×ž×•×¨ ×ž×¦×‘×™×¢ ×œ×¤×•× ×§×¦×™×™×ª ×”×¡××•× ×“ ×”×’×œ×•×‘×œ×™×ª ×©×œ ×”×¨× ×˜×™×™×
+const __sfxGlobal = window.sfx; // שמור מצביע לפונקציית הסאונד הגלובלית של הרנטיים
 function sfx(kind){
   if (kind === 'error' || kind === 'tada'){
     try{ __sfxGlobal && __sfxGlobal(kind); }catch(e){}
   }
-  // ×›×œ ×”×©××¨ (click / confirm / whoosh ...) â€“ ×ž×•×©×ª×§×™× ×›××Ÿ ×ž×§×•×ž×™×ª
+  // כל השאר (click / confirm / whoosh ...) – מושתקים כאן מקומית
 }
 
-  // ×˜×§×¡×˜×™× ×œ×¤×™ ×”×‘×¨×™×£ (× ×™×ª× ×™× ×œ××•×‘×¨×¨×™×™×“ ×“×¨×š URL ×× ×ª×¨×¦×”)
+  // טקסטים לפי הבריף (ניתנים לאובררייד דרך URL אם תרצה)
   const copy = {
-    introTitle: (qs.get('introTitle') || `${NAME}, a special gift is waiting! ðŸŽ`).slice(0,80),
+    introTitle: (qs.get('introTitle') || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
     introSub:   (qs.get('introSub')   || `To claim it, please verify your identity.`).slice(0,80),
     introBtn:   (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
 
     recTitle:   (qs.get('recTitle')   || `To verify your identity, record the sound of the animal`).slice(0,80),
     errText:    (qs.get('errText')    || `We were unable to record sound, please try louder.`).slice(0,80),
 
-    okTitle:    (qs.get('okTitle')    || `You've earned it ðŸ˜‚`).slice(0,80),
+    okTitle:    (qs.get('okTitle')    || `You've earned it 😂`).slice(0,80),
     okSub:      (qs.get('okSub')      || `Click to get your real gift`).slice(0,80),
     okBtn:      (qs.get('okBtn')      || `Claim your gift!`).slice(0,32)
   };
 
-  // ×ª×ž×•× ×ª â€œ×¤×¨×”â€ self-contained (SVG emoji) â€” ×œ×œ× ×¨×©×ª/××—×¡×•×Ÿ
+  // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
   function cowDataURL(){
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
          <rect width='100%' height='100%' fill='#0f1324'/>
-         <text x='50%' y='55%' text-anchor='middle' font-size='180'>ðŸ®</text>
+         <text x='50%' y='55%' text-anchor='middle' font-size='180'>🐮</text>
        </svg>`;
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
 
-  // ×§×•× ×¤×˜×™ (×›×ž×• ×‘×©××¨ ×”×¤×™×¦'×¨×™×)
+  // קונפטי (כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -612,11 +612,11 @@ function sfx(kind){
     })();
   }
 
-  // ×ž×¡×š ×¤×ª×™×—×”
+  // מסך פתיחה
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
-        <div class="vv-gift-icon" aria-hidden="true">ðŸŽ</div>
+        <div class="vv-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="vv-title">${copy.introTitle}</h1>
         <p class="vv-sub">${copy.introSub}</p>
         <button id="vv-start" class="btn btn-green vv-cta">${copy.introBtn}</button>
@@ -629,12 +629,12 @@ function sfx(kind){
     });
   }
    
-  // ×ž×¡×š ×”×”×§×œ×˜×” (× ×¡×™×•×Ÿ ×¨××©×•×Ÿ â†’ ×©×’×™××” ××ž×™× ×”; × ×¡×™×•×Ÿ ×©× ×™ â†’ ×”×¦×œ×—×”)
+  // מסך ההקלטה (נסיון ראשון → שגיאה אמינה; נסיון שני → הצלחה)
   function screenRecord(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
         <h1 class="vv-title">${copy.recTitle}</h1>
-        <div class="vv-cow" id="vv-cow" aria-hidden="true"><div class="emoji">ðŸ„</div></div>
+        <div class="vv-cow" id="vv-cow" aria-hidden="true"><div class="emoji">🐄</div></div>
 
         <div class="vv-rec">
           <button id="rec-btn" class="btn blue"><span id="rec-label">Start recording</span></button>
@@ -646,7 +646,7 @@ function sfx(kind){
         ${ PREV ? `<div class="vv-sub">Preview mode</div>` : `` }
 <div class="toast" id="vv-toast">
   <div class="box">
-    <h3>We couldn't pick up a sound âš ï¸</h3>
+    <h3>We couldn't pick up a sound ⚠️</h3>
     <p>Try again - louder and clearer.</p>
     <div style="height:10px"></div>
     <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
@@ -655,7 +655,7 @@ function sfx(kind){
 <!-- Error toast #2 (same style, texts reveal the prank) -->
 <div class="toast" id="vv-toast2">
   <div class="box">
-    <h3>You're a natural ðŸ˜</h3>
+    <h3>You're a natural 😍</h3>
     <p>Try again, it's too funny.</p>
     <div style="height:10px"></div>
     <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
@@ -676,15 +676,15 @@ function sfx(kind){
 const toast = document.getElementById('vv-toast');
 const tryAgain = document.getElementById('vv-tryagain');
 
-// Toast #2 (×× ×”×•×¡×¤×ª ××•×ª×•)
+// Toast #2 (אם הוספת אותו)
 const toast2 = document.getElementById('vv-toast2');
 const tryAgain2 = document.getElementById('vv-tryagain2');
 
-// ×”×–×–×ª ×”×˜×•×¡×˜×™× ×ž×—×•×¥ ×œ-wrap ×›×“×™ ×œ× ×œ×”×™×•×ª ×¦××¦××™× ×©×œ ××œ×ž× ×˜ ×¢× transform (shake)
+// הזזת הטוסטים מחוץ ל-wrap כדי לא להיות צאצאים של אלמנט עם transform (shake)
 if (toast && !toast.__moved){ document.body.appendChild(toast); toast.__moved = true; }
 if (toast2 && !toast2.__moved){ document.body.appendChild(toast2); toast2.__moved = true; }
 
-// ×—×™×•×•×˜ ×›×¤×ª×•×¨×™ "××™×©×•×¨"
+// חיווט כפתורי "אישור"
 if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
 if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
 
@@ -694,7 +694,7 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
     let raf       = 0;
     let autoStop  = 0;
 
-    // ×”×’×“×¨×•×ª ××•×“×™×• (×•×™×–×•××œ×™ ×‘×œ×‘×“ â€” ×‘×œ×™ ×©×ž×™×¨×”/×©×œ×™×—×”)
+    // הגדרות אודיו (ויזואלי בלבד — בלי שמירה/שליחה)
     let stream = null, audioCtx = null, analyser = null, data = null;
 
     function fmt(ms){
@@ -712,7 +712,7 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
         const rms = Math.sqrt(sum / data.length);
         return Math.min(100, Math.floor(rms*180));
       }
-      // fallback ××ž×™×Ÿ
+      // fallback אמין
       return Math.min(100, (Math.random()*65+20)|0);
     }
 
@@ -732,7 +732,7 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       t0 = performance.now();
       loop();
 
-      // × ×¡×™×•×Ÿ ×”×¨×©××ª ×ž×™×§×¨×•×¤×•×Ÿ ×œâ€‘VU ××ž×™×ª×™ (×œ×œ× ×”×§×œ×˜×”/×©×ž×™×¨×”)
+      // נסיון הרשאת מיקרופון ל‑VU אמיתי (ללא הקלטה/שמירה)
       try{
         stream = await navigator.mediaDevices?.getUserMedia?.({ audio:true }) || null;
         if (stream){
@@ -743,9 +743,9 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
           data = new Uint8Array(analyser.frequencyBinCount);
           src.connect(analyser);
         }
-      }catch(_){ /* ××™×Ÿ ×”×¨×©××” â€“ × ×©××¨ ×¢× fallback */ }
+      }catch(_){ /* אין הרשאה – נשאר עם fallback */ }
 
-      // fail-safe: ×¢×¦×™×¨×” ××•×˜×•×ž×˜×™×ª ××—×¨×™ 7×©×³×³ ×× ×œ× ×¢×¦×¨×• ×™×“× ×™×ª
+      // fail-safe: עצירה אוטומטית אחרי 7ש׳׳ אם לא עצרו ידנית
       autoStop = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
     }
 
@@ -768,7 +768,7 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       attempt += 1;
 
       if (attempt === 1){
-        // ×©×’×™××” ××ž×™× ×” ×‘×¤×¢× ×”×¨××©×•× ×”
+        // שגיאה אמינה בפעם הראשונה
         toast.classList.add('show');
         btn.classList.add('shake'); wrap.classList.add('shake');
         try{sfx('error')}catch(e){}
@@ -778,7 +778,7 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
         return;
       }
       if (attempt === 2){
-  // ×©×’×™××” ×©× ×™×™×” ×•××—×¨×•× ×” (×˜×•×¡×˜ #2)
+  // שגיאה שנייה ואחרונה (טוסט #2)
   toast2.classList.add('show');
   btn.classList.add('shake'); wrap.classList.add('shake');
   try{sfx('error')}catch(e){}
@@ -787,23 +787,23 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
   meter.style.width = '0%';
   return;
 }
-      // × ×¡×™×•×Ÿ ×©×œ×™×©×™ â€” ×”×¦×œ×—×”
+      // נסיון שלישי — הצלחה
 try{sfx('tada')}catch(e){}
-screenSuccess(); // ×”×§×•× ×¤×˜×™ ×™×¨×•×¥ ×¨×§ ×‘×ž×¡×š ×”×”×¦×œ×—×”
+screenSuccess(); // הקונפטי ירוץ רק במסך ההצלחה
     }
 
     btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
   }
 
-  // ×ž×¡×š ×”×¦×œ×—×”
+  // מסך הצלחה
   function screenSuccess(){
     app.innerHTML = `
       <div class="wrap wrap-voice">
-        <div class="vv-success-icon" aria-hidden="true">ðŸ’</div>
+        <div class="vv-success-icon" aria-hidden="true">💝</div>
         <h1 class="vv-title">${copy.okTitle}</h1>
         <p class="vv-sub">${copy.okSub}</p>
         <button id="vv-open" class="btn green vv-cta"${PREV?' disabled':''}>${copy.okBtn}</button>
-        ${ PREV ? `<div class="vv-sub">Preview only â€“ button disabled</div>` : `` }
+        ${ PREV ? `<div class="vv-sub">Preview only – button disabled</div>` : `` }
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
@@ -833,22 +833,22 @@ function captcha(){
     introTitle:  (qs.get('introTitle') || `A special gift is waiting for you, ${NAME}!`).slice(0,80),
     introSub:    (qs.get('introSub')   || `To unlock it, please verify your identity`).slice(0,80),
     introBtn:    (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
-    gridHeader:  (qs.get('gridHeader') || `Select all images with a weirdo ðŸ‘‡`).slice(0,80),
+    gridHeader:  (qs.get('gridHeader') || `Select all images with a weirdo 👇`).slice(0,80),
     verify:      (qs.get('verifyText') || `Verify`).slice(0,32),
     continueTxt: (qs.get('continueText') || `Success! get your gift`).slice(0,32),
-    okTitle:     (qs.get('okTitle')    || `You're verified! ðŸ¤£`).slice(0,80),
+    okTitle:     (qs.get('okTitle')    || `You're verified! 🤣`).slice(0,80),
     okSub:       (qs.get('okSub')      || `Enjoy your gift!`).slice(0,80),
     okBtn:       (qs.get('okBtn')      || `Claim your gift`).slice(0,32),
   };
 
-  // ×©×œ×•×©×ª ×”×™×¢×“×™× ×”×§×‘×•×¢×™× (0..8): ×™×ž× ×™â€‘×¢×œ×™×•×Ÿ, ×ž×¨×›×–, ×ª×—×ª×•×Ÿâ€‘×ž×¨×›×–
-  const targets = [2,4,7];  // ×œ×¤×™ ×”×‘×¨×™×£. :contentReference[oaicite:4]{index=4}
+  // שלושת היעדים הקבועים (0..8): ימני‑עליון, מרכז, תחתון‑מרכז
+  const targets = [2,4,7];  // לפי הבריף. :contentReference[oaicite:4]{index=4}
 
-  // ×”×¢×œ××•×ª ×ž×”â€‘URL (img1..img3)
+  // העלאות מה‑URL (img1..img3)
   const IMG_URLS = [ qs.get('img1')||'', qs.get('img2')||'', qs.get('img3')||'' ];
   const anyProvided = IMG_URLS.some(Boolean);
 
-  // 6 ×ª×ž×•× ×•×ª ×§×‘×•×¢×•×ª (×ž×•×§×˜× ×•×ª ×œâ€‘600Ã—600 ×¢×‘×•×¨ ×‘×™×¦×•×¢×™×)
+  // 6 תמונות קבועות (מוקטנות ל‑600×600 עבור ביצועים)
   const FILLER_URLS = [
     "https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=2",
     "https://images.pexels.com/photos/113338/pexels-photo-113338.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=2",
@@ -858,21 +858,21 @@ function captcha(){
     "https://images.pexels.com/photos/1547813/pexels-photo-1547813.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&dpr=2"
   ];
 
-  // Placeholder ×’×“×•×œ, ×‘×•×œ×“, ×©×ª×™ ×©×•×¨×•×ª (×§×¨×™× ×‘×ž×•×‘×™×™×œ)
+  // Placeholder גדול, בולד, שתי שורות (קריא במובייל)
   function placeholderDataURL(){
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'>
          <rect width='100%' height='100%' fill='white'/>
          <g fill='#111' font-family='system-ui,Segoe UI,Roboto,Helvetica,Arial' font-weight='700'>
            <text x='50%' y='45%' text-anchor='middle' font-size='56'>The victim</text>
-           <text x='50%' y='60%' text-anchor='middle' font-size='56'>goes here ðŸ¤£</text>
+           <text x='50%' y='60%' text-anchor='middle' font-size='56'>goes here 🤣</text>
          </g>
        </svg>`;
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
   const PLACEHOLDER = placeholderDataURL();
 
-  // ×ž×–×¢×¨ ×ª×ž×•× ×•×ª ×œ×¨×©×ª (Cloudinary/Pexels)
+  // מזער תמונות לרשת (Cloudinary/Pexels)
   function sizeForGrid(src){
     try{
       const u = new URL(src);
@@ -890,7 +890,7 @@ function captcha(){
     }catch(e){ return src; }
   }
 
-  // ×‘â€‘PREVIEW: ×× ×—×¡×¨×” ×ª×ž×•× ×” â€“ placeholder; ×‘×œ×™×™×‘: ×ž×©×›×¤×œ×™× ×× ×¤×—×•×ª ×žâ€‘3
+  // ב‑PREVIEW: אם חסרה תמונה – placeholder; בלייב: משכפלים אם פחות מ‑3
   function getTargetSrc(slotIndex){
     if (IMG_URLS[slotIndex]) return IMG_URLS[slotIndex];
     if (PREV || !anyProvided) return PLACEHOLDER;
@@ -901,12 +901,12 @@ function captcha(){
   const nonTargets = [0,1,3,5,6,8];
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // â€œ×ž×¡×š × ×§×™â€ ×›×ž×• infinite. :contentReference[oaicite:5]{index=5}
+  app.classList.remove('card'); // “מסך נקי” כמו infinite. :contentReference[oaicite:5]{index=5}
 
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-captcha">
-        <div class="cap-gift-icon" aria-hidden="true">ðŸŽ</div>
+        <div class="cap-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="cap-title">${copy.introTitle}</h1>
         <p class="cap-sub">${copy.introSub}</p>
         <button id="start" class="btn cap-cta brand">${copy.introBtn}</button>
@@ -944,7 +944,7 @@ function captcha(){
     const verifyBtn = document.getElementById('verify');
     const confettiCanvas = document.getElementById('cap-confetti');
 
-    // Tap ×ž×™×™×“×™ ×‘×ž×§×•× click
+    // Tap מיידי במקום click
     grid.addEventListener('pointerdown', (e)=>{
       const tile = e.target.closest('.cap-tile');
       if(!tile) return;
@@ -956,7 +956,7 @@ function captcha(){
     verifyBtn.addEventListener('click', ()=>{
       if(solved){ screenSuccess(); return; }
       const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
-      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // ×‘×“×™×•×§ 3 ×”×™×¢×“×™×. :contentReference[oaicite:6]{index=6}
+      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
       if(!ok){
         try{sfx('error')}catch(e){}
         verifyBtn.classList.add('error'); grid.classList.add('shake');
@@ -974,11 +974,11 @@ function captcha(){
   function screenSuccess(){
     app.innerHTML = `
       <div class="wrap wrap-captcha">
-        <div class="cap-success-icon" aria-hidden="true">ðŸ’</div>
+        <div class="cap-success-icon" aria-hidden="true">💝</div>
         <h1 class="cap-title">${copy.okTitle}</h1>
         <p class="cap-sub">${copy.okSub}</p>
         <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
-        ${PREV ? `<div class="cap-hint">Preview only â€“ button disabled</div>` : ``}
+        ${PREV ? `<div class="cap-hint">Preview only – button disabled</div>` : ``}
       </div>
     `;
     const btn = document.getElementById('openGift');
@@ -989,7 +989,7 @@ function captcha(){
     });
   }
 
-  // ×§×•× ×¤×˜×™
+  // קונפטי
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1033,24 +1033,24 @@ function infinite(){
   const titleOverride = qs.get('title');
 
   const copy = {
-    title: titleOverride ? titleOverride : `${NAME}, you've got a sweet surprise! ðŸ’–`,
+    title: titleOverride ? titleOverride : `${NAME}, you've got a sweet surprise! 💖`,
     subtitle: getCopy('subtitle', 'Click the button to get your gift'),
     btn1_loading: getCopy('btn1_loading', 'Loading... hold on'),
     btn2_error: getCopy('btn2_error', 'Oops! Try again'),
     btn3_tease1: getCopy('btn3_tease1', 'Error! Click again'),
     btn4_tease2: getCopy('btn4_tease2', 'Try to click harder'),
     btn5_tease3: getCopy('btn5_tease3', 'You love being trolled?'),
-    btn6_tease4: getCopy('btn6_tease4', 'Admit it, this is fun ðŸ˜ˆ'),
-    btn7_tease5: getCopy('btn7_tease5', 'Almost there... or not? ðŸ¤­'),
+    btn6_tease4: getCopy('btn6_tease4', 'Admit it, this is fun 😈'),
+    btn7_tease5: getCopy('btn7_tease5', 'Almost there... or not? 🤭'),
     btn8_success: getCopy('btn8_success', 'Unlocked! Tap to open'),
-    earned: getCopy('earned', 'You earned it ðŸŽ‰')
+    earned: getCopy('earned', 'You earned it 🎉')
   };
 
   // Inner block
   const inner = document.createElement('div');
   inner.className = 'wrap wrap-infinite';
 inner.innerHTML = `
-    <div class="inf-icon" aria-hidden="true">ðŸŽ</div>
+    <div class="inf-icon" aria-hidden="true">🎁</div>
     <h1>${copy.title}</h1>
     <p class="sub">${copy.subtitle}</p>
 
@@ -1115,7 +1115,7 @@ inner.innerHTML = `
   ipct.style.display = 'none';
   btn.disabled = false;
   loading = false;
-  // ×ž×¢×‘×¨ ××•×˜×•×ž×˜×™ ×œ×©×œ×‘ ×”×‘× (Oops) ×‘×œ×™ ×§×œ×™×§ × ×•×¡×£
+  // מעבר אוטומטי לשלב הבא (Oops) בלי קליק נוסף
   if (tap === 1) { btn.click(); }
 }, 300);
       }
@@ -1175,9 +1175,9 @@ inner.innerHTML = `
   break;
 }
       case 8: {
-        // ×ž×¡×š ×”×¦×œ×—×” ×¢× ××™×™×§×•×Ÿ
+        // מסך הצלחה עם אייקון
         inner.innerHTML = `
-          <div class="inf-success-icon" aria-hidden="true">ðŸ’</div>
+          <div class="inf-success-icon" aria-hidden="true">💝</div>
           <h1>${copy.title}</h1>
           <div id="earned" class="earned">${copy.earned}</div>
           <button id="ibtn-final" class="btn green">${copy.btn8_success}</button>
@@ -1188,7 +1188,7 @@ inner.innerHTML = `
         sfx('tada');
         success = true;
         
-        // ×—×™×‘×•×¨ ×ž×—×“×© ×œ×›×¤×ª×•×¨ ×”×¡×•×¤×™
+        // חיבור מחדש לכפתור הסופי
         inner.querySelector('#ibtn-final').addEventListener('click', ()=> openGift());
         break;
       }
@@ -1245,7 +1245,7 @@ function narcissistQ(){
           margin-top:clamp(32px, 8vh, 64px); padding-bottom:24px;
         }
         
-        /* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª */
+        /* אייקון מתנה מעל הכותרת */
         .nq-gift-icon{
           width:56px; height:56px; border-radius:16px;
           background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -1260,7 +1260,7 @@ function narcissistQ(){
           50%{ transform:translateY(-6px) }
         }
         
-        /* ××™×™×§×•×Ÿ ×”×¦×œ×—×” */
+        /* אייקון הצלחה */
         .nq-success-icon{
           width:64px; height:64px; border-radius:20px;
           background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -1326,7 +1326,7 @@ function narcissistQ(){
     introTitle: (qs.get('introTitle') || `${NAME}, you've got a sweet gift!`).slice(0,80),
     introSub:   (qs.get('introSub')   || `To claim it, answer 3 quick questions.`).slice(0,80),
     startBtn:   (qs.get('startBtn')   || `Verify identity to get the gift`).slice(0,40),
-    okTitle:    (qs.get('okTitle')    || `You've earned it ðŸ¤£`).slice(0,80),
+    okTitle:    (qs.get('okTitle')    || `You've earned it 🤣`).slice(0,80),
     okSub:      (qs.get('okSub')      || `You're officially verified.`).slice(0,80),
     okBtn:      (qs.get('okBtn')      || `Get the real gift`).slice(0,40),
   };
@@ -1335,9 +1335,9 @@ function narcissistQ(){
   const defaults = [
     { q:`What's the most beautiful thing about me?`,
       a:`My quiet presence`, b:`My eyes`, c:`My truth`,
-      d:`SKIP TO THE GIFT! ðŸ˜‚`, esc:'d' },
-    { q:`Youâ€™ll name your kid after me becauseâ€¦`,
-      a:`Iâ€™m a genius`, b:`There's no one like me`, c:`I'll never do that`,
+      d:`SKIP TO THE GIFT! 😂`, esc:'d' },
+    { q:`You’ll name your kid after me because…`,
+      a:`I’m a genius`, b:`There's no one like me`, c:`I'll never do that`,
       d:`You adore me`, esc:'c' },
     { q:`One word that best describes me:`,
       a:`Legend`, b:`Masterpiece`, c:`Unforgettable`,
@@ -1401,7 +1401,7 @@ function narcissistQ(){
   function screenIntro(){
     render(`
       <div class="wrap wrap-nq ${themeClass}">
-        <div class="nq-gift-icon" aria-hidden="true">ðŸŽ</div>
+        <div class="nq-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="nq-title">${copy.introTitle}</h1>
         <p class="nq-sub">${copy.introSub}</p>
         <button id="nqStart" class="btn nq-btn nq-brand">${copy.startBtn}</button>
@@ -1454,11 +1454,11 @@ function narcissistQ(){
   function screenSuccess(){
     render(`
       <div class="wrap wrap-nq ${themeClass}">
-        <div class="nq-success-icon" aria-hidden="true">ðŸ’</div>
+        <div class="nq-success-icon" aria-hidden="true">💝</div>
         <h1 class="nq-title">${copy.okTitle}</h1>
         <p class="nq-sub">${copy.okSub}</p>
         <button id="nqOpen" class="btn nq-btn nq-green"${PREV?' disabled':''}>${copy.okBtn}</button>
-        ${PREV ? `<div class="nq-hint">Preview only â€“ button disabled</div>` : ``}
+        ${PREV ? `<div class="nq-hint">Preview only – button disabled</div>` : ``}
       </div>
     `);
     try{sfx('tada')}catch(_){}
@@ -1480,8 +1480,8 @@ function selfieVerify(){
   (function injectCSS(){
     if (document.getElementById('selfie-ux-extra')) return;
     const css = `
-      /* ×ž×¨×›×–×™× ×× ×›×™×ª ×‘×ª×•×š ×”"×˜×œ×¤×•×Ÿ" + RTL */
-/* ×ž×¨×›×–×™× ×× ×›×™×ª ×‘×ª×•×š "×”×˜×œ×¤×•×Ÿ" + RTL */
+      /* מרכזים אנכית בתוך ה"טלפון" + RTL */
+/* מרכזים אנכית בתוך "הטלפון" + RTL */
 #app .wrap-selfie{
   display:grid;
   gap:32px;
@@ -1491,7 +1491,7 @@ function selfieVerify(){
   padding-bottom: 24px;
 }
 
-      /* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª */
+      /* אייקון מתנה מעל הכותרת */
       .sf-gift-icon{
         width:56px; height:56px; border-radius:16px;
         background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -1506,7 +1506,7 @@ function selfieVerify(){
         50%{ transform:translateY(-6px) }
       }
       
-      /* ××™×™×§×•×Ÿ ×”×¦×œ×—×” */
+      /* אייקון הצלחה */
       .sf-success-icon{
         width:64px; height:64px; border-radius:20px;
         background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -1559,7 +1559,7 @@ function selfieVerify(){
 }
 @keyframes ledSpin { to { transform: rotate(1turn); } }
 
-/* Zoom-in ×¢×“×™×Ÿ ×œ×ª×ž×•× ×” ×›×©×”×ž×¡×š × ×˜×¢×Ÿ */
+/* Zoom-in עדין לתמונה כשהמסך נטען */
 .sf-monkey img{ transform:scale(1); transition:transform .6s cubic-bezier(.2,.9,.2,1); }
 .sf-monkey img.pop{ transform:scale(1.08); }
 
@@ -1617,7 +1617,7 @@ function selfieVerify(){
       .sf-check.on{ opacity:1; transform:scale(1) }
 
       /* Filters */
-/* Neutral selfie â€“ no color filter, mirror only */
+/* Neutral selfie – no color filter, mirror only */
 .fx-none video{ filter:none !important; transform:scaleX(-1); }
       .fx-ugly1 video{ filter:hue-rotate(120deg) saturate(2) contrast(1.2); transform:scaleX(-1) }
       .fx-ugly2 video{ filter:hue-rotate(260deg) saturate(2.4) contrast(1.15) brightness(1.08); transform:scaleX(-1) }
@@ -1649,18 +1649,18 @@ function selfieVerify(){
   const NAME  = (qs.get('name')||'Friend').trim();
   const GIFT  = (qs.get('giftUrl')||'#').trim();
   const app   = document.getElementById('app');
-  app.classList.remove('card');  // ×ž×¡×š × ×§×™ ×›×¤×™ ×©×ž×•×’×“×¨ ×‘×©×œ×“.  (Runtime)  [ref]
-  // (×”×©×œ×“ ×•×”×—×•×–×™×: ×ž×™×¤×•×™ slugâ†’×¤×•× ×§×¦×™×”, ×¨×™× ×“×•×¨ ×œ×ª×•×š #app ×‘×œ×‘×“)  // :contentReference[oaicite:3]{index=3}
+  app.classList.remove('card');  // מסך נקי כפי שמוגדר בשלד.  (Runtime)  [ref]
+  // (השלד והחוזים: מיפוי slug→פונקציה, רינדור לתוך #app בלבד)  // :contentReference[oaicite:3]{index=3}
 
-  // ×˜×§×¡×˜×™× (+ ×—×“×©×™×)
+  // טקסטים (+ חדשים)
   const copy = {
-    introTitle:   (qs.get('introTitle')  || `${NAME}, a special gift is waiting! ðŸŽ`).slice(0,80),
+    introTitle:   (qs.get('introTitle')  || `${NAME}, a special gift is waiting! 🎁`).slice(0,80),
     introSub:     (qs.get('introSub')    || `To claim it, take a selfie to verify your identity.`).slice(0,80),
     introBtn:     (qs.get('introBtn')    || `Verify your identity`).slice(0,32),
 
     camLabel:     (qs.get('camLabel')    || `Fit your face in the center of the frame`).slice(0,60),
     captureBtn:   (qs.get('captureBtn')  || `Verify your identity`).slice(0,32),
-    overlaySub:   (qs.get('overlaySub')  || `Please wait while the system verifies your identityâ€¦`).slice(0,80),
+    overlaySub:   (qs.get('overlaySub')  || `Please wait while the system verifies your identity…`).slice(0,80),
 
     successTitle: (qs.get('successTitle')|| `You're verified!`).slice(0,60),
     okSub:        (qs.get('okSub')       || `Enjoy your gift :)`).slice(0,80),
@@ -1668,27 +1668,27 @@ function selfieVerify(){
     saveBtn:      (qs.get('saveBtn')     || `Save your selfie`).slice(0,24)
   };
 
-  // ×¤×™×œ×˜×¨×™× ×ž×¦×—×™×§×™× (×›×ž×• ×‘×‘×¨×™×£)
+  // פילטרים מצחיקים (כמו בבריף)
 const filterPreset = (qs.get('filter') || 'none').toLowerCase();
 const fxClass = ['ugly1','ugly2','ugly3','none'].includes(filterPreset) ? `fx-${filterPreset}` : 'fx-none';
 
-  // ×¡×˜ ×‘×¨×™×¨×ªÖ¾×ž×—×“×œ ×©×œ ×ª×ž×•× ×•×ª ×”×§×•×£ â€“ ×”×§×™×©×•×¨×™× ×©×¡×™×¤×§×ª
+  // סט ברירת־מחדל של תמונות הקוף – הקישורים שסיפקת
   const DEFAULT_MONKEYS = [
     "https://i.pinimg.com/736x/04/cc/d5/04ccd55d5944df4195eccd126f729499.jpg",
     "https://www.stockvault.net/data/2009/07/27/109625/preview16.jpg",
     "https://e0.pxfuel.com/wallpapers/515/782/desktop-wallpaper-ugly-monkey-ugly-face.jpg",
     "https://www.stockvault.net/data/2020/10/19/280001/preview16.jpg"
   ];
-  // ×ž××¤×©×¨ ×’× ×œ×¢×§×•×£ ×“×¨×š ×¤×¨×ž×˜×¨×™× ?monkey1..monkey5
+  // מאפשר גם לעקוף דרך פרמטרים ?monkey1..monkey5
   const MONKEY_OVR = [1,2,3,4,5].map(i => (qs.get('monkey'+i)||'').trim()).filter(Boolean);
   const MONKEYS = (MONKEY_OVR.length ? MONKEY_OVR : DEFAULT_MONKEYS);
 
   let stream = null;
-  let lastShot = null; // dataURL ×©×œ ×”×¡×œ×¤×™ (×œ×¨×™××œ×™×–×; ×œ× ×©×•×ž×¨×™×/×œ× ×©×•×œ×—×™×)
+  let lastShot = null; // dataURL של הסלפי (לריאליזם; לא שומרים/לא שולחים)
 
   function stopCamera(){ try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){ } stream=null; }
 
-  // ×§×•× ×¤×˜×™ (×›×ž×• ×‘×©××¨ ×”×¤×™×¦'×¨×™×)
+  // קונפטי (כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1719,7 +1719,7 @@ const fxClass = ['ugly1','ugly2','ugly3','none'].includes(filterPreset) ? `fx-${
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-selfie">
-        <div class="sf-gift-icon" aria-hidden="true">ðŸŽ</div>
+        <div class="sf-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="sf-title">${copy.introTitle}</h1>
         <p class="sf-sub">${copy.introSub}</p>
         <button id="sfStart" class="btn sf-cta brand">${copy.introBtn}</button>
@@ -1734,7 +1734,7 @@ function screenCamera(){
       <div id="cam" class="sf-cam ${fxClass}">
         <video id="sfVideo" autoplay playsinline muted></video>
         <div id="sfFallback" class="sf-fallback" hidden>
-          Camera unavailable â€” using a fun fake frame ðŸ˜…
+          Camera unavailable — using a fun fake frame 😅
         </div>
       </div>
 
@@ -1748,9 +1748,9 @@ function screenCamera(){
       </div>
 
       <canvas id="sfConfetti" class="confetti-canvas"></canvas>
-      <div class="sf-hint">Camera feed isnâ€™t saved</div>
+      <div class="sf-hint">Camera feed isn’t saved</div>
 
-      <!-- Overlay: big 5â†’1 on blurred background -->
+      <!-- Overlay: big 5→1 on blurred background -->
       <div id="sfOverlay" class="sf-overlay" aria-hidden="true">
         <div>
           <div id="sfCount" class="sf-count">5</div>
@@ -1762,14 +1762,14 @@ function screenCamera(){
   const video    = document.getElementById('sfVideo');
   const fallback = document.getElementById('sfFallback');
 
-  // Start camera (front) â€” robust + logs
+  // Start camera (front) — robust + logs
 startCamera(video, fallback);
 
-// iOS/Safari nudge: ×× ×”×•×•×™×“××• × ×¢×¦×¨, × ×¡×” play() ×œ××—×¨ × ×’×™×¢×” ×¨××©×•× ×”
+// iOS/Safari nudge: אם הווידאו נעצר, נסה play() לאחר נגיעה ראשונה
 const nudge = ()=>{ try{ video.play().catch(()=>{}); }catch(_){ } document.removeEventListener('pointerdown', nudge); };
 document.addEventListener('pointerdown', nudge, { once:true });
 
-  // âœ… ×›×¤×ª×•×¨ â€œ×œ×¦×™×œ×•× ×•××™×ž×•×ª ×–×”×•×ª×šâ€
+  // ✅ כפתור “לצילום ואימות זהותך”
   document.getElementById('sfCapture').addEventListener('click', ()=>{
     lastShot = trySnapshot(video) || null;
     const ov = document.getElementById('sfOverlay');
@@ -1788,7 +1788,7 @@ document.addEventListener('pointerdown', nudge, { once:true });
 
   app.innerHTML = `
     <div class="wrap wrap-selfie">
-      <div class="sf-success-icon" aria-hidden="true">ðŸ’</div>
+      <div class="sf-success-icon" aria-hidden="true">💝</div>
       <h1 class="sf-title">${copy.successTitle}</h1>
       <p class="sf-sub">${copy.okSub}</p>
 
@@ -1799,23 +1799,23 @@ document.addEventListener('pointerdown', nudge, { once:true });
         ${picked ? `<button id="sfSave" class="btn ghost">${copy.saveBtn}</button>` : ''}
       </div>
 
-      ${PREV ? `<div class="sf-hint sf-phone-only">Preview only â€“ green button disabled</div>` : ``}
+      ${PREV ? `<div class="sf-hint sf-phone-only">Preview only – green button disabled</div>` : ``}
       <canvas id="sfConfetti2" class="confetti-canvas"></canvas>
     </div>`;
 
-  // ×§×•× ×¤×˜×™
+  // קונפטי
   confettiBurst(document.getElementById('sfConfetti2'));
   const mImg = document.getElementById('monkeyImg');
   if (mImg) setTimeout(()=> mImg.classList.add('pop'), 120);
 
-  // ×›×¤×ª×•×¨ ×™×¨×•×§
+  // כפתור ירוק
   document.getElementById('sfOpen').addEventListener('click', ()=>{
     if(PREV) return;
     try{sfx('confirm')}catch(_){}
     try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
   });
 
-  // ×›×¤×ª×•×¨ ×©×ž×™×¨×ª ×”×ª×ž×•× ×” (×¨×§ ×× ×™×© ×ª×ž×•× ×”)
+  // כפתור שמירת התמונה (רק אם יש תמונה)
   const saveBtn = document.getElementById('sfSave');
   if (saveBtn){
     saveBtn.addEventListener('click', ()=>{
@@ -1848,7 +1848,7 @@ async function startCamera(videoEl, fallbackEl){
     try{
       stream = await navigator.mediaDevices.getUserMedia(c);
       videoEl.srcObject = stream;
-      // ×¢×•×–×¨ ×œ××•×˜×•×¤×œ×™×™/×¡×¤××¨×™
+      // עוזר לאוטופליי/ספארי
       videoEl.setAttribute('playsinline',''); 
       videoEl.playsInline = true;
       videoEl.setAttribute('autoplay','');
@@ -1914,19 +1914,19 @@ function shake(){
     countTitle: (qs.get('countTitle') || `When the countdown ends, shake your phone`).slice(0,80),
     shakeHint:  (qs.get('shakeHint')  || `Shake now!`).slice(0,40),
 
-    err1Title:  (qs.get('err1Title')  || `Error âš ï¸`).slice(0,40),
-    err1Text:   (qs.get('err1Text')   || `We couldnâ€™t verify it. Try again.`).slice(0,120),
+    err1Title:  (qs.get('err1Title')  || `Error ⚠️`).slice(0,40),
+    err1Text:   (qs.get('err1Text')   || `We couldn’t verify it. Try again.`).slice(0,120),
 
-    err2Title:  (qs.get('err2Title')  || `Hmmâ€¦ still not it`).slice(0,40),
+    err2Title:  (qs.get('err2Title')  || `Hmm… still not it`).slice(0,40),
     err2Text:   (qs.get('err2Text')   || `Try shaking to the other side.`).slice(0,120),
 
-    err3Title:  (qs.get('err3Title')  || `Shake harder! Didnâ€™t eat breakfast? ðŸ˜ˆ`).slice(0,80),
+    err3Title:  (qs.get('err3Title')  || `Shake harder! Didn’t eat breakfast? 😈`).slice(0,80),
     err3Text:   (qs.get('err3Text')   || `Give it your best shot.`).slice(0,120),
 
-    okTitle:    (qs.get('okTitle')    || `You earned it ðŸ¤£`).slice(0,80),
+    okTitle:    (qs.get('okTitle')    || `You earned it 🤣`).slice(0,80),
     okSub:      (qs.get('okSub')      || `Ready for the real gift?`).slice(0,120),
     okBtn:      (qs.get('okBtn')      || `To the real gift`).slice(0,40),
-    love:       (qs.get('love')       || `Love you ðŸ˜˜`).slice(0,40)
+    love:       (qs.get('love')       || `Love you 😘`).slice(0,40)
   };
 
   // --- CSS injection (scoped & centered, Assistant font) ---
@@ -1942,7 +1942,7 @@ function shake(){
         padding-bottom:24px;
       }
       
-      /* ××™×™×§×•×Ÿ ×ž×ª× ×” ×ž×¢×œ ×”×›×•×ª×¨×ª */
+      /* אייקון מתנה מעל הכותרת */
       .sh-gift-icon{
         width:56px; height:56px; border-radius:16px;
         background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
@@ -1957,7 +1957,7 @@ function shake(){
         50%{ transform:translateY(-6px) }
       }
       
-      /* ××™×™×§×•×Ÿ ×”×¦×œ×—×” */
+      /* אייקון הצלחה */
       .sh-success-icon{
         width:64px; height:64px; border-radius:20px;
         background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
@@ -2032,7 +2032,7 @@ function shake(){
   })();
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // "×ž×¡×š × ×§×™" ×›×ž×• ×©××¨ ×”×¤×™×¦'×¨×™×.  :contentReference[oaicite:8]{index=8}
+  app.classList.remove('card'); // "מסך נקי" כמו שאר הפיצ'רים.  :contentReference[oaicite:8]{index=8}
 
   // --- Confetti (same engine used in runtime skeleton) ---
   function confettiBurst(canvas){
@@ -2103,7 +2103,7 @@ function shake(){
   function screenIntro(){
     app.innerHTML = `
       <div class="wrap wrap-shake">
-        <div class="sh-gift-icon" aria-hidden="true">ðŸŽ</div>
+        <div class="sh-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="sh-title">${copy.introTitle}</h1>
         <p class="sh-sub">${copy.introSub}</p>
         <button id="shStart" class="btn sh-cta brand">${copy.introBtn}</button>
@@ -2117,7 +2117,7 @@ function runAttempt(){
   attempt += 1;
   stopMotion(); // reset any previous
 
-  // ×—×“×©: ×”×× ×œ×”×¦×™×’ ×¡×¤×™×¨×” ×œ××—×•×¨? ×œ× ×‘× ×™×¡×™×•×Ÿ ×”××—×¨×•×Ÿ (××—×¨×™ ×”×˜×¢×•×ª ×”×©×œ×™×©×™×ª)
+  // חדש: האם להציג ספירה לאחור? לא בניסיון האחרון (אחרי הטעות השלישית)
   const showCountdown = attempt <= 3;
 
   app.innerHTML = `
@@ -2128,7 +2128,7 @@ function runAttempt(){
       <div class="sh-zone" id="shZone" style="${showCountdown ? 'display:none' : 'display:grid'}">
         <div class="sh-phone wobble" aria-hidden="true">
           <div id="shHintIn" class="sh-hint-in">${copy.shakeHint}</div>
-          <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? 'ðŸ¤£' : 'ðŸ“±'}</div>
+          <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? '🤣' : '📱'}</div>
         </div>
         <div class="sh-meter"><i id="shBar"></i></div>
       </div>
@@ -2148,7 +2148,7 @@ function runAttempt(){
   const bar  = document.getElementById('shBar');
 
   if (showCountdown){
-    // (×›×ž×• ×§×•×“×) ×¡×¤×™×¨×” ×œ××—×•×¨ â†’ ×•××– ×ž×¦×‘ Shake
+    // (כמו קודם) ספירה לאחור → ואז מצב Shake
     let n = 5;
     cnt.textContent = String(n);
     const t = setInterval(()=>{
@@ -2159,7 +2159,7 @@ function runAttempt(){
         zone.style.display='grid';
         startMotion(level => { if(bar) bar.style.width = level + '%'; });
 
-        // ××—×¨×™ ~5×©×³×³: ×˜×¢×•×ª ××• ×”×¦×œ×—×”
+        // אחרי ~5ש׳׳: טעות או הצלחה
         setTimeout(()=>{
           stopMotion();
           if (attempt <= 3){
@@ -2181,7 +2181,7 @@ function runAttempt(){
       }
     }, 1000);
   } else {
-    // ×—×“×©: ××™×Ÿ ×¡×¤×™×¨×” ×œ××—×•×¨ ×‘× ×™×¡×™×•×Ÿ ×”××—×¨×•×Ÿ â€” ×™×©×¨ ×ž×¦×‘ Shake
+    // חדש: אין ספירה לאחור בניסיון האחרון — ישר מצב Shake
     startMotion(level => { if(bar) bar.style.width = level + '%'; });
     setTimeout(()=>{
       stopMotion();
@@ -2193,12 +2193,12 @@ function runAttempt(){
   function screenSuccess(){
     app.innerHTML = `
       <div class="wrap wrap-shake">
-        <div class="sh-success-icon" aria-hidden="true">ðŸ’</div>
+        <div class="sh-success-icon" aria-hidden="true">💝</div>
         <h1 class="sh-title">${copy.okTitle}</h1>
         <p class="sh-sub">${copy.okSub}</p>
         <button id="shOpen" class="btn sh-cta green"${PREV?' disabled':''}>${copy.okBtn}</button>
         <div class="sh-sub" style="font-size:12px">${copy.love}</div>
-        ${ PREV ? `<div class="sh-sub">Preview only â€“ button disabled</div>` : `` }
+        ${ PREV ? `<div class="sh-sub">Preview only – button disabled</div>` : `` }
         <canvas id="shConfetti2" class="confetti-canvas"></canvas>
       </div>
     `;
