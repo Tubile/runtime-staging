@@ -1179,9 +1179,43 @@ function narcissistQ(){
   if(!document.getElementById('nq-css')){
     document.head.insertAdjacentHTML('beforeend', `
       <style id="nq-css">
-        .wrap-nq{ display:grid; gap:24px; justify-items:center; text-align:center; margin-top:clamp(12px,6vh,48px) }
-        .nq-title{ margin:0; font-size:26px; line-height:1.25; font-weight:800 }
-        .nq-sub{ margin:0; font-size:15px; color:#9aa3b2 }
+        .wrap-nq{ 
+          display:grid; gap:32px; justify-items:center; text-align:center; 
+          margin-top:clamp(32px, 8vh, 64px); padding-bottom:24px;
+        }
+        
+        /* אייקון מתנה מעל הכותרת */
+        .nq-gift-icon{
+          width:56px; height:56px; border-radius:16px;
+          background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
+          border:1px solid rgba(255,255,255,.08);
+          display:flex; align-items:center; justify-content:center;
+          font-size:28px; line-height:1;
+          box-shadow:0 8px 24px rgba(0,0,0,.15);
+          animation:nqIconFloat 3s ease-in-out infinite;
+        }
+        @keyframes nqIconFloat{
+          0%, 100%{ transform:translateY(0px) }
+          50%{ transform:translateY(-6px) }
+        }
+        
+        /* אייקון הצלחה */
+        .nq-success-icon{
+          width:64px; height:64px; border-radius:20px;
+          background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
+          border:1px solid rgba(16,185,129,.2);
+          display:flex; align-items:center; justify-content:center;
+          font-size:32px; line-height:1;
+          box-shadow:0 8px 32px rgba(16,185,129,.2);
+          animation:nqSuccessPop .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        @keyframes nqSuccessPop{
+          0%{ transform:scale(0) rotate(-45deg); opacity:0 }
+          100%{ transform:scale(1) rotate(0); opacity:1 }
+        }
+        
+        .nq-title{ margin:0; font-size:28px; line-height:1.3; font-weight:800; letter-spacing:-0.02em }
+        .nq-sub{ margin:0; font-size:16px; color:#9aa3b2; line-height:1.5; opacity:.85 }
         .nq-steps{ font-size:12px; color:#9aa3b2; opacity:.9 }
         .nq-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; width:min(360px,100%) }
         @media (max-width:380px){ .nq-grid{ grid-template-columns:1fr } }
@@ -1195,17 +1229,26 @@ function narcissistQ(){
         .nq-card:active{ transform:translateY(0) scale(.995) }
         .nq-letter{ display:inline-block; font-weight:900; font-size:12px; color:#9aa3b2; margin-right:6px }
         .nq-text{ font-size:15px; }
-        /* fix: readable text on dark cards */
-.nq-card{ color:#e8ecf4; }   /* טקסט בהיר לכל הכרטיס */
-.nq-text{ color:inherit; }   /* לוודא שה-span יורש את הבהיר */
+        .nq-card{ color:#e8ecf4; }
+        .nq-text{ color:inherit; }
         .nq-card.ok{ box-shadow:0 10px 28px rgba(16,185,129,.25); border-color:rgba(16,185,129,.45) }
         .nq-card.err{ box-shadow:0 10px 28px rgba(239,68,68,.25); border-color:rgba(239,68,68,.55); background:linear-gradient(0deg,rgba(239,68,68,.10),transparent) }
         .nq-toast{ font-size:12px; color:#9aa3b2; min-height:16px }
         .nq-hint{ font-size:12px; color:#9aa3b2 }
+        .nq-brand{ background:#282D3F !important; color:#fff !important; border:1px solid rgba(255,255,255,.1) !important }
         .nq-green{ background:#10b981 !important; color:#fff !important }
-        .nq-btn{ width:min(280px,100%); min-height:48px; padding:14px 18px; font-size:15px; border-radius:0px; font-weight:700 }
+        .nq-btn{ 
+          width:min(300px,100%); min-height:52px; padding:16px 20px; font-size:16px; 
+          border-radius:12px; font-weight:700;
+          transition:transform .15s ease, box-shadow .15s ease;
+          box-shadow:0 4px 16px rgba(0,0,0,.2);
+        }
+        .nq-btn:hover{
+          transform:translateY(-2px);
+          box-shadow:0 8px 24px rgba(0,0,0,.3);
+        }
+        .nq-btn:active{ transform:translateY(0) }
         .nq-confetti{ position:fixed; inset:0; pointer-events:none; z-index:999; display:block }
-        /* Accent (optional) */
         .nq-theme-blue .nq-card:hover{ border-color:#38bdf8 }
         .nq-theme-purple .nq-card:hover{ border-color:#a78bfa }
         .nq-theme-green .nq-card:hover{ border-color:#10b981 }
@@ -1297,9 +1340,10 @@ function narcissistQ(){
   function screenIntro(){
     render(`
       <div class="wrap wrap-nq ${themeClass}">
+        <div class="nq-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="nq-title">${copy.introTitle}</h1>
         <p class="nq-sub">${copy.introSub}</p>
-        <button id="nqStart" class="btn nq-btn">${copy.startBtn}</button>
+        <button id="nqStart" class="btn nq-btn nq-brand">${copy.startBtn}</button>
         <div class="nq-hint">no data collected</div>
       </div>
     `);
@@ -1349,10 +1393,11 @@ function narcissistQ(){
   function screenSuccess(){
     render(`
       <div class="wrap wrap-nq ${themeClass}">
+        <div class="nq-success-icon" aria-hidden="true">💝</div>
         <h1 class="nq-title">${copy.okTitle}</h1>
         <p class="nq-sub">${copy.okSub}</p>
         <button id="nqOpen" class="btn nq-btn nq-green"${PREV?' disabled':''}>${copy.okBtn}</button>
-        ${PREV ? `<div class="nq-hint">Preview only — button disabled</div>` : ``}
+        ${PREV ? `<div class="nq-hint">Preview only – button disabled</div>` : ``}
       </div>
     `);
     try{sfx('tada')}catch(_){}
