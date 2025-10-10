@@ -954,14 +954,24 @@ function captcha(){
     let solved = false;
 
     verifyBtn.addEventListener('click', ()=>{
-      if(solved){ screenSuccess(); return; }
-      const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
-      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
-      if(!ok){
-        try{sfx('tada')}catch(e){}
-solved = true;
-screenSuccess();
-      }
+  if(solved){ screenSuccess(); return; }
+
+  const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
+  const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b));
+
+  if(!ok){
+    // ✗ טעות: זה המקום לשגיאה, לא להצלחה
+    try{sfx('error')}catch(e){}
+    verifyBtn.classList.add('error'); grid.classList.add('shake');
+    setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
+    return; // ← חשוב: לעצור כאן, לא להמשיך לחלק של ההצלחה
+  }
+
+  // ✓ הצלחה: מעבר מיידי למסך הסופי (בלי קונפטי בגריד)
+  try{sfx('tada')}catch(e){}
+  solved = true;
+  screenSuccess();
+});
       try{sfx('tada')}catch(e){}
       confettiBurst(confettiCanvas);
       verifyBtn.textContent = copy.continueTxt;
@@ -978,7 +988,6 @@ screenSuccess();
         <p class="cap-sub">${copy.okSub}</p>
         <button id="openGift" class="btn cap-cta green">${copy.okBtn}</button>
         ${PREV ? `<div class="cap-hint">Preview only – button disabled</div>` : ``}
-        <canvas id="cap-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
     const confettiCanvas = document.getElementById('cap-confetti');
