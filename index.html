@@ -119,27 +119,79 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
 /* Infinite-only layout & sizing */
 .wrap-infinite{
   display:grid;
-  gap:30px;              /* ריווח נעים בין כל האלמנטים */
+  gap:32px;              /* ריווח אלגנטי ומאוזן */
   justify-items:center;  /* מרכז הכל אופקית */
   text-align:center;     /* טקסט ממורכז */
-  margin-top: clamp(12px, 6vh, 48px);
+  margin-top: clamp(32px, 8vh, 64px); /* ריווח מודרני מראש העמוד */
+  padding-bottom: 24px;  /* ריווח מתחת */
 }
-.wrap-infinite h1{ margin:0; font-size:26px; line-height:1.25 }
-.wrap-infinite .sub{ margin:0; font-size:15px; opacity:.9 }
+.wrap-infinite h1{ margin:0; font-size:28px; line-height:1.3; font-weight:800; letter-spacing:-0.02em }
+.wrap-infinite .sub{ margin:0; font-size:16px; opacity:.85; line-height:1.5; color:#9aa3b2 }
+
+/* אייקון מתנה מעל הכותרת הראשית */
+.inf-icon{
+  width:56px; height:56px; border-radius:16px;
+  background:linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.12));
+  border:1px solid rgba(255,255,255,.08);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; line-height:1;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);
+  animation:infIconFloat 3s ease-in-out infinite;
+}
+@keyframes infIconFloat{
+  0%, 100%{ transform:translateY(0px) }
+  50%{ transform:translateY(-6px) }
+}
 
 /* כפתור גדול ואמין (אחיד לכל המצבים) */
 .wrap-infinite .btn{
-  width:min(280px, 100%);
-  min-height:48px;
-  padding:14px 18px;
+  width:min(300px, 100%);
+  min-height:52px;
+  padding:16px 20px;
   font-size:16px;
-  border-radius:0px;
+  border-radius:12px;
   font-weight:700;
   margin:0 auto;
+  transition:transform .15s ease, box-shadow .15s ease;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+}
+.wrap-infinite .btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+.wrap-infinite .btn:active{
+  transform:translateY(0);
 }
 
 /* בר־התקדמות מיושר לרוחב הכפתור */
-.wrap-infinite .progress{ width:min(320px, 100%); margin-top:2px }
+.wrap-infinite .progress{ width:min(320px, 100%); margin-top:4px; height:10px; border-radius:999px }
+
+/* earned – קצת רווח מעל */
+.wrap-infinite .earned{ margin-top:12px; font-size:17px; font-weight:700; color:#10b981 }
+  
+/* כפתור ראשי – צבע מותג */
+.btn.brand{ background:#282D3F; color:#fff; border:1px solid rgba(255,255,255,.1) }
+
+/* כפתורי שגיאה – אדום */
+.btn.error-red{ background:#ef4444; color:#fff }
+
+/* כפתור הצלחה ירוק */
+.btn.green{ background:#10b981; color:#fff }
+
+/* אייקון הצלחה מעל המסך האחרון */
+.inf-success-icon{
+  width:64px; height:64px; border-radius:20px;
+  background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
+  border:1px solid rgba(16,185,129,.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; line-height:1;
+  box-shadow:0 8px 32px rgba(16,185,129,.2);
+  animation:infSuccessPop .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes infSuccessPop{
+  0%{ transform:scale(0) rotate(-45deg); opacity:0 }
+  100%{ transform:scale(1) rotate(0); opacity:1 }
+}
 
 /* earned – קצת רווח מעל */
 .wrap-infinite .earned{ margin-top:8px }
@@ -961,11 +1013,12 @@ function infinite(){
   // Inner block
   const inner = document.createElement('div');
   inner.className = 'wrap wrap-infinite';
-  inner.innerHTML = `
+inner.innerHTML = `
+    <div class="inf-icon" aria-hidden="true">🎁</div>
     <h1>${copy.title}</h1>
     <p class="sub">${copy.subtitle}</p>
 
-    <button id="ibtn" class="btn">
+    <button id="ibtn" class="btn brand">
       <span id="ilabel" class="label">${getCopy('btn0_start','Claim your gift')}</span>
       <span id="ipct" class="percent" style="display:none">0%</span>
     </button>
@@ -974,7 +1027,7 @@ function infinite(){
       <div class="progress__bar" id="ibar"></div>
     </div>
 
-    <div id="earned" class="earned">${copy.earned}</div>
+    <div id="earned" class="earned" style="display:none">${copy.earned}</div>
     <canvas id="confetti" class="confetti-canvas"></canvas>
   `;
   app.replaceChildren(inner);
@@ -991,7 +1044,7 @@ function infinite(){
 
   // helpers for fun states
   function resetBtnColors(){
-    btn.classList.remove('error','purple','sky','green','alt1','alt2','success');
+    btn.classList.remove('error-red','brand','green','purple','sky','success','alt1','alt2');
   }
   function resetFx(){
     inner.classList.remove('shake','fx-alert','fx-calm','fx-blue','fx-pink');
@@ -1053,45 +1106,54 @@ function infinite(){
     switch (tap) {
       case 2: {
         ilabel.textContent = copy.btn2_error;
-        resetBtnColors(); btn.classList.add('error'); sfx('error');
+        resetBtnColors(); btn.classList.add('error-red'); sfx('error');
         inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
         break;
       }
       case 3: {
   ilabel.textContent = copy.btn3_tease1;
-  resetBtnColors(); btn.classList.add('alt1'); resetFx();
+  resetBtnColors(); btn.classList.add('error-red'); resetFx();
   inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
   break;
 }
       case 4: {
   ilabel.textContent = copy.btn4_tease2;
-  resetBtnColors(); btn.classList.add('alt2'); resetFx();
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  sfx('whoosh');
   break;
 }
       case 5: {
   ilabel.textContent = copy.btn5_tease3;
-  resetBtnColors(); btn.classList.add('alt1'); resetFx();
-  sfx('whoosh');
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
   break;
 }
       case 6: {
   ilabel.textContent = copy.btn6_tease4;
-  resetBtnColors(); btn.classList.add('alt2'); resetFx();
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  sfx('whoosh');
   break;
 }
       case 7: {
   ilabel.textContent = copy.btn7_tease5;
-  resetBtnColors(); btn.classList.add('alt1'); resetFx();
-  sfx('whoosh');
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
   break;
 }
       case 8: {
-        ilabel.textContent = copy.btn8_success;
-        resetBtnColors(); btn.classList.add('green'); // או .success אם הוספת CSS
-        earned.classList.add('show');
-        confettiBurst(confettiCanvas);
+        // מסך הצלחה עם אייקון
+        inner.innerHTML = `
+          <div class="inf-success-icon" aria-hidden="true">💝</div>
+          <h1>${copy.title}</h1>
+          <div id="earned" class="earned">${copy.earned}</div>
+          <button id="ibtn-final" class="btn green">${copy.btn8_success}</button>
+          <canvas id="confetti" class="confetti-canvas"></canvas>
+        `;
+        
+        confettiBurst(inner.querySelector('#confetti'));
         sfx('tada');
         success = true;
+        
+        // חיבור מחדש לכפתור הסופי
+        inner.querySelector('#ibtn-final').addEventListener('click', ()=> openGift());
         break;
       }
       default: {
