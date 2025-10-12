@@ -477,7 +477,7 @@ function voiceVerify(){
       /* Alert toast overlay – identical look to the reference */
       .toast{
         position:fixed; inset:0; display:none; place-items:center;
-        background:rgba(10,12,22,.6); backdrop-filter:blur(1px);
+        background:rgba(10,12,22,.6); backdrop-filter:blur(3px);
         text-align:center; padding:24px; z-index:1000;
       }
       .toast.show{ display:grid }
@@ -1143,13 +1143,13 @@ inner.innerHTML = `
       case 2: {
         ilabel.textContent = copy.btn2_error;
         resetBtnColors(); btn.classList.add('error-red'); sfx('error');
-btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
+        inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
         break;
       }
       case 3: {
   ilabel.textContent = copy.btn3_tease1;
   resetBtnColors(); btn.classList.add('error-red'); resetFx();
-btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
+  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
   break;
 }
       case 4: {
@@ -1525,7 +1525,7 @@ function selfieVerify(){
 
       /* Overlay countdown (blur background) */
       .sf-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-        background:rgba(0,0,0,.55);backdrop-filter:blur(1px);z-index:1000;text-align:center;padding:24px}
+        background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:1000;text-align:center;padding:24px}
       .sf-overlay.on{display:flex}
       .sf-count{font-size:96px;font-weight:900;line-height:1}
       .sf-sub2{font-size:14px;color:#cbd5e1;margin-top:12px}
@@ -1626,7 +1626,7 @@ function selfieVerify(){
       .sf-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center }
 
       /* Confetti canvas */
-      .confetti-canvas{ position:absolute; inset:0; pointer-events:none; z-index:999; display:none }
+      .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999; display:none }
       /* Kill LED only (keep everything else) */
 #app .sf-led,
 #app .sf-monkey.led::before,
@@ -2013,7 +2013,7 @@ function shake(){
       .sh-meter > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,#60a5fa,#a78bfa); transition:width .06s linear }
 
       .sh-toast{ position:fixed; inset:0; display:none; place-items:center;
-        background:rgba(10,12,22,.55); backdrop-filter:blur(1px); z-index:1000; padding:24px; text-align:center }
+        background:rgba(10,12,22,.55); backdrop-filter:blur(6px); z-index:1000; padding:24px; text-align:center }
       .sh-toast.show{ display:grid }
       .sh-toast .box{ background:#1a1f35; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:320px }
       .sh-toast h3{ margin:0 0 6px 0 }
@@ -2025,7 +2025,7 @@ function shake(){
       .shake{ animation:infShake .35s linear 1 }
 
       /* Confetti canvas (identical pattern to other features) */
-      .confetti-canvas{ position:absolute; inset:0; pointer-events:none; z-index:999; display:none }
+      .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:999; display:none }
     `;
     const st = document.createElement('style'); st.id='shake-ux'; st.textContent=css;
     (document.head || document.documentElement).appendChild(st);
@@ -2163,8 +2163,8 @@ function runAttempt(){
         setTimeout(()=>{
           stopMotion();
           if (attempt <= 3){
-            document.querySelector('.sh-phone')?.classList.add('shake');
-setTimeout(()=> document.querySelector('.sh-phone')?.classList.remove('shake'), 380);
+            document.querySelector('.wrap-shake')?.classList.add('shake');
+            setTimeout(()=>document.querySelector('.wrap-shake')?.classList.remove('shake'), 380);
             (document.getElementById('shErr'+attempt)).classList.add('show');
             document.querySelectorAll('#shErr'+attempt+' [data-ok]').forEach(btn=>{
               btn.addEventListener('click', ()=>{
