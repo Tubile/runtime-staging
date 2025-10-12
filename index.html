@@ -21,6 +21,8 @@ body{margin:0;background:#0b1020;color:#e8ecf4;font-family:'Assistant',system-ui
   .stage{ min-height:100svh; align-items:stretch; justify-content:stretch; }
   .phone{ width:100vw; height:100svh; border-radius:0; border:0; box-shadow:none; }
   .wrap{ padding:clamp(16px,4vw,24px); }
+  /* lock scrolling when modal is open */
+.wrap.lock { overflow: hidden !important; }
 }
 
 /* status bar (preview-only) */
@@ -476,7 +478,7 @@ function voiceVerify(){
 
       /* Alert toast overlay */
       .toast{
-        position:fixed; inset:0; display:none; place-items:center;
+        position:absolute; inset:0; display:none; place-items:center; /* SAFARI-SAFE: scoped to .phone */
         background:rgba(10,12,22,.75);
         text-align:center; padding:24px; z-index:1000;
       }
@@ -668,7 +670,7 @@ function voiceVerify(){
           </div>
         </div>
       `;
-      document.body.insertAdjacentHTML('beforeend', toasts);
+      (document.querySelector('.phone') || document.body).insertAdjacentHTML('beforeend', toasts);
     }
 
     const btn   = document.getElementById('rec-btn');
@@ -1724,7 +1726,7 @@ function shake(){
         <div id="shErr2" class="sh-toast"><div class="box"><h3>${copy.err2Title}</h3><p>${copy.err2Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
         <div id="shErr3" class="sh-toast"><div class="box"><h3>${copy.err3Title}</h3><p>${copy.err3Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again, hero!</button></div></div>
       `;
-      document.body.insertAdjacentHTML('beforeend', toasts);
+      (document.querySelector('.phone') || document.body).insertAdjacentHTML('beforeend', toasts);
     }
 
     const cnt = document.getElementById('shCount');
