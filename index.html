@@ -474,10 +474,10 @@ function voiceVerify(){
         user-select:none; -webkit-user-drag:none;
       }
 
-      /* Alert toast overlay – identical look to the reference */
+      /* Alert toast overlay */
       .toast{
         position:fixed; inset:0; display:none; place-items:center;
-        background:rgba(10,12,22,.6); backdrop-filter:blur(3px);
+        background:rgba(10,12,22,.75);
         text-align:center; padding:24px; z-index:1000;
       }
       .toast.show{ display:grid }
@@ -523,21 +523,21 @@ function voiceVerify(){
       }
       .vv-cta:active{ transform:translateY(0) }
       #vv-start {
-  width: min(300px, 100%);
-  min-height: 52px;
-  padding: 16px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  transition: transform .15s ease, box-shadow .15s ease;
-  box-shadow: 0 4px 16px rgba(0,0,0,.2);
-}
-#vv-start:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-}
-#vv-start:active {
-  transform: translateY(0);
-}
+        width: min(300px, 100%);
+        min-height: 52px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: transform .15s ease, box-shadow .15s ease;
+        box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      }
+      #vv-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      }
+      #vv-start:active {
+        transform: translateY(0);
+      }
     `;
     document.head.appendChild(st);
   }
@@ -549,15 +549,15 @@ function voiceVerify(){
   const GIFT = (qs.get('giftUrl')||'#').trim();
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // “מסך נקי” כמו בשאר הפיצ'רים
+  app.classList.remove('card');
+  
   // --- SFX gate (voice-verify only): allow only 'error' and 'tada'
-const __sfxGlobal = window.sfx; // שמור מצביע לפונקציית הסאונד הגלובלית של הרנטיים
-function sfx(kind){
-  if (kind === 'error' || kind === 'tada'){
-    try{ __sfxGlobal && __sfxGlobal(kind); }catch(e){}
+  const __sfxGlobal = window.sfx;
+  function sfx(kind){
+    if (kind === 'error' || kind === 'tada'){
+      try{ __sfxGlobal && __sfxGlobal(kind); }catch(e){}
+    }
   }
-  // כל השאר (click / confirm / whoosh ...) – מושתקים כאן מקומית
-}
 
   // טקסטים לפי הבריף (ניתנים לאובררייד דרך URL אם תרצה)
   const copy = {
@@ -573,7 +573,7 @@ function sfx(kind){
     okBtn:      (qs.get('okBtn')      || `Claim your gift!`).slice(0,32)
   };
 
-  // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
+  // תמונת "פרה" self-contained (SVG emoji) — ללא רשת/אחסון
   function cowDataURL(){
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
@@ -583,7 +583,7 @@ function sfx(kind){
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
 
-  // קונפטי (כמו בשאר הפיצ'רים)
+  // קונפטי - optimized for iOS
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -593,7 +593,7 @@ function sfx(kind){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<120;i++){
+    for(let i=0;i<90;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -608,7 +608,7 @@ function sfx(kind){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 
@@ -644,49 +644,48 @@ function sfx(kind){
         </div>
 
         ${ PREV ? `<div class="vv-sub">Preview mode</div>` : `` }
-<div class="toast" id="vv-toast">
-  <div class="box">
-    <h3>We couldn't pick up a sound ⚠️</h3>
-    <p>Try again - louder and clearer.</p>
-    <div style="height:10px"></div>
-    <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
-  </div>
-</div>
-<!-- Error toast #2 (same style, texts reveal the prank) -->
-<div class="toast" id="vv-toast2">
-  <div class="box">
-    <h3>You're a natural 😍</h3>
-    <p>Try again, it's too funny.</p>
-    <div style="height:10px"></div>
-    <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
-  </div>
-</div>
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
+
+    // Move toasts to body (Safari fix)
+    if(!document.getElementById('vv-toast')){
+      const toasts = `
+        <div class="toast" id="vv-toast">
+          <div class="box">
+            <h3>We couldn't pick up a sound ⚠️</h3>
+            <p>Try again - louder and clearer.</p>
+            <div style="height:10px"></div>
+            <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
+          </div>
+        </div>
+        <div class="toast" id="vv-toast2">
+          <div class="box">
+            <h3>You're a natural 😍</h3>
+            <p>Try again, it's too funny.</p>
+            <div style="height:10px"></div>
+            <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', toasts);
+    }
 
     const btn   = document.getElementById('rec-btn');
     const label = document.getElementById('rec-label');
     const meter = document.getElementById('rec-meter');
     const time  = document.getElementById('rec-time');
     const errEl = document.getElementById('rec-err');
-    const wrap  = document.querySelector('.wrap-voice');
     const conf  = document.getElementById('vv-confetti');
-    // Toast #1
-const toast = document.getElementById('vv-toast');
-const tryAgain = document.getElementById('vv-tryagain');
+    
+    const toast = document.getElementById('vv-toast');
+    const tryAgain = document.getElementById('vv-tryagain');
+    const toast2 = document.getElementById('vv-toast2');
+    const tryAgain2 = document.getElementById('vv-tryagain2');
 
-// Toast #2 (אם הוספת אותו)
-const toast2 = document.getElementById('vv-toast2');
-const tryAgain2 = document.getElementById('vv-tryagain2');
-
-// הזזת הטוסטים מחוץ ל-wrap כדי לא להיות צאצאים של אלמנט עם transform (shake)
-if (toast && !toast.__moved){ document.body.appendChild(toast); toast.__moved = true; }
-if (toast2 && !toast2.__moved){ document.body.appendChild(toast2); toast2.__moved = true; }
-
-// חיווט כפתורי "אישור"
-if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
-if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
+    // חיווט כפתורי "אישור"
+    if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
+    if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
 
     let recording = false;
     let attempt   = 0;
@@ -712,7 +711,6 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
         const rms = Math.sqrt(sum / data.length);
         return Math.min(100, Math.floor(rms*180));
       }
-      // fallback אמין
       return Math.min(100, (Math.random()*65+20)|0);
     }
 
@@ -732,9 +730,11 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       t0 = performance.now();
       loop();
 
-      // נסיון הרשאת מיקרופון ל‑VU אמיתי (ללא הקלטה/שמירה)
       try{
-        stream = await navigator.mediaDevices?.getUserMedia?.({ audio:true }) || null;
+        const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+        if(getUserMedia){
+          stream = await getUserMedia({ audio:true });
+        }
         if (stream){
           audioCtx = new (window.AudioContext||window.webkitAudioContext)();
           const src = audioCtx.createMediaStreamSource(stream);
@@ -745,13 +745,16 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
         }
       }catch(_){ /* אין הרשאה – נשאר עם fallback */ }
 
-      // fail-safe: עצירה אוטומטית אחרי 7ש׳׳ אם לא עצרו ידנית
       autoStop = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
     }
 
     function cleanupAudio(){
-      try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){}
-      try{ audioCtx?.close?.(); }catch(_){}
+      if(stream && stream.getTracks){
+        stream.getTracks().forEach(function(t){ try{ t.stop(); }catch(_){} });
+      }
+      if(audioCtx && audioCtx.close){
+        try{ audioCtx.close(); }catch(_){}
+      }
       stream = null; audioCtx = null; analyser = null; data = null;
     }
 
@@ -768,28 +771,25 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       attempt += 1;
 
       if (attempt === 1){
-        // שגיאה אמינה בפעם הראשונה
         toast.classList.add('show');
-btn.classList.add('shake');
-try{sfx('error')}catch(e){}
-setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
+        btn.classList.add('shake');
+        try{sfx('error')}catch(e){}
+        setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
         time.textContent = '00:00';
         meter.style.width = '0%';
         return;
       }
       if (attempt === 2){
-  // שגיאה שנייה ואחרונה (טוסט #2)
-  toast2.classList.add('show');
-btn.classList.add('shake');
-try{sfx('error')}catch(e){}
-setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
-  time.textContent = '00:00';
-  meter.style.width = '0%';
-  return;
-}
-      // נסיון שלישי — הצלחה
-try{sfx('tada')}catch(e){}
-screenSuccess(); // הקונפטי ירוץ רק במסך ההצלחה
+        toast2.classList.add('show');
+        btn.classList.add('shake');
+        try{sfx('error')}catch(e){}
+        setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
+        time.textContent = '00:00';
+        meter.style.width = '0%';
+        return;
+      }
+      try{sfx('tada')}catch(e){}
+      screenSuccess();
     }
 
     btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
