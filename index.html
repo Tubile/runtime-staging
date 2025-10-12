@@ -842,7 +842,7 @@ function captcha(){
   };
 
   // שלושת היעדים הקבועים (0..8): ימני‑עליון, מרכז, תחתון‑מרכז
-  const targets = [2,4,7];
+  const targets = [2,4,7];  // לפי הבריף. :contentReference[oaicite:4]{index=4}
 
   // העלאות מה‑URL (img1..img3)
   const IMG_URLS = [ qs.get('img1')||'', qs.get('img2')||'', qs.get('img3')||'' ];
@@ -901,7 +901,7 @@ function captcha(){
   const nonTargets = [0,1,3,5,6,8];
 
   const app = document.getElementById('app');
-  app.classList.remove('card');
+  app.classList.remove('card'); // “מסך נקי” כמו infinite. :contentReference[oaicite:5]{index=5}
 
   function screenIntro(){
     app.innerHTML = `
@@ -956,11 +956,11 @@ function captcha(){
     verifyBtn.addEventListener('click', ()=>{
       if(solved){ screenSuccess(); return; }
       const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
-      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b));
+      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
       if(!ok){
         try{sfx('error')}catch(e){}
-        verifyBtn.classList.add('error');
-        setTimeout(()=>{ verifyBtn.classList.remove('error'); }, 380);
+        verifyBtn.classList.add('error'); grid.classList.add('shake');
+        setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
         return;
       }
       try{sfx('tada')}catch(e){}
@@ -989,7 +989,7 @@ function captcha(){
     });
   }
 
-  // קונפטי - optimized for iOS
+  // קונפטי
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -999,7 +999,7 @@ function captcha(){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<90;i++){
+    for(let i=0;i<120;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1014,7 +1014,7 @@ function captcha(){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 
@@ -1049,7 +1049,7 @@ function infinite(){
   // Inner block
   const inner = document.createElement('div');
   inner.className = 'wrap wrap-infinite';
-  inner.innerHTML = `
+inner.innerHTML = `
     <div class="inf-icon" aria-hidden="true">🎁</div>
     <h1>${copy.title}</h1>
     <p class="sub">${copy.subtitle}</p>
@@ -1083,7 +1083,7 @@ function infinite(){
     btn.classList.remove('error-red','brand','green','purple','sky','success','alt1','alt2');
   }
   function resetFx(){
-    inner.classList.remove('fx-alert','fx-calm','fx-blue','fx-pink');
+    inner.classList.remove('shake','fx-alert','fx-calm','fx-blue','fx-pink');
   }
 
   // state
@@ -1112,12 +1112,12 @@ function infinite(){
       if (p >= 100){
         clearInterval(interval);
         setTimeout(()=>{
-          ipct.style.display = 'none';
-          btn.disabled = false;
-          loading = false;
-          // מעבר אוטומטי לשלב הבא (Oops) בלי קליק נוסף
-          if (tap === 1) { btn.click(); }
-        }, 300);
+  ipct.style.display = 'none';
+  btn.disabled = false;
+  loading = false;
+  // מעבר אוטומטי לשלב הבא (Oops) בלי קליק נוסף
+  if (tap === 1) { btn.click(); }
+}, 300);
       }
     }, 120);
   }
@@ -1143,37 +1143,37 @@ function infinite(){
       case 2: {
         ilabel.textContent = copy.btn2_error;
         resetBtnColors(); btn.classList.add('error-red'); sfx('error');
-        btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
+        inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
         break;
       }
       case 3: {
-        ilabel.textContent = copy.btn3_tease1;
-        resetBtnColors(); btn.classList.add('error-red'); resetFx();
-        btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
-        break;
-      }
+  ilabel.textContent = copy.btn3_tease1;
+  resetBtnColors(); btn.classList.add('error-red'); resetFx();
+  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+  break;
+}
       case 4: {
-        ilabel.textContent = copy.btn4_tease2;
-        resetBtnColors(); btn.classList.add('brand'); resetFx();
-        sfx('whoosh');
-        break;
-      }
+  ilabel.textContent = copy.btn4_tease2;
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  sfx('whoosh');
+  break;
+}
       case 5: {
-        ilabel.textContent = copy.btn5_tease3;
-        resetBtnColors(); btn.classList.add('brand'); resetFx();
-        break;
-      }
+  ilabel.textContent = copy.btn5_tease3;
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  break;
+}
       case 6: {
-        ilabel.textContent = copy.btn6_tease4;
-        resetBtnColors(); btn.classList.add('brand'); resetFx();
-        sfx('whoosh');
-        break;
-      }
+  ilabel.textContent = copy.btn6_tease4;
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  sfx('whoosh');
+  break;
+}
       case 7: {
-        ilabel.textContent = copy.btn7_tease5;
-        resetBtnColors(); btn.classList.add('brand'); resetFx();
-        break;
-      }
+  ilabel.textContent = copy.btn7_tease5;
+  resetBtnColors(); btn.classList.add('brand'); resetFx();
+  break;
+}
       case 8: {
         // מסך הצלחה עם אייקון
         inner.innerHTML = `
@@ -1198,7 +1198,7 @@ function infinite(){
     }
   }, false);
 
-  // Canvas confetti (modern "poof") - optimized for iOS
+  // Canvas confetti (modern "poof")
   function confettiBurst(canvas){
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1208,7 +1208,7 @@ function infinite(){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<90;i++){
+    for(let i=0;i<120;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1223,7 +1223,7 @@ function infinite(){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 }
@@ -1473,7 +1473,7 @@ function narcissistQ(){
 
   screenIntro();
 }
-
+  
 // ===== Shake (MOBILE) =====
 function shake(){
   // --- Params & setup (Runtime contract) ---
