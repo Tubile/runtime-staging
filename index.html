@@ -1049,7 +1049,7 @@ function infinite(){
   // Inner block
   const inner = document.createElement('div');
   inner.className = 'wrap wrap-infinite';
-inner.innerHTML = `
+  inner.innerHTML = `
     <div class="inf-icon" aria-hidden="true">🎁</div>
     <h1>${copy.title}</h1>
     <p class="sub">${copy.subtitle}</p>
@@ -1083,7 +1083,7 @@ inner.innerHTML = `
     btn.classList.remove('error-red','brand','green','purple','sky','success','alt1','alt2');
   }
   function resetFx(){
-    inner.classList.remove('shake','fx-alert','fx-calm','fx-blue','fx-pink');
+    inner.classList.remove('fx-alert','fx-calm','fx-blue','fx-pink');
   }
 
   // state
@@ -1112,12 +1112,12 @@ inner.innerHTML = `
       if (p >= 100){
         clearInterval(interval);
         setTimeout(()=>{
-  ipct.style.display = 'none';
-  btn.disabled = false;
-  loading = false;
-  // מעבר אוטומטי לשלב הבא (Oops) בלי קליק נוסף
-  if (tap === 1) { btn.click(); }
-}, 300);
+          ipct.style.display = 'none';
+          btn.disabled = false;
+          loading = false;
+          // מעבר אוטומטי לשלב הבא (Oops) בלי קליק נוסף
+          if (tap === 1) { btn.click(); }
+        }, 300);
       }
     }, 120);
   }
@@ -1143,37 +1143,37 @@ inner.innerHTML = `
       case 2: {
         ilabel.textContent = copy.btn2_error;
         resetBtnColors(); btn.classList.add('error-red'); sfx('error');
-        inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+        btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
         break;
       }
       case 3: {
-  ilabel.textContent = copy.btn3_tease1;
-  resetBtnColors(); btn.classList.add('error-red'); resetFx();
-  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
-  break;
-}
+        ilabel.textContent = copy.btn3_tease1;
+        resetBtnColors(); btn.classList.add('error-red'); resetFx();
+        btn.classList.add('shake'); setTimeout(()=> btn.classList.remove('shake'), 300);
+        break;
+      }
       case 4: {
-  ilabel.textContent = copy.btn4_tease2;
-  resetBtnColors(); btn.classList.add('brand'); resetFx();
-  sfx('whoosh');
-  break;
-}
+        ilabel.textContent = copy.btn4_tease2;
+        resetBtnColors(); btn.classList.add('brand'); resetFx();
+        sfx('whoosh');
+        break;
+      }
       case 5: {
-  ilabel.textContent = copy.btn5_tease3;
-  resetBtnColors(); btn.classList.add('brand'); resetFx();
-  break;
-}
+        ilabel.textContent = copy.btn5_tease3;
+        resetBtnColors(); btn.classList.add('brand'); resetFx();
+        break;
+      }
       case 6: {
-  ilabel.textContent = copy.btn6_tease4;
-  resetBtnColors(); btn.classList.add('brand'); resetFx();
-  sfx('whoosh');
-  break;
-}
+        ilabel.textContent = copy.btn6_tease4;
+        resetBtnColors(); btn.classList.add('brand'); resetFx();
+        sfx('whoosh');
+        break;
+      }
       case 7: {
-  ilabel.textContent = copy.btn7_tease5;
-  resetBtnColors(); btn.classList.add('brand'); resetFx();
-  break;
-}
+        ilabel.textContent = copy.btn7_tease5;
+        resetBtnColors(); btn.classList.add('brand'); resetFx();
+        break;
+      }
       case 8: {
         // מסך הצלחה עם אייקון
         inner.innerHTML = `
@@ -1198,7 +1198,7 @@ inner.innerHTML = `
     }
   }, false);
 
-  // Canvas confetti (modern "poof")
+  // Canvas confetti (modern "poof") - optimized for iOS
   function confettiBurst(canvas){
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1208,7 +1208,7 @@ inner.innerHTML = `
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<120;i++){
+    for(let i=0;i<90;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1223,7 +1223,7 @@ inner.innerHTML = `
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 }
