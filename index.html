@@ -770,9 +770,9 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       if (attempt === 1){
         // שגיאה אמינה בפעם הראשונה
         toast.classList.add('show');
-        btn.classList.add('shake'); wrap.classList.add('shake');
-        try{sfx('error')}catch(e){}
-        setTimeout(()=>{ btn.classList.remove('shake'); wrap.classList.remove('shake'); }, 380);
+btn.classList.add('shake');
+try{sfx('error')}catch(e){}
+setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
         time.textContent = '00:00';
         meter.style.width = '0%';
         return;
@@ -780,9 +780,9 @@ if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove
       if (attempt === 2){
   // שגיאה שנייה ואחרונה (טוסט #2)
   toast2.classList.add('show');
-  btn.classList.add('shake'); wrap.classList.add('shake');
-  try{sfx('error')}catch(e){}
-  setTimeout(()=>{ btn.classList.remove('shake'); wrap.classList.remove('shake'); }, 380);
+btn.classList.add('shake');
+try{sfx('error')}catch(e){}
+setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
   time.textContent = '00:00';
   meter.style.width = '0%';
   return;
