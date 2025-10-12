@@ -1143,13 +1143,13 @@ inner.innerHTML = `
       case 2: {
         ilabel.textContent = copy.btn2_error;
         resetBtnColors(); btn.classList.add('error-red'); sfx('error');
-        inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+        btn.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
         break;
       }
       case 3: {
   ilabel.textContent = copy.btn3_tease1;
   resetBtnColors(); btn.classList.add('error-red'); resetFx();
-  inner.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
+  btn.classList.add('shake'); setTimeout(()=> inner.classList.remove('shake'), 300);
   break;
 }
       case 4: {
@@ -2163,8 +2163,8 @@ function runAttempt(){
         setTimeout(()=>{
           stopMotion();
           if (attempt <= 3){
-            document.querySelector('.wrap-shake')?.classList.add('shake');
-            setTimeout(()=>document.querySelector('.wrap-shake')?.classList.remove('shake'), 380);
+            document.querySelector('.sh-phone')?.classList.add('shake');
+setTimeout(()=> document.querySelector('.sh-phone')?.classList.remove('shake'), 380);
             (document.getElementById('shErr'+attempt)).classList.add('show');
             document.querySelectorAll('#shErr'+attempt+' [data-ok]').forEach(btn=>{
               btn.addEventListener('click', ()=>{
