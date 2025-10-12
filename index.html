@@ -21,8 +21,6 @@ body{margin:0;background:#0b1020;color:#e8ecf4;font-family:'Assistant',system-ui
   .stage{ min-height:100svh; align-items:stretch; justify-content:stretch; }
   .phone{ width:100vw; height:100svh; border-radius:0; border:0; box-shadow:none; }
   .wrap{ padding:clamp(16px,4vw,24px); }
-  /* lock scrolling when modal is open */
-.wrap.lock { overflow: hidden !important; }
 }
 
 /* status bar (preview-only) */
@@ -476,10 +474,10 @@ function voiceVerify(){
         user-select:none; -webkit-user-drag:none;
       }
 
-      /* Alert toast overlay */
+      /* Alert toast overlay – identical look to the reference */
       .toast{
-        position:absolute; inset:0; display:none; place-items:center; /* SAFARI-SAFE: scoped to .phone */
-        background:rgba(10,12,22,.75);
+        position:fixed; inset:0; display:none; place-items:center;
+        background:rgba(10,12,22,.6); backdrop-filter:blur(3px);
         text-align:center; padding:24px; z-index:1000;
       }
       .toast.show{ display:grid }
@@ -525,21 +523,21 @@ function voiceVerify(){
       }
       .vv-cta:active{ transform:translateY(0) }
       #vv-start {
-        width: min(300px, 100%);
-        min-height: 52px;
-        padding: 16px 20px;
-        border-radius: 12px;
-        font-weight: 700;
-        transition: transform .15s ease, box-shadow .15s ease;
-        box-shadow: 0 4px 16px rgba(0,0,0,.2);
-      }
-      #vv-start:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,.3);
-      }
-      #vv-start:active {
-        transform: translateY(0);
-      }
+  width: min(300px, 100%);
+  min-height: 52px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: transform .15s ease, box-shadow .15s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+#vv-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+#vv-start:active {
+  transform: translateY(0);
+}
     `;
     document.head.appendChild(st);
   }
@@ -551,15 +549,15 @@ function voiceVerify(){
   const GIFT = (qs.get('giftUrl')||'#').trim();
 
   const app = document.getElementById('app');
-  app.classList.remove('card');
-  
+  app.classList.remove('card'); // “מסך נקי” כמו בשאר הפיצ'רים
   // --- SFX gate (voice-verify only): allow only 'error' and 'tada'
-  const __sfxGlobal = window.sfx;
-  function sfx(kind){
-    if (kind === 'error' || kind === 'tada'){
-      try{ __sfxGlobal && __sfxGlobal(kind); }catch(e){}
-    }
+const __sfxGlobal = window.sfx; // שמור מצביע לפונקציית הסאונד הגלובלית של הרנטיים
+function sfx(kind){
+  if (kind === 'error' || kind === 'tada'){
+    try{ __sfxGlobal && __sfxGlobal(kind); }catch(e){}
   }
+  // כל השאר (click / confirm / whoosh ...) – מושתקים כאן מקומית
+}
 
   // טקסטים לפי הבריף (ניתנים לאובררייד דרך URL אם תרצה)
   const copy = {
@@ -575,7 +573,7 @@ function voiceVerify(){
     okBtn:      (qs.get('okBtn')      || `Claim your gift!`).slice(0,32)
   };
 
-  // תמונת "פרה" self-contained (SVG emoji) — ללא רשת/אחסון
+  // תמונת “פרה” self-contained (SVG emoji) — ללא רשת/אחסון
   function cowDataURL(){
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
@@ -585,7 +583,7 @@ function voiceVerify(){
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
 
-  // קונפטי - optimized for iOS
+  // קונפטי (כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -595,7 +593,7 @@ function voiceVerify(){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<90;i++){
+    for(let i=0;i<120;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -610,7 +608,7 @@ function voiceVerify(){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 
@@ -646,48 +644,49 @@ function voiceVerify(){
         </div>
 
         ${ PREV ? `<div class="vv-sub">Preview mode</div>` : `` }
+<div class="toast" id="vv-toast">
+  <div class="box">
+    <h3>We couldn't pick up a sound ⚠️</h3>
+    <p>Try again - louder and clearer.</p>
+    <div style="height:10px"></div>
+    <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
+  </div>
+</div>
+<!-- Error toast #2 (same style, texts reveal the prank) -->
+<div class="toast" id="vv-toast2">
+  <div class="box">
+    <h3>You're a natural 😍</h3>
+    <p>Try again, it's too funny.</p>
+    <div style="height:10px"></div>
+    <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
+  </div>
+</div>
         <canvas id="vv-confetti" class="confetti-canvas"></canvas>
       </div>
     `;
-
-    // Move toasts to body (Safari fix)
-    if(!document.getElementById('vv-toast')){
-      const toasts = `
-        <div class="toast" id="vv-toast">
-          <div class="box">
-            <h3>We couldn't pick up a sound ⚠️</h3>
-            <p>Try again - louder and clearer.</p>
-            <div style="height:10px"></div>
-            <button id="vv-tryagain" class="btn btn-primary">Confirm</button>
-          </div>
-        </div>
-        <div class="toast" id="vv-toast2">
-          <div class="box">
-            <h3>You're a natural 😍</h3>
-            <p>Try again, it's too funny.</p>
-            <div style="height:10px"></div>
-            <button id="vv-tryagain2" class="btn btn-primary">Try again</button>
-          </div>
-        </div>
-      `;
-      (document.querySelector('.phone') || document.body).insertAdjacentHTML('beforeend', toasts);
-    }
 
     const btn   = document.getElementById('rec-btn');
     const label = document.getElementById('rec-label');
     const meter = document.getElementById('rec-meter');
     const time  = document.getElementById('rec-time');
     const errEl = document.getElementById('rec-err');
+    const wrap  = document.querySelector('.wrap-voice');
     const conf  = document.getElementById('vv-confetti');
-    
-    const toast = document.getElementById('vv-toast');
-    const tryAgain = document.getElementById('vv-tryagain');
-    const toast2 = document.getElementById('vv-toast2');
-    const tryAgain2 = document.getElementById('vv-tryagain2');
+    // Toast #1
+const toast = document.getElementById('vv-toast');
+const tryAgain = document.getElementById('vv-tryagain');
 
-    // חיווט כפתורי "אישור"
-    if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
-    if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
+// Toast #2 (אם הוספת אותו)
+const toast2 = document.getElementById('vv-toast2');
+const tryAgain2 = document.getElementById('vv-tryagain2');
+
+// הזזת הטוסטים מחוץ ל-wrap כדי לא להיות צאצאים של אלמנט עם transform (shake)
+if (toast && !toast.__moved){ document.body.appendChild(toast); toast.__moved = true; }
+if (toast2 && !toast2.__moved){ document.body.appendChild(toast2); toast2.__moved = true; }
+
+// חיווט כפתורי "אישור"
+if (tryAgain)  tryAgain.addEventListener('click', ()=>{ toast.classList.remove('show'); });
+if (tryAgain2) tryAgain2.addEventListener('click', ()=>{ toast2.classList.remove('show'); });
 
     let recording = false;
     let attempt   = 0;
@@ -713,6 +712,7 @@ function voiceVerify(){
         const rms = Math.sqrt(sum / data.length);
         return Math.min(100, Math.floor(rms*180));
       }
+      // fallback אמין
       return Math.min(100, (Math.random()*65+20)|0);
     }
 
@@ -732,11 +732,9 @@ function voiceVerify(){
       t0 = performance.now();
       loop();
 
+      // נסיון הרשאת מיקרופון ל‑VU אמיתי (ללא הקלטה/שמירה)
       try{
-        const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-        if(getUserMedia){
-          stream = await getUserMedia({ audio:true });
-        }
+        stream = await navigator.mediaDevices?.getUserMedia?.({ audio:true }) || null;
         if (stream){
           audioCtx = new (window.AudioContext||window.webkitAudioContext)();
           const src = audioCtx.createMediaStreamSource(stream);
@@ -747,16 +745,13 @@ function voiceVerify(){
         }
       }catch(_){ /* אין הרשאה – נשאר עם fallback */ }
 
+      // fail-safe: עצירה אוטומטית אחרי 7ש׳׳ אם לא עצרו ידנית
       autoStop = window.setTimeout(()=>{ if(recording) stop(); }, 7000);
     }
 
     function cleanupAudio(){
-      if(stream && stream.getTracks){
-        stream.getTracks().forEach(function(t){ try{ t.stop(); }catch(_){} });
-      }
-      if(audioCtx && audioCtx.close){
-        try{ audioCtx.close(); }catch(_){}
-      }
+      try{ stream?.getTracks?.().forEach(t=>t.stop()); }catch(_){}
+      try{ audioCtx?.close?.(); }catch(_){}
       stream = null; audioCtx = null; analyser = null; data = null;
     }
 
@@ -773,25 +768,28 @@ function voiceVerify(){
       attempt += 1;
 
       if (attempt === 1){
+        // שגיאה אמינה בפעם הראשונה
         toast.classList.add('show');
-        btn.classList.add('shake');
-        try{sfx('error')}catch(e){}
-        setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
+btn.classList.add('shake');
+try{sfx('error')}catch(e){}
+setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
         time.textContent = '00:00';
         meter.style.width = '0%';
         return;
       }
       if (attempt === 2){
-        toast2.classList.add('show');
-        btn.classList.add('shake');
-        try{sfx('error')}catch(e){}
-        setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
-        time.textContent = '00:00';
-        meter.style.width = '0%';
-        return;
-      }
-      try{sfx('tada')}catch(e){}
-      screenSuccess();
+  // שגיאה שנייה ואחרונה (טוסט #2)
+  toast2.classList.add('show');
+btn.classList.add('shake');
+try{sfx('error')}catch(e){}
+setTimeout(()=>{ btn.classList.remove('shake'); }, 380);
+  time.textContent = '00:00';
+  meter.style.width = '0%';
+  return;
+}
+      // נסיון שלישי — הצלחה
+try{sfx('tada')}catch(e){}
+screenSuccess(); // הקונפטי ירוץ רק במסך ההצלחה
     }
 
     btn.addEventListener('click', ()=>{ recording ? stop() : start(); });
@@ -1229,7 +1227,6 @@ function infinite(){
     })();
   }
 }
-
 // ===== Narcissist Questions =====
 function narcissistQ(){
   // Params
@@ -1237,7 +1234,7 @@ function narcissistQ(){
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim().slice(0,24);
   const GIFT  = (qs.get('giftUrl')||'#').trim();
-  const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase();
+  const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase(); // optional: dark|blue|green|purple
 
   // Style (scoped)
   if(!document.getElementById('nq-css')){
@@ -1297,7 +1294,6 @@ function narcissistQ(){
         .nq-text{ color:inherit; }
         .nq-card.ok{ box-shadow:0 10px 28px rgba(16,185,129,.25); border-color:rgba(16,185,129,.45) }
         .nq-card.err{ box-shadow:0 10px 28px rgba(239,68,68,.25); border-color:rgba(239,68,68,.55); background:linear-gradient(0deg,rgba(239,68,68,.10),transparent) }
-        .nq-card.shake{ animation:infShake .35s linear 1 }
         .nq-toast{ font-size:12px; color:#9aa3b2; min-height:16px }
         .nq-hint{ font-size:12px; color:#9aa3b2 }
         .nq-brand{ background:#282D3F !important; color:#fff !important; border:1px solid rgba(255,255,255,.1) !important }
@@ -1340,8 +1336,8 @@ function narcissistQ(){
     { q:`What's the most beautiful thing about me?`,
       a:`My quiet presence`, b:`My eyes`, c:`My truth`,
       d:`SKIP TO THE GIFT! 😂`, esc:'d' },
-    { q:`You'll name your kid after me because…`,
-      a:`I'm a genius`, b:`There's no one like me`, c:`I'll never do that`,
+    { q:`You’ll name your kid after me because…`,
+      a:`I’m a genius`, b:`There's no one like me`, c:`I'll never do that`,
       d:`You adore me`, esc:'c' },
     { q:`One word that best describes me:`,
       a:`Legend`, b:`Masterpiece`, c:`Unforgettable`,
@@ -1373,7 +1369,7 @@ function narcissistQ(){
   function toast(el, text){ if(!el) return; el.textContent = text||''; }
 
   function confettiBurst(){
-    // Canvas confetti - optimized for iOS
+    // Canvas confetti (like in other features)
     const canvas = document.createElement('canvas');
     canvas.className = 'nq-confetti';
     document.body.appendChild(canvas);
@@ -1383,7 +1379,7 @@ function narcissistQ(){
     size(); const onR=()=>size(); window.addEventListener('resize', onR, { once:true });
     const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces=[]; const w=innerWidth, h=innerHeight;
-    for(let i=0;i<90;i++){
+    for(let i=0;i<140;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1398,7 +1394,7 @@ function narcissistQ(){
         ctx.restore();
       });
       ctx.globalAlpha=1;
-      if(t++<200) requestAnimationFrame(step); else { ctx.clearRect(0,0,w,h); canvas.remove(); }
+      if(t++<260) requestAnimationFrame(step); else { ctx.clearRect(0,0,w,h); canvas.remove(); }
     })();
   }
 
@@ -1412,8 +1408,7 @@ function narcissistQ(){
         <div class="nq-hint">no data collected</div>
       </div>
     `);
-    const btn = document.getElementById('nqStart');
-    if(btn) btn.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
+    document.getElementById('nqStart')?.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
   }
 
   function qCard(letter, text){
@@ -1469,7 +1464,7 @@ function narcissistQ(){
     try{sfx('tada')}catch(_){}
     confettiBurst();
     const btn = document.getElementById('nqOpen');
-    if(btn) btn.addEventListener('click', ()=>{
+    btn?.addEventListener('click', ()=>{
       if(PREV) return;
       try{sfx('confirm')}catch(_){}
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
@@ -1497,12 +1492,12 @@ function shake(){
     shakeHint:  (qs.get('shakeHint')  || `Shake now!`).slice(0,40),
 
     err1Title:  (qs.get('err1Title')  || `Error ⚠️`).slice(0,40),
-    err1Text:   (qs.get('err1Text')   || `We couldn't verify it. Try again.`).slice(0,120),
+    err1Text:   (qs.get('err1Text')   || `We couldn’t verify it. Try again.`).slice(0,120),
 
     err2Title:  (qs.get('err2Title')  || `Hmm… still not it`).slice(0,40),
     err2Text:   (qs.get('err2Text')   || `Try shaking to the other side.`).slice(0,120),
 
-    err3Title:  (qs.get('err3Title')  || `Shake harder! Didn't eat breakfast? 😈`).slice(0,80),
+    err3Title:  (qs.get('err3Title')  || `Shake harder! Didn’t eat breakfast? 😈`).slice(0,80),
     err3Text:   (qs.get('err3Text')   || `Give it your best shot.`).slice(0,120),
 
     okTitle:    (qs.get('okTitle')    || `You earned it 🤣`).slice(0,80),
@@ -1595,7 +1590,7 @@ function shake(){
       .sh-meter > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,#60a5fa,#a78bfa); transition:width .06s linear }
 
       .sh-toast{ position:fixed; inset:0; display:none; place-items:center;
-        background:rgba(10,12,22,.75); z-index:1000; padding:24px; text-align:center }
+        background:rgba(10,12,22,.55); backdrop-filter:blur(6px); z-index:1000; padding:24px; text-align:center }
       .sh-toast.show{ display:grid }
       .sh-toast .box{ background:#1a1f35; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:320px }
       .sh-toast h3{ margin:0 0 6px 0 }
@@ -1614,9 +1609,9 @@ function shake(){
   })();
 
   const app = document.getElementById('app');
-  app.classList.remove('card');
+  app.classList.remove('card'); // "מסך נקי" כמו שאר הפיצ'רים.  :contentReference[oaicite:8]{index=8}
 
-  // --- Confetti (optimized for iOS) ---
+  // --- Confetti (same engine used in runtime skeleton) ---
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1626,7 +1621,7 @@ function shake(){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<90;i++){
+    for(let i=0;i<120;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1641,7 +1636,7 @@ function shake(){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 
@@ -1652,7 +1647,7 @@ function shake(){
     try{
       if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
         DeviceMotionEvent.requestPermission().then(st=>{
-          if(st==='granted') attach();
+          if(st==='granted') attach(); // else: silent fallback
         }).catch(()=>{ /* ignore */ });
       } else {
         attach();
@@ -1663,9 +1658,10 @@ function shake(){
       if (handler) return;
       handler = (e)=>{
         const acc = e.accelerationIncludingGravity || e.acceleration || {x:0,y:0,z:0};
+        // very light high-pass: diff between frames
         const dx = (acc.x||0) - last.x, dy=(acc.y||0)-last.y, dz=(acc.z||0)-last.z;
         last = {x:acc.x||0, y:acc.y||0, z:acc.z||0};
-        let mag = Math.sqrt(dx*dx + dy*dy + dz*dz) * 5;
+        let mag = Math.sqrt(dx*dx + dy*dy + dz*dz) * 5; // scale up for UI
         mag = Math.max(0, Math.min(100, Math.floor(mag)));
         onLevel && onLevel(mag);
       };
@@ -1679,7 +1675,7 @@ function shake(){
   }
 
   // --- Flow screens ---
-  let attempt = 0;
+  let attempt = 0; // 1..3 = forced error; 4 = success
 
   function screenIntro(){
     app.innerHTML = `
@@ -1691,93 +1687,85 @@ function shake(){
         <div class="sh-sub" style="font-size:12px">no data collected</div>
       </div>
     `;
-    const btn = document.getElementById('shStart');
-    if(btn) btn.addEventListener('click', ()=>{ runAttempt(); }, { once:true });
+    document.getElementById('shStart')?.addEventListener('click', ()=>{ runAttempt(); }, { once:true });
   }
 
-  function runAttempt(){
-    attempt += 1;
-    stopMotion();
+function runAttempt(){
+  attempt += 1;
+  stopMotion(); // reset any previous
 
-    const showCountdown = attempt <= 3;
+  // חדש: האם להציג ספירה לאחור? לא בניסיון האחרון (אחרי הטעות השלישית)
+  const showCountdown = attempt <= 3;
 
-    app.innerHTML = `
-      <div class="wrap wrap-shake">
-        <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake it harder, hero'}</h1>
-        <div id="shCount" class="sh-count" style="${showCountdown ? '' : 'display:none'}">5</div>
+  app.innerHTML = `
+    <div class="wrap wrap-shake">
+      <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake it harder, hero'}</h1>
+      <div id="shCount" class="sh-count" style="${showCountdown ? '' : 'display:none'}">5</div>
 
-        <div class="sh-zone" id="shZone" style="${showCountdown ? 'display:none' : 'display:grid'}">
-          <div class="sh-phone wobble" aria-hidden="true">
-            <div id="shHintIn" class="sh-hint-in">${copy.shakeHint}</div>
-            <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? '🤣' : '📱'}</div>
-          </div>
-          <div class="sh-meter"><i id="shBar"></i></div>
+      <div class="sh-zone" id="shZone" style="${showCountdown ? 'display:none' : 'display:grid'}">
+        <div class="sh-phone wobble" aria-hidden="true">
+          <div id="shHintIn" class="sh-hint-in">${copy.shakeHint}</div>
+          <div id="shEmoji" class="sh-emoji ${attempt>=4 ? 'fill' : ''}">${attempt>=4 ? '🤣' : '📱'}</div>
         </div>
-
-        ${ PREV ? `<div class="sh-sub">Get ready to shake your phone!</div>` : `` }
-        <canvas id="shConfetti" class="confetti-canvas"></canvas>
+        <div class="sh-meter"><i id="shBar"></i></div>
       </div>
-    `;
 
-    // Move toasts to body (Safari fix)
-    if(!document.getElementById('shErr1')){
-      const toasts = `
-        <div id="shErr1" class="sh-toast"><div class="box"><h3>${copy.err1Title}</h3><p>${copy.err1Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
-        <div id="shErr2" class="sh-toast"><div class="box"><h3>${copy.err2Title}</h3><p>${copy.err2Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
-        <div id="shErr3" class="sh-toast"><div class="box"><h3>${copy.err3Title}</h3><p>${copy.err3Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again, hero!</button></div></div>
-      `;
-      (document.querySelector('.phone') || document.body).insertAdjacentHTML('beforeend', toasts);
-    }
+      ${ PREV ? `<div class="sh-sub">Get ready to shake your phone!</div>` : `` }
+      <canvas id="shConfetti" class="confetti-canvas"></canvas>
+    </div>
 
-    const cnt = document.getElementById('shCount');
-    const zone = document.getElementById('shZone');
-    const bar = document.getElementById('shBar');
+    <!-- three toasts (errors) -->
+    <div id="shErr1" class="sh-toast"><div class="box"><h3>${copy.err1Title}</h3><p>${copy.err1Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
+    <div id="shErr2" class="sh-toast"><div class="box"><h3>${copy.err2Title}</h3><p>${copy.err2Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again</button></div></div>
+    <div id="shErr3" class="sh-toast"><div class="box"><h3>${copy.err3Title}</h3><p>${copy.err3Text}</p><div style="height:10px"></div><button class="btn sh-cta green" data-ok>Try again, hero!</button></div></div>
+  `;
 
-    if (showCountdown){
-      let n = 5;
-      cnt.textContent = String(n);
-      const t = setInterval(()=>{
-        n -= 1;
-        if(n<=0){
-          clearInterval(t);
-          cnt.style.display='none';
-          zone.style.display='grid';
-          startMotion(level => { if(bar) bar.style.width = level + '%'; });
+  const cnt = document.getElementById('shCount');
+  const zone = document.getElementById('shZone');
+  const bar  = document.getElementById('shBar');
 
-          setTimeout(()=>{
-            stopMotion();
-            if (attempt <= 3){
-              const phone = document.querySelector('.sh-phone');
-              if(phone){
-                phone.classList.add('shake');
-                setTimeout(()=> phone.classList.remove('shake'), 380);
-              }
-              const toast = document.getElementById('shErr'+attempt);
-              if(toast){
-                toast.classList.add('show');
-                toast.querySelectorAll('[data-ok]').forEach(btn=>{
-                  btn.addEventListener('click', ()=>{
-                    toast.classList.remove('show');
-                    runAttempt();
-                  }, { once:true });
-                });
-              }
-            } else {
-              screenSuccess();
-            }
-          }, 5000);
-        } else {
-          cnt.textContent = String(n);
-        }
-      }, 1000);
-    } else {
-      startMotion(level => { if(bar) bar.style.width = level + '%'; });
-      setTimeout(()=>{
-        stopMotion();
-        screenSuccess();
-      }, 5000);
-    }
+  if (showCountdown){
+    // (כמו קודם) ספירה לאחור → ואז מצב Shake
+    let n = 5;
+    cnt.textContent = String(n);
+    const t = setInterval(()=>{
+      n -= 1;
+      if(n<=0){
+        clearInterval(t);
+        cnt.style.display='none';
+        zone.style.display='grid';
+        startMotion(level => { if(bar) bar.style.width = level + '%'; });
+
+        // אחרי ~5ש׳׳: טעות או הצלחה
+        setTimeout(()=>{
+          stopMotion();
+          if (attempt <= 3){
+            document.querySelector('.wrap-shake')?.classList.add('shake');
+            setTimeout(()=>document.querySelector('.wrap-shake')?.classList.remove('shake'), 380);
+            (document.getElementById('shErr'+attempt)).classList.add('show');
+            document.querySelectorAll('#shErr'+attempt+' [data-ok]').forEach(btn=>{
+              btn.addEventListener('click', ()=>{
+                (document.getElementById('shErr'+attempt)).classList.remove('show');
+                runAttempt();
+              }, { once:true });
+            });
+          } else {
+            screenSuccess();
+          }
+        }, 5000);
+      } else {
+        cnt.textContent = String(n);
+      }
+    }, 1000);
+  } else {
+    // חדש: אין ספירה לאחור בניסיון האחרון — ישר מצב Shake
+    startMotion(level => { if(bar) bar.style.width = level + '%'; });
+    setTimeout(()=>{
+      stopMotion();
+      screenSuccess();
+    }, 5000);
   }
+}
 
   function screenSuccess(){
     app.innerHTML = `
@@ -1792,8 +1780,7 @@ function shake(){
       </div>
     `;
     confettiBurst(document.getElementById('shConfetti2'));
-    const btn = document.getElementById('shOpen');
-    if(btn) btn.addEventListener('click', ()=>{
+    document.getElementById('shOpen')?.addEventListener('click', ()=>{
       if(PREV) return;
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
     });
