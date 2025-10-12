@@ -1227,6 +1227,7 @@ function infinite(){
     })();
   }
 }
+
 // ===== Narcissist Questions =====
 function narcissistQ(){
   // Params
@@ -1234,7 +1235,7 @@ function narcissistQ(){
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim().slice(0,24);
   const GIFT  = (qs.get('giftUrl')||'#').trim();
-  const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase(); // optional: dark|blue|green|purple
+  const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase();
 
   // Style (scoped)
   if(!document.getElementById('nq-css')){
@@ -1294,6 +1295,7 @@ function narcissistQ(){
         .nq-text{ color:inherit; }
         .nq-card.ok{ box-shadow:0 10px 28px rgba(16,185,129,.25); border-color:rgba(16,185,129,.45) }
         .nq-card.err{ box-shadow:0 10px 28px rgba(239,68,68,.25); border-color:rgba(239,68,68,.55); background:linear-gradient(0deg,rgba(239,68,68,.10),transparent) }
+        .nq-card.shake{ animation:infShake .35s linear 1 }
         .nq-toast{ font-size:12px; color:#9aa3b2; min-height:16px }
         .nq-hint{ font-size:12px; color:#9aa3b2 }
         .nq-brand{ background:#282D3F !important; color:#fff !important; border:1px solid rgba(255,255,255,.1) !important }
@@ -1336,8 +1338,8 @@ function narcissistQ(){
     { q:`What's the most beautiful thing about me?`,
       a:`My quiet presence`, b:`My eyes`, c:`My truth`,
       d:`SKIP TO THE GIFT! 😂`, esc:'d' },
-    { q:`You’ll name your kid after me because…`,
-      a:`I’m a genius`, b:`There's no one like me`, c:`I'll never do that`,
+    { q:`You'll name your kid after me because…`,
+      a:`I'm a genius`, b:`There's no one like me`, c:`I'll never do that`,
       d:`You adore me`, esc:'c' },
     { q:`One word that best describes me:`,
       a:`Legend`, b:`Masterpiece`, c:`Unforgettable`,
@@ -1369,7 +1371,7 @@ function narcissistQ(){
   function toast(el, text){ if(!el) return; el.textContent = text||''; }
 
   function confettiBurst(){
-    // Canvas confetti (like in other features)
+    // Canvas confetti - optimized for iOS
     const canvas = document.createElement('canvas');
     canvas.className = 'nq-confetti';
     document.body.appendChild(canvas);
@@ -1379,7 +1381,7 @@ function narcissistQ(){
     size(); const onR=()=>size(); window.addEventListener('resize', onR, { once:true });
     const colors=['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces=[]; const w=innerWidth, h=innerHeight;
-    for(let i=0;i<140;i++){
+    for(let i=0;i<90;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1394,7 +1396,7 @@ function narcissistQ(){
         ctx.restore();
       });
       ctx.globalAlpha=1;
-      if(t++<260) requestAnimationFrame(step); else { ctx.clearRect(0,0,w,h); canvas.remove(); }
+      if(t++<200) requestAnimationFrame(step); else { ctx.clearRect(0,0,w,h); canvas.remove(); }
     })();
   }
 
@@ -1408,7 +1410,8 @@ function narcissistQ(){
         <div class="nq-hint">no data collected</div>
       </div>
     `);
-    document.getElementById('nqStart')?.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
+    const btn = document.getElementById('nqStart');
+    if(btn) btn.addEventListener('click', ()=>{ try{sfx('confirm')}catch(_){ } screenQ(1); });
   }
 
   function qCard(letter, text){
@@ -1464,7 +1467,7 @@ function narcissistQ(){
     try{sfx('tada')}catch(_){}
     confettiBurst();
     const btn = document.getElementById('nqOpen');
-    btn?.addEventListener('click', ()=>{
+    if(btn) btn.addEventListener('click', ()=>{
       if(PREV) return;
       try{sfx('confirm')}catch(_){}
       try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
