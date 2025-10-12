@@ -842,7 +842,7 @@ function captcha(){
   };
 
   // שלושת היעדים הקבועים (0..8): ימני‑עליון, מרכז, תחתון‑מרכז
-  const targets = [2,4,7];  // לפי הבריף. :contentReference[oaicite:4]{index=4}
+  const targets = [2,4,7];
 
   // העלאות מה‑URL (img1..img3)
   const IMG_URLS = [ qs.get('img1')||'', qs.get('img2')||'', qs.get('img3')||'' ];
@@ -901,7 +901,7 @@ function captcha(){
   const nonTargets = [0,1,3,5,6,8];
 
   const app = document.getElementById('app');
-  app.classList.remove('card'); // “מסך נקי” כמו infinite. :contentReference[oaicite:5]{index=5}
+  app.classList.remove('card');
 
   function screenIntro(){
     app.innerHTML = `
@@ -956,11 +956,11 @@ function captcha(){
     verifyBtn.addEventListener('click', ()=>{
       if(solved){ screenSuccess(); return; }
       const selected = [...grid.querySelectorAll('.cap-tile.sel')].map(t=>+t.dataset.i).sort((a,b)=>a-b);
-      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b)); // בדיוק 3 היעדים. :contentReference[oaicite:6]{index=6}
+      const ok = JSON.stringify(selected) === JSON.stringify([...targets].sort((a,b)=>a-b));
       if(!ok){
         try{sfx('error')}catch(e){}
-        verifyBtn.classList.add('error'); grid.classList.add('shake');
-        setTimeout(()=>{ verifyBtn.classList.remove('error'); grid.classList.remove('shake'); }, 380);
+        verifyBtn.classList.add('error');
+        setTimeout(()=>{ verifyBtn.classList.remove('error'); }, 380);
         return;
       }
       try{sfx('tada')}catch(e){}
@@ -989,7 +989,7 @@ function captcha(){
     });
   }
 
-  // קונפטי
+  // קונפטי - optimized for iOS
   function confettiBurst(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -999,7 +999,7 @@ function captcha(){
     const colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
     const pieces = [];
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    for(let i=0;i<120;i++){
+    for(let i=0;i<90;i++){
       pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
         r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
     }
@@ -1014,7 +1014,7 @@ function captcha(){
         ctx.restore();
       });
       ctx.globalAlpha = 1;
-      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+      if(t++<200) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
     })();
   }
 
