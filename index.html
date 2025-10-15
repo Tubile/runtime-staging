@@ -1792,22 +1792,19 @@ function runAttempt(){
 
 // פיצ'ר חדש: breath-verify (bv)
 function breathVerify(){
-  // --- פרמטרים מה-URL (חוזה רנטיים) ---
+  // --- פרמטרים מה-URL (חוזה Runtime v3.5) ---
   var qs   = new URLSearchParams(location.search);
   var PREV = (qs.get('preview')||'0').trim()==='1';
   var NAME = (qs.get('name')||'Friend').trim();
   var GIFT = (qs.get('giftUrl')||'#').trim();
 
-  // --- הזרקת CSS ייעודי (scoped) ---
+  // --- הזרקת CSS ייעודי (scoped, ללא שבירה) ---
   if(!document.getElementById('bv-css')){
     var css = document.createElement('style');
     css.id = 'bv-css';
     css.textContent = [
+      /* בסיס אחיד בהתאם לקו העיצובי */
       '.wrap-breath{display:grid;gap:32px;justify-items:center;text-align:center;margin-top:clamp(32px,8vh,64px);padding-bottom:24px;direction:rtl}',
-      '.bv-gift-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,rgba(96,165,250,.12),rgba(167,139,250,.12));border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:bvFloat 3s ease-in-out infinite}',
-      '@keyframes bvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}',
-      '.bv-success-icon{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(52,211,153,.15));border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:32px;line-height:1;box-shadow:0 8px 32px rgba(16,185,129,.2);animation:bvPop .5s cubic-bezier(0.68,-0.55,0.265,1.55)}',
-      '@keyframes bvPop{0%{transform:scale(0) rotate(-45deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}',
       '.bv-title{margin:0;font-size:28px;line-height:1.3;font-weight:800;letter-spacing:-.02em}',
       '.bv-sub{margin:0;font-size:16px;line-height:1.5;color:#9aa3b2;opacity:.85}',
       '.bv-cta,.btn.bv{width:min(300px,100%);min-height:52px;padding:16px 20px;font-size:16px;border-radius:12px;font-weight:700;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 16px rgba(0,0,0,.2)}',
@@ -1817,26 +1814,66 @@ function breathVerify(){
       '.green{background:#10b981;color:#fff}',
       '.blue{background:#3b82f6;color:#fff}',
       '.red{background:#ef4444;color:#fff}',
-      '.bv-count{font-size:64px;font-weight:900;line-height:1}',
-      '.bv-hint{font-size:12px;color:#9aa3b2}',
+
+      /* אייקונים בהתאם ל-Guidelines */
+      '.bv-gift-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,rgba(96,165,250,.12),rgba(167,139,250,.12));border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:bvFloat 3s ease-in-out infinite}',
+      '@keyframes bvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}',
+      '.bv-success-icon{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(52,211,153,.15));border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:32px;line-height:1;box-shadow:0 8px 32px rgba(16,185,129,.2);animation:bvPop .5s cubic-bezier(0.68,-0.55,0.265,1.55)}',
+      '@keyframes bvPop{0%{transform:scale(0) rotate(-45deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}',
+
+      /* מד בר (נשאר מהגרסה הקודמת) */
       '.bv-zone{display:grid;gap:12px;justify-items:center}',
       '.bv-meter{height:10px;width:min(320px,100%);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);position:relative}',
-      '.bv-meter>i{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);transition:width .06s linear}',
+      '.bv-meter>i{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,#60a5fa,#a78bfa);transition:width .06s linear}',
+
+      /* --- חדש: Hero נשיפה מודרני (בהשראת SHAKE) --- */
+      '.bv-hero{display:grid;gap:14px;justify-items:center}',
+      '.bv-glass{position:relative;width:min(240px,72vw);border-radius:20px;padding:16px;background:linear-gradient(180deg,#1b1f34,#111528);',
+      ' box-shadow:inset 0 0 0 1px rgba(255,255,255,.06), 0 20px 40px rgba(0,0,0,.35);',
+      ' border:1px solid rgba(255,255,255,.08);}',
+      '.bv-ring{position:relative;display:grid;place-items:center}',
+      '.bv-ring svg{width:180px;height:180px;filter:drop-shadow(0 6px 22px rgba(0,0,0,.35))}',
+      '.bv-ring circle{fill:none;stroke-linecap:round}',
+      '.bv-ring .bg{stroke:rgba(255,255,255,.10);stroke-width:10}',
+      '.bv-ring .fg{stroke:url(#bv-grad);stroke-width:12;transform:rotate(-90deg);transform-origin:50% 50%;',
+      ' stroke-dasharray:339 339;stroke-dashoffset:339;transition:stroke-dashoffset .08s linear}',
+      '.bv-emoji{position:absolute;inset:0;display:grid;place-items:center;font-size:58px;user-select:none;-webkit-user-drag:none;will-change:transform}',
+
+      /* “שבילי רוח” — נדלקים רק כשיש נשיפה */
+      '.bv-gust{position:absolute;right:-12px;top:50%;width:120px;height:54px;transform:translateY(-50%);opacity:0;pointer-events:none}',
+      '.bv-gust.on{opacity:1}',
+      '.bv-gust span{position:absolute;right:0;width:0;height:2px;border-radius:999px;',
+      ' background:linear-gradient(90deg,rgba(255,255,255,0),rgba(96,165,250,.85));',
+      ' box-shadow:0 0 16px rgba(96,165,250,.45);animation:bvWind 1s linear infinite}',
+      '.bv-gust span:nth-child(1){top:8px;animation-duration:.9s}',
+      '.bv-gust span:nth-child(2){top:26px;animation-duration:1.05s}',
+      '.bv-gust span:nth-child(3){top:42px;animation-duration:1.2s}',
+      '@keyframes bvWind{0%{width:0;opacity:0}15%{opacity:1}100%{width:120px;opacity:0;transform:translateX(6px)}}',
+
+      /* צ’יפ הדרכה קטן בסגנון SHAKE */
+      '.bv-chip{font-size:12px;color:#e8ecf4;font-weight:800;background:rgba(255,255,255,.08);',
+      ' border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;',
+      ' box-shadow:0 6px 18px rgba(0,0,0,.25);letter-spacing:.2px}',
+
+      /* טוסטים וקונפטי — כמו קודם (לא נוגעים) */
       '.toast{position:fixed;inset:0;display:none;place-items:center;background:rgba(10,12,22,.6);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);z-index:1000;padding:24px;text-align:center}',
       '.toast.show{display:grid}',
       '.toast .box{background:#1a1f35;border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:320px}',
       '.toast h3{margin:0 0 6px 0}',
       '.confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;display:block}',
       '@keyframes infShake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}',
-      '.shake{animation:infShake .35s linear 1}'
+      '.shake{animation:infShake .35s linear 1}',
+
+      /* נגישות: פחות תנועה למעדיפים */
+      '@media (prefers-reduced-motion:reduce){.bv-gust span,.bv-ring .fg{transition:none;animation:none}}'
     ].join('');
     document.head.appendChild(css);
   }
 
-  // שימוש בכפתורי SFX מהסקלטון (נשתמש רק ב-error/tada/confirm)
+  // שימוש ב-SFX מהסקלטון
   function play(kind){ try{ sfx(kind); }catch(e){} }
 
-  // confetti מקומי (כמו בשאר הפיצ'רים)
+  // קונפטי (אותו מנוע כמו בשאר הפיצ'רים)
   function confettiBurst(canvas){
     if(!canvas) return;
     var ctx = canvas.getContext('2d');
@@ -1855,19 +1892,19 @@ function breathVerify(){
     })();
   }
 
-  // תשתית DOM
+  // DOM יעד
   var app = document.getElementById('app');
-  app.classList.remove('card'); // מסך "נקי" כמו שאר הפיצ'רים
+  app.classList.remove('card');
 
-  // זרימת מסכים
+  // --- מסכים ---
   function screenIntro(){
     app.innerHTML =
       '<div class="wrap wrap-breath">'+
         '<div class="bv-gift-icon" aria-hidden="true">🎁</div>'+
-        '<h1 class="bv-title">'+NAME+', a gift is waiting for you!</h1>'+
-        '<p class="bv-sub">To unlock it, start a 3-second breath verification</p>'+
-        '<button id="bv-start" class="btn bv brand">Start verification & Unlock gift</button>'+
-        '<div class="bv-hint">no data collected</div>'+
+        '<h1 class="bv-title">'+NAME+' ,ממתינה לך מתנה שווה</h1>'+
+        '<p class="bv-sub">לקבלת המתנה, אמת את זהותך בנשיפת אימות קצרה של 3 שניות</p>'+
+        '<button id="bv-start" class="btn bv brand">לאימות זהותך וקבלת המתנה</button>'+
+        '<div class="bv-sub" style="font-size:12px">no data collected</div>'+
       '</div>';
     document.getElementById('bv-start').addEventListener('click', function(){ play('confirm'); screenCount(1); });
   }
@@ -1876,10 +1913,9 @@ function breathVerify(){
     app.innerHTML =
       '<div class="wrap wrap-breath">'+
         '<h1 class="bv-title">כשהמיספור מסתיים, נשוף למשך 3 שניות לכיוון המיקרופון</h1>'+
-        '<div id="bv-count" class="bv-count">3</div>'+
-        '<div class="bv-hint">מוכן? זה קצר ומהיר</div>'+
+        '<div id="bv-count" class="bv-title" style="font-size:64px;font-weight:900;line-height:1">3</div>'+
+        '<div class="bv-sub">מוכן? זה קצר ומהיר</div>'+
       '</div>';
-    // ספירה לאחור → התחלת נשיפה
     var n = 3, el = document.getElementById('bv-count');
     var t = setInterval(function(){
       n -= 1;
@@ -1892,53 +1928,90 @@ function breathVerify(){
     app.innerHTML =
       '<div class="wrap wrap-breath">'+
         '<h1 id="bv-title" class="bv-title">תנשוף עכשיו למשך 3 שניות רצוף</h1>'+
+
+        /* --- HERO חדש: טבעת נשיפה + שבילי רוח + צ’יפ --- */
+        '<div class="bv-hero" aria-hidden="true">'+
+          '<div class="bv-glass">'+
+            '<div class="bv-ring">'+
+              '<svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'+
+                '<defs>'+
+                  '<linearGradient id="bv-grad" x1="0%" y1="0%" x2="100%" y2="0%">'+
+                    '<stop offset="0%" stop-color="#60a5fa"></stop>'+
+                    '<stop offset="100%" stop-color="#a78bfa"></stop>'+
+                  '</linearGradient>'+
+                '</defs>'+
+                '<circle class="bg" cx="60" cy="60" r="54"></circle>'+
+                '<circle class="fg" id="bv-circ" cx="60" cy="60" r="54"></circle>'+
+              '</svg>'+
+              '<div class="bv-emoji" id="bv-emoji">🌬️</div>'+
+            '</div>'+
+            '<div class="bv-gust" id="bv-gust"><span></span><span></span><span></span></div>'+
+          '</div>'+
+          '<div class="bv-chip">נשוף עכשיו • 3s</div>'+
+        '</div>'+
+
+        /* --- המד/זמן הישנים נשמרים (לא נוגעים בפונקציונליות) --- */
         '<div class="bv-zone">'+
           '<div class="bv-meter" aria-hidden="true"><i id="bv-bar"></i></div>'+
           '<div class="bv-sub" id="bv-time">00:00</div>'+
           '<div id="bv-err" class="bv-sub" style="min-height:18px;color:#fca5a5"></div>'+
         '</div>'+
-        (PREV?'<div class="bv-hint">Preview mode</div>':'')+
+        (PREV?'<div class="bv-sub">Preview mode</div>':'')+
         '<canvas id="bv-confetti" class="confetti-canvas"></canvas>'+
       '</div>'+
-      // טוסטים (מועברים ל-body כדי לא להיות בתוך אלמנט עם transform)
       '<div id="bv-toast-err" class="toast"><div class="box"><h3>לא זיהינו זרימת אוויר</h3><p>נשוף חזק יותר</p><div style="height:10px"></div><button id="bv-try" class="btn bv green">נסה שוב</button></div></div>'+
       '<div id="bv-toast-ok" class="toast"><div class="box"><h3>נשיפה מושלמת</h3><p>אתה משכר… מצחוק 😂</p><div style="height:10px"></div><button id="bv-go" class="btn bv green">take me to my gift</button></div></div>';
 
-    // הזזת טוסטים ל-body
-    (function moveToBody(id){
-      var x = document.getElementById(id);
-      if(x && !x.__moved){ document.body.appendChild(x); x.__moved = true; }
-    })('bv-toast-err'); (function(id){ var x=document.getElementById(id); if(x && !x.__moved){ document.body.appendChild(x); x.__moved=true; } })('bv-toast-ok');
+    // הזזת טוסטים ל-body כדי שלא יושפעו מ-transform
+    (function moveToBody(id){ var x=document.getElementById(id); if(x && !x.__moved){ document.body.appendChild(x); x.__moved=true; } })('bv-toast-err');
+    (function moveToBody(id){ var x=document.getElementById(id); if(x && !x.__moved){ document.body.appendChild(x); x.__moved=true; } })('bv-toast-ok');
 
-    var bar = document.getElementById('bv-bar');
-    var timeEl = document.getElementById('bv-time');
-    var errEl = document.getElementById('bv-err');
+    var bar   = document.getElementById('bv-bar');
+    var timeEl= document.getElementById('bv-time');
+    var circ  = document.getElementById('bv-circ');
+    var gust  = document.getElementById('bv-gust');
+    var emoji = document.getElementById('bv-emoji');
+
     var t0 = performance.now(), raf = 0, stopTimer = 0;
     var stream=null, ctx=null, analyser=null, data=null;
 
+    // הגדרות טבעת (רדיוס 54 → היקף ~339)
+    var C = 339; // קבוע תואם ל-stroke-dasharray
+
     function fmt(ms){ var s=Math.max(0,Math.floor(ms/1000)); return '00:'+String(s%60).padStart(2,'0'); }
+
     function level(){
       if(analyser && data){
         analyser.getByteTimeDomainData(data);
         var sum=0; for(var i=0;i<data.length;i++){ var v=(data[i]-128)/128; sum+=v*v; }
         var rms=Math.sqrt(sum/data.length);
-        // רגיש יחסית ל"נשיפה"
         return Math.min(100, Math.floor(rms*260));
       }
       return Math.min(100, (Math.random()*60+10)|0);
     }
+
     function loop(){
-      var w;
-      if(attempt===2){
-        // ניסיון שני: "קפיצה ל-100%" לטיזינג
-        w = 100;
-      }else{
-        w = level();
-      }
+      var w = (attempt===2) ? 100 : level();     // ניסיון שני: כמו במפרט — קפיצה ל‑100%
       bar.style.width = w + '%';
       timeEl.textContent = fmt(performance.now()-t0);
+
+      // עדכוני ה-HERO (ויזואלי בלבד)
+      try{
+        // טבעת
+        var off = C - (C*w/100);
+        circ.style.strokeDashoffset = off;
+
+        // “שבילי רוח” נדלקים בסף נשיפה
+        if (w >= 55){ gust.classList.add('on'); } else { gust.classList.remove('on'); }
+
+        // אימוג’י נשיפה — scale עדין
+        var s = 1 + (w*0.0035);
+        emoji.style.transform = 'scale('+s+')';
+      }catch(_){}
+
       raf = requestAnimationFrame(loop);
     }
+
     function cleanup(){
       try{ if(stream && stream.getTracks){ stream.getTracks().forEach(function(tr){tr.stop();}); } }catch(e){}
       try{ if(ctx && ctx.close){ ctx.close(); } }catch(e){}
@@ -1947,32 +2020,29 @@ function breathVerify(){
       try{ clearTimeout(stopTimer); }catch(e){}
     }
 
-    // נסיון הרשאת מיקרופון ל-VU (ללא הקלטה/שמירה)
-    (function tryMic(){
-      try{
-        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-          navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
-            stream = s;
-            ctx = new (window.AudioContext||window.webkitAudioContext)();
-            var src = ctx.createMediaStreamSource(stream);
-            analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
-            data = new Uint8Array(analyser.frequencyBinCount);
-            src.connect(analyser);
-          }).catch(function(){ /* ממשיך עם fallback */ });
-        }
-      }catch(e){}
-    })();
+    // נסיון הרשאת מיקרופון ל‑VU אמיתי (ללא הקלטה/שמירה)
+    try{
+      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+          stream = s;
+          ctx = new (window.AudioContext||window.webkitAudioContext)();
+          var src = ctx.createMediaStreamSource(stream);
+          analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+          data = new Uint8Array(analyser.frequencyBinCount);
+          src.connect(analyser);
+        }).catch(function(){ /* נשאר עם fallback */ });
+      }
+    }catch(_){}
 
-    // התחלה
     play('confirm');
     loop();
 
-    // סיום לוגי: אחרי ~4ש׳׳ שגיאה בנסיון 1; בנסיון 2 → טוסט הצלחה
+    // סיום לוגי: אין שינוי לפלואו (ניסיון 1 → שגיאה; ניסיון 2 → הצלחה)
     stopTimer = setTimeout(function(){
       cleanup();
       if(attempt===1){
-        // שגיאה אמינה
-        try{ document.querySelector('.wrap-breath').classList.add('shake'); setTimeout(function(){document.querySelector('.wrap-breath').classList.remove('shake');}, 380);}catch(e){}
+        document.querySelector('.wrap-breath') && document.querySelector('.wrap-breath').classList.add('shake');
+        setTimeout(function(){ try{ document.querySelector('.wrap-breath').classList.remove('shake'); }catch(_){ } }, 380);
         play('error');
         document.getElementById('bv-toast-err').classList.add('show');
         document.getElementById('bv-try').addEventListener('click', function(){
@@ -1980,7 +2050,6 @@ function breathVerify(){
           screenCount(2);
         }, { once:true });
       } else {
-        // הצלחה (טוסט “נשיפה מושלמת”)
         play('tada');
         document.getElementById('bv-toast-ok').classList.add('show');
         document.getElementById('bv-go').addEventListener('click', function(){
@@ -1998,7 +2067,7 @@ function breathVerify(){
         '<h1 class="bv-title">הרווחת את זה</h1>'+
         '<p class="bv-sub">זהותך אומתה בהצלחה</p>'+
         '<button id="bv-open" class="btn bv green"'+(PREV?' disabled':'')+'>למתנה האמיתית</button>'+
-        (PREV?'<div class="bv-hint">Preview only – button disabled</div>':'')+
+        (PREV?'<div class="bv-sub">Preview only – button disabled</div>':'')+
         '<canvas id="bv-confetti" class="confetti-canvas"></canvas>'+
       '</div>';
     confettiBurst(document.getElementById('bv-confetti'));
