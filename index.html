@@ -2180,51 +2180,64 @@ function finger(){
     var pct    = 0;
     var raf    = 0;
     var running = false;
+    // === Finger: calibrated 3s timeline ===
+var startTs = 0;
+var target  = 0;
+var DURATION = 3000; // 3,000ms per attempt
 
     function colorize(){ setRing(sensor, pct); sensor.setAttribute('aria-valuenow', String(pct)); }
 
-    function step(){
-      // speed tuned for believable hold
-      var speed = (pct<70)?1.6:(pct<90)?1.2:0.8;
-      pct = Math.min(100, Math.round(pct + speed));
-      colorize();
+    function step(ts){
+  if (!startTs) startTs = ts || performance.now();
+  var elapsed = (ts || performance.now()) - startTs;
+  // התקדמות ליניארית בזמן, עד היעד של הניסיון הנוכחי
+  pct = Math.min(target, Math.round((elapsed / DURATION) * target));
+  colorize();
 
-      // stop points by attempt
-      if (attempt===0 && pct>=90){ // first attempt → 90%
-        running = false;
-        core.classList.remove('scanning');
-        try{ sfx('error'); }catch(_){}
-        document.querySelector('.wrap-finger').classList.add('shake');
-        setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
-        t1.classList.add('show');
-        return;
-      }
-      if (attempt===1 && pct>=95){ // second attempt → 95%
-        running = false;
-        core.classList.remove('scanning');
-        try{ sfx('error'); }catch(_){}
-        document.querySelector('.wrap-finger').classList.add('shake');
-        setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
-        t2.classList.add('show');
-        return;
-      }
-      if (attempt>=2 && pct>=100){ // third → success
-        running = false;
-        core.classList.remove('scanning');
-        try{ sfx('tada'); }catch(_){}
-        screenSuccess();
-        return;
-      }
-      raf = requestAnimationFrame(step);
-    }
+  if (pct >= target){
+    running = false;
+    core.classList.remove('scanning');
 
-    function startScan(){
-      if (running) return;
-      running = true;
-      core.classList.add('scanning');
-      try{ sfx('confirm'); }catch(_){}
-      raf = requestAnimationFrame(step);
+    if (attempt === 0){ // first attempt → 90%
+      try{ sfx('error'); }catch(_){}
+      document.querySelector('.wrap-finger').classList.add('shake');
+      setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
+      t1.classList.add('show');
+      return;
     }
+    if (attempt === 1){ // second attempt → 95%
+      try{ sfx('error'); }catch(_){}
+      document.querySelector('.wrap-finger').classList.add('shake');
+      setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
+      t2.classList.add('show');
+      return;
+    }
+    // third attempt → 100% success
+    try{ sfx('tada'); }catch(_){}
+    screenSuccess();
+    return;
+  }
+
+  raf = requestAnimationFrame(step);
+}
+
+function startScan(){
+  if (running) return;
+  running = true;
+
+  // יעד לפי ניסיון: 90% → 95% → 100%
+  target = (attempt === 0) ? 90 : (attempt === 1 ? 95 : 100);
+
+  // אתחול טיימליין
+  startTs = 0;
+  core.classList.add('scanning');
+  try{ sfx('confirm'); }catch(_){}
+
+  // בטיחות: לבטל לופ קודם אם היה
+  if (raf) { try{ cancelAnimationFrame(raf); }catch(_){} raf = 0; }
+
+  raf = requestAnimationFrame(step);
+}
 
     // “Place your finger” → hold to start; also allow tap
     sensor.addEventListener('pointerdown', function(){ startScan(); });
