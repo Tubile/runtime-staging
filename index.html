@@ -1864,9 +1864,9 @@ function breathVerify(){
     app.innerHTML =
       '<div class="wrap wrap-breath">'+
         '<div class="bv-gift-icon" aria-hidden="true">🎁</div>'+
-        '<h1 class="bv-title">'+NAME+' ,ממתינה לך מתנה שווה</h1>'+
-        '<p class="bv-sub">לקבלת המתנה, אמת את זהותך בנשיפת אימות קצרה של 3 שניות</p>'+
-        '<button id="bv-start" class="btn bv brand">לאימות זהותך וקבלת המתנה</button>'+
+        '<h1 class="bv-title">'+NAME+', a gift is waiting for you!</h1>'+
+        '<p class="bv-sub">To unlock it, start a 3-second breath verification</p>'+
+        '<button id="bv-start" class="btn bv brand">Start verification & Unlock gift</button>'+
         '<div class="bv-hint">no data collected</div>'+
       '</div>';
     document.getElementById('bv-start').addEventListener('click', function(){ play('confirm'); screenCount(1); });
@@ -2108,22 +2108,22 @@ function finger(){
   // --- Copy (defaults in Hebrew; allow URL overrides)
   function take(k, def){ var v = qs.get(k); if(!v || !v.trim()){ return def; } return v.trim().slice(0,80); }
   var copy = {
-    introTitle: take('introTitle', 'מחכה לך מתנה'),
-    introSub:   take('introSub',   'לאימות זהות באמצעות תביעת אצבע וקבלת המתנה…'),
-    introBtn:   take('introBtn',   'להתחלת אימות'),
+    introTitle: take('introTitle', 'A gift is waiting for you'),
+    introSub:   take('introSub',   'Unlock your gift via fingerprint scan verification'),
+    introBtn:   take('introBtn',   'Verify your identity'),
 
-    scanTitle:  take('scanTitle',  'הנח את האצבע על החיישן לאימות'),
-    scanSub:    take('scanSub',    'החזק רציף עד שהטבעת מתמלאת לאימות זהות מדויק'),
+    scanTitle:  take('scanTitle',  'To verify, place your finger on the sensor.'),
+    scanSub:    take('scanSub',    'Hold steadily until the ring fills up for accurate identification.'),
 
-    err1Title:  take('err1Title',  'האצבע זזה'),
-    err1Text:   take('err1Text',   'החזק יציב עד הסוף'),
-    err2Title:  take('err2Title',  'האצבע רטובה מדי'),
-    err2Text:   take('err2Text',   'נגב את האצבע ונסה שוב'),
-    errBtn:     take('errBtn',     'נסה שוב'),
+    err1Title:  take('err1Title',  'Finger moved ⚠️'),
+    err1Text:   take('err1Text',   'Keep it steady until completion'),
+    err2Title:  take('err2Title',  'Finger too wet ⚠️'),
+    err2Text:   take('err2Text',   'Wipe your finger and try again'),
+    errBtn:     take('errBtn',     'Try again'),
 
-    okTitle:    take('okTitle',    'הרווחת את זה ביושר 😂'),
-    okSub:      take('okSub',      'זהותך אומתה רשמית'),
-    okBtn:      take('okBtn',      'למתנה האמיתית')
+    okTitle:    take('okTitle',    'You’ve earned it 😂'),
+    okSub:      take('okSub',      'You are officially verified!'),
+    okBtn:      take('okBtn',      'To the real gift')
   };
 
   // --- Flow
