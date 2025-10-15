@@ -2013,8 +2013,260 @@ function breathVerify(){
   // GO
   screenIntro();
 }
-  
+
+/* Finger-ID (Fake Fingerprint) */
+function finger(){
+  // --- Params (Runtime contract)
+  var qs   = new URLSearchParams(location.search);
+  var PREV = (qs.get('preview')||'0').trim()==='1';
+  var NAME = (qs.get('name')||'Friend').trim();
+  var GIFT = (qs.get('giftUrl')||'#').trim();
+
+  // --- One-time CSS injection (scoped)
+  if (!document.getElementById('finger-ux')) {
+    var st = document.createElement('style');
+    st.id = 'finger-ux';
+    st.textContent = [
+      ".wrap-finger{display:grid;gap:32px;justify-items:center;text-align:center;margin-top:clamp(32px,8vh,64px);padding-bottom:24px}",
+      /* gift icon */
+      ".fng-gift-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,rgba(96,165,250,.12),rgba(167,139,250,.12));border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:fngFloat 3s ease-in-out infinite}",
+      "@keyframes fngFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}",
+      /* success icon */
+      ".fng-success-icon{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(52,211,153,.15));border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:32px;line-height:1;box-shadow:0 8px 32px rgba(16,185,129,.2);animation:fngPop .5s cubic-bezier(0.68,-0.55,0.265,1.55)}",
+      "@keyframes fngPop{0%{transform:scale(0) rotate(-45deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}",
+      /* typography */
+      ".fng-title{margin:0;font-size:28px;line-height:1.3;font-weight:800;letter-spacing:-.02em}",
+      ".fng-sub{margin:0;font-size:16px;color:#9aa3b2;line-height:1.5;opacity:.85}",
+      ".fng-hint{font-size:12px;color:#9aa3b2}",
+      /* buttons (brand/green per design system) */
+      ".btn{width:min(300px,100%);min-height:52px;padding:16px 20px;font-size:16px;border-radius:12px;font-weight:700;margin:0 auto;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 4px 16px rgba(0,0,0,.2);border:0;cursor:pointer}",
+      ".btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}",
+      ".btn:active{transform:translateY(0)}",
+      ".brand{background:#282D3F;color:#fff;border:1px solid rgba(255,255,255,.1)}",
+      ".green{background:#10b981;color:#fff}",
+      ".ghost{background:#0b1020;color:#9aa3b2;border:1px solid rgba(255,255,255,.12)}",
+      /* sensor (progress ring) */
+      ".fng-sensor{--p:0;--col:#a78bfa;width:190px;height:190px;border-radius:50%;display:grid;place-items:center;position:relative;user-select:none;touch-action:manipulation;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 18px 42px rgba(0,0,0,.35);",
+      "background: radial-gradient(farthest-side,#0f152a 69%,transparent 70% 100%),",
+      "conic-gradient(var(--col) calc(var(--p)*1%), rgba(255,255,255,.08) 0);}",
+      ".fng-core{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;background:#0f152a;border:1px solid rgba(255,255,255,.08)}",
+      ".fng-core svg{width:74px;height:74px;opacity:.9;stroke:#aeb7c8}",
+      /* small pulse while scanning */
+      ".fng-core.scanning{box-shadow:0 0 0 0 rgba(96,165,250,.25);animation:fngPulse 1.2s ease-in-out infinite}",
+      "@keyframes fngPulse{to{box-shadow:0 0 0 16px rgba(96,165,250,.0)}}",
+      /* toasts (iOS-safe: no heavy blur) */
+      ".fng-toast{position:fixed;inset:0;display:none;place-items:center;background:rgba(10,12,22,.60);z-index:1000;padding:24px;text-align:center}",
+      ".fng-toast.show{display:grid}",
+      ".fng-toast .box{background:#1a1f35;border-radius:16px;padding:20px;max-width:320px;box-shadow:0 10px 30px rgba(0,0,0,.35)}",
+      ".fng-toast h3{margin:0 0 6px 0}",
+      /* shake (reuse runtime's keyframes name) */
+      "@keyframes infShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}",
+      ".shake{animation:infShake .35s linear 1}",
+      /* confetti canvas */
+      ".confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;display:block}"
+    ].join('');
+    (document.head||document.documentElement).appendChild(st);
+  }
+
+  // --- Confetti
+  function confettiBurst(canvas){
+    if(!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var r = window.devicePixelRatio || 1;
+    function size(){ canvas.width = canvas.clientWidth*r; canvas.height = canvas.clientHeight*r; ctx.setTransform(r,0,0,r,0,0); }
+    if(!canvas.__sized){ canvas.__sized = true; size(); window.addEventListener('resize', size); }
+    var colors = ['#a78bfa','#60a5fa','#34d399','#f472b6','#f59e0b'];
+    var pieces = [], w = canvas.clientWidth, h = canvas.clientHeight;
+    for(var i=0;i<120;i++){
+      pieces.push({ x:w/2, y:h/2, vx:(Math.random()*4-2), vy:(Math.random()*-3-2),
+        r:Math.random()*6+3, c:colors[(Math.random()*colors.length)|0], a:1, spin:(Math.random()*6.28), vr:(Math.random()*0.2-0.1) });
+    }
+    var g=0.05, t=0;
+    (function step(){
+      ctx.clearRect(0,0,w,h);
+      for(var j=0;j<pieces.length;j++){
+        var p = pieces[j];
+        p.vy += g; p.x += p.vx; p.y += p.vy; p.spin += p.vr; p.a -= 0.008;
+        ctx.globalAlpha = Math.max(p.a,0);
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+      if(t++<260) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h);
+    })();
+  }
+
+  // --- Helpers
+  function render(html){ var app = document.getElementById('app'); app.innerHTML = html; app.classList.remove('card'); }
+  function setRing(el, pct){
+    el.style.setProperty('--p', String(pct));
+    var col = (pct<34)?'#a78bfa':(pct<67)?'#60a5fa':'#2dd4bf';
+    el.style.setProperty('--col', col);
+  }
+
+  // --- Copy (defaults in Hebrew; allow URL overrides)
+  function take(k, def){ var v = qs.get(k); if(!v || !v.trim()){ return def; } return v.trim().slice(0,80); }
+  var copy = {
+    introTitle: take('introTitle', 'מחכה לך מתנה'),
+    introSub:   take('introSub',   'לאימות זהות באמצעות תביעת אצבע וקבלת המתנה…'),
+    introBtn:   take('introBtn',   'להתחלת אימות'),
+
+    scanTitle:  take('scanTitle',  'הנח את האצבע על החיישן לאימות'),
+    scanSub:    take('scanSub',    'החזק רציף עד שהטבעת מתמלאת לאימות זהות מדויק'),
+
+    err1Title:  take('err1Title',  'האצבע זזה'),
+    err1Text:   take('err1Text',   'החזק יציב עד הסוף'),
+    err2Title:  take('err2Title',  'האצבע רטובה מדי'),
+    err2Text:   take('err2Text',   'נגב את האצבע ונסה שוב'),
+    errBtn:     take('errBtn',     'נסה שוב'),
+
+    okTitle:    take('okTitle',    'הרווחת את זה ביושר 😂'),
+    okSub:      take('okSub',      'זהותך אומתה רשמית'),
+    okBtn:      take('okBtn',      'למתנה האמיתית')
+  };
+
+  // --- Flow
+  var attempt = 0; // 1=>90% stop, 2=>95% stop, 3=>100% success
+
+  function screenIntro(){
+    render(
+      '<div class="wrap wrap-finger" dir="rtl">'+
+        '<div class="fng-gift-icon" aria-hidden="true">🎁</div>'+
+        '<h1 class="fng-title">'+copy.introTitle+'</h1>'+
+        '<p class="fng-sub">'+copy.introSub+'</p>'+
+        '<button id="fng-start" class="btn brand">'+copy.introBtn+'</button>'+
+        '<div class="fng-hint">no data collected</div>'+
+      '</div>'
+    );
+    var start = document.getElementById('fng-start');
+    start.addEventListener('click', function(){ try{ sfx('confirm'); }catch(_){ } screenScan(); });
+  }
+
+  function screenScan(){
+    render(
+      '<div class="wrap wrap-finger" dir="rtl">'+
+        '<h1 class="fng-title">'+copy.scanTitle+'</h1>'+
+        '<p class="fng-sub">'+copy.scanSub+'</p>'+
+        '<div id="fng-sensor" class="fng-sensor" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">'+
+          '<div id="fng-core" class="fng-core" aria-hidden="true">'+
+            /* simple fingerprint svg (stylized) */
+            '<svg viewBox="0 0 64 64" fill="none" stroke-width="2">'+
+              '<path d="M20 28a12 12 0 0 1 24 0" />'+
+              '<path d="M16 28c0-8.8 7.2-16 16-16s16 7.2 16 16" />'+
+              '<path d="M24 36c1 6 0 10-4 16" />'+
+              '<path d="M40 32c2 8 1 14-3 22" />'+
+              '<path d="M28 28c1 10-1 16-6 24" />'+
+              '<path d="M32 28c2 12 0 20-6 30" />'+
+            '</svg>'+
+          '</div>'+
+        '</div>'+
+        (PREV?'<div class="fng-hint">Preview mode</div>':'')+
+        '<canvas id="fng-confetti" class="confetti-canvas"></canvas>'+
+      '</div>'+
+      /* toast #1 */
+      '<div id="fng-toast1" class="fng-toast"><div class="box"><h3>'+copy.err1Title+'</h3><p>'+copy.err1Text+'</p><div style="height:10px"></div><button id="fng-try1" class="btn brand">'+copy.errBtn+'</button></div></div>'+
+      /* toast #2 */
+      '<div id="fng-toast2" class="fng-toast"><div class="box"><h3>'+copy.err2Title+'</h3><p>'+copy.err2Text+'</p><div style="height:10px"></div><button id="fng-try2" class="btn brand">'+copy.errBtn+'</button></div></div>'
+    );
+
+    // move toasts to <body> (avoid transform ancestry issues)
+    var t1 = document.getElementById('fng-toast1'), t2 = document.getElementById('fng-toast2');
+    if (t1 && !t1.__moved){ document.body.appendChild(t1); t1.__moved = true; }
+    if (t2 && !t2.__moved){ document.body.appendChild(t2); t2.__moved = true; }
+
+    var sensor = document.getElementById('fng-sensor');
+    var core   = document.getElementById('fng-core');
+    var pct    = 0;
+    var raf    = 0;
+    var running = false;
+
+    function colorize(){ setRing(sensor, pct); sensor.setAttribute('aria-valuenow', String(pct)); }
+
+    function step(){
+      // speed tuned for believable hold
+      var speed = (pct<70)?1.6:(pct<90)?1.2:0.8;
+      pct = Math.min(100, Math.round(pct + speed));
+      colorize();
+
+      // stop points by attempt
+      if (attempt===0 && pct>=90){ // first attempt → 90%
+        running = false;
+        core.classList.remove('scanning');
+        try{ sfx('error'); }catch(_){}
+        document.querySelector('.wrap-finger').classList.add('shake');
+        setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
+        t1.classList.add('show');
+        return;
+      }
+      if (attempt===1 && pct>=95){ // second attempt → 95%
+        running = false;
+        core.classList.remove('scanning');
+        try{ sfx('error'); }catch(_){}
+        document.querySelector('.wrap-finger').classList.add('shake');
+        setTimeout(function(){ var el=document.querySelector('.wrap-finger'); if(el){ el.classList.remove('shake'); } }, 380);
+        t2.classList.add('show');
+        return;
+      }
+      if (attempt>=2 && pct>=100){ // third → success
+        running = false;
+        core.classList.remove('scanning');
+        try{ sfx('tada'); }catch(_){}
+        screenSuccess();
+        return;
+      }
+      raf = requestAnimationFrame(step);
+    }
+
+    function startScan(){
+      if (running) return;
+      running = true;
+      core.classList.add('scanning');
+      try{ sfx('confirm'); }catch(_){}
+      raf = requestAnimationFrame(step);
+    }
+
+    // “Place your finger” → hold to start; also allow tap
+    sensor.addEventListener('pointerdown', function(){ startScan(); });
+    sensor.addEventListener('click', function(){ if(!running) startScan(); });
+
+    document.getElementById('fng-try1').addEventListener('click', function(){
+      t1.classList.remove('show'); attempt = 1; pct = 0; colorize(); startScan();
+    });
+    document.getElementById('fng-try2').addEventListener('click', function(){
+      t2.classList.remove('show'); attempt = 2; pct = 0; colorize(); startScan();
+    });
+
+    // init ring
+    setRing(sensor, 0);
+  }
+
+  function screenSuccess(){
+    render(
+      '<div class="wrap wrap-finger" dir="rtl">'+
+        '<div class="fng-success-icon" aria-hidden="true">💝</div>'+
+        '<h1 class="fng-title">'+copy.okTitle+'</h1>'+
+        '<p class="fng-sub">'+copy.okSub+'</p>'+
+        '<button id="fng-open" class="btn green"'+(PREV?' disabled':'')+'>'+copy.okBtn+'</button>'+
+        (PREV?'<div class="fng-hint">Preview only – button disabled</div>':'')+
+        '<canvas id="fng-confetti" class="confetti-canvas"></canvas>'+
+      '</div>'
+    );
+    confettiBurst(document.getElementById('fng-confetti'));
+    var btn = document.getElementById('fng-open');
+    btn.addEventListener('click', function(){
+      if (PREV) return;
+      try{ sfx('confirm'); }catch(_){}
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
+    });
+  }
+
+  // GO
+  screenIntro();
+}
+
 const map = {
+'Finger': finger,
 'breath-verify': breathVerify,
 'voice-verify': voiceVerify,
 'captcha': captcha,
@@ -2023,6 +2275,6 @@ const map = {
 'shake': shake
 };
 
-(map[F] || (()=>el('<h1 class="h1">Feature not found</h1><p class="p">Use ?f=voice-verify|captcha|infinite|narcissist-q|shake|breath-verify</p>')))();
+(map[F] || (()=>el('<h1 class="h1">Feature not found</h1><p class="p">Use ?f=voice-verify|captcha|infinite|narcissist-q|shake|breath-verify|Finger</p>')))();
 })();
 </script>
