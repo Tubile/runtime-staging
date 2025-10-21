@@ -1175,14 +1175,13 @@ inner.innerHTML = `
   break;
 }
       case 8: {
-        // מסך הצלחה עם אייקון
-        inner.innerHTML = `
-          <div class="inf-success-icon" aria-hidden="true">💝</div>
-          <h1>${copy.title}</h1>
-          <div id="earned" class="earned">${copy.earned}</div>
-          <button id="ibtn-final" class="btn green">${copy.btn8_success}</button>
-          <canvas id="confetti" class="confetti-canvas"></canvas>
-        `;
+    // מסך הצלחה עם אייקון
+    inner.innerHTML = `
+      <div class="inf-success-icon" aria-hidden="true">💝</div>
+      <h1 style="font-size:22px;margin:12px 0 8px">${copy.earned}</h1>
+      <button id="ibtn-final" class="btn green">${copy.btn8_success}</button>
+      <canvas id="confetti" class="confetti-canvas"></canvas>
+    `;
         
         confettiBurst(inner.querySelector('#confetti'));
         sfx('tada');
