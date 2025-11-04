@@ -2177,7 +2177,7 @@ function finger(){
   // --- Copy (defaults in Hebrew; allow URL overrides)
   function take(k, def){ var v = qs.get(k); if(!v || !v.trim()){ return def; } return v.trim().slice(0,80); }
   var copy = {
-    introTitle: take('introTitle', '${NAME}, you got a sweet surprise! 💖'),
+    introTitle: take('introTitle', NAME + ', you got a sweet surprise! 💖'),
     introSub:   take('introSub',   'Unlock your gift via fingerprint scan verification'),
     introBtn:   take('introBtn',   'Verify your identity'),
 
