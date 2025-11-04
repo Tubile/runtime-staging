@@ -830,7 +830,7 @@ function captcha(){
   const GIFT  = (qs.get('giftUrl')||'#').trim();
 
   const copy = {
-    introTitle:  (qs.get('introTitle') || `A special gift is waiting for you, ${NAME}!`).slice(0,80),
+    introTitle:  (qs.get('introTitle') || `${NAME}, you've got a sweet surprise! 💖`).slice(0,80),
     introSub:    (qs.get('introSub')   || `To unlock it, please verify your identity`).slice(0,80),
     introBtn:    (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
     gridHeader:  (qs.get('gridHeader') || `Select all images with a weirdo 👇`).slice(0,80),
@@ -1323,7 +1323,7 @@ function narcissistQ(){
 
   // Copy / defaults (from brief)
   const copy = {
-    introTitle: (qs.get('introTitle') || `${NAME}, you've got a sweet gift!`).slice(0,80),
+    introTitle: (qs.get('introTitle') || `${NAME}, you've got a sweet surprise! 💖`).slice(0,80),
     introSub:   (qs.get('introSub')   || `To claim it, answer 3 quick questions.`).slice(0,80),
     startBtn:   (qs.get('startBtn')   || `Verify identity to get the gift`).slice(0,40),
     okTitle:    (qs.get('okTitle')    || `You've earned it 🤣`).slice(0,80),
@@ -1484,7 +1484,7 @@ function shake(){
 
   // Copy with URL overrides (all English by default per brief)
   const copy = {
-    introTitle: (qs.get('introTitle') || `${NAME}, your friend left you a gift!`).slice(0,80),
+    introTitle: (qs.get('introTitle') || `${NAME}, you've got a sweet surprise! 💖`).slice(0,80),
     introSub:   (qs.get('introSub')   || `To claim it, please verify your identity. Tap below for a quick check.`).slice(0,120),
     introBtn:   (qs.get('introBtn')   || `Verify identity to get the gift`).slice(0,48),
 
@@ -2177,7 +2177,7 @@ function finger(){
   // --- Copy (defaults in Hebrew; allow URL overrides)
   function take(k, def){ var v = qs.get(k); if(!v || !v.trim()){ return def; } return v.trim().slice(0,80); }
   var copy = {
-    introTitle: take('introTitle', 'A gift is waiting for you'),
+    introTitle: take('introTitle', '${NAME}, you've got a sweet surprise! 💖'),
     introSub:   take('introSub',   'Unlock your gift via fingerprint scan verification'),
     introBtn:   take('introBtn',   'Verify your identity'),
 
