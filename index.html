@@ -1070,6 +1070,11 @@ function captcha(){
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim();
   const GIFT  = (qs.get('giftUrl')||'#').trim();
+  const THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+const validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+const activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
 
   const copy = {
     introTitle:  (qs.get('introTitle') || `${NAME}, you've got a sweet surprise! 💖`).slice(0,80),
@@ -1148,7 +1153,7 @@ function captcha(){
 
   function screenIntro(){
     app.innerHTML = `
-      <div class="wrap wrap-captcha">
+  <div class="wrap wrap-captcha ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="cap-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="cap-title">${copy.introTitle}</h1>
         <p class="cap-sub">${copy.introSub}</p>
@@ -1172,7 +1177,7 @@ function captcha(){
 
   function screenGrid(){
     app.innerHTML = `
-      <div class="wrap wrap-captcha">
+  <div class="wrap wrap-captcha ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <h1 class="cap-title">${copy.gridHeader}</h1>
         <div id="grid" class="cap-grid">
           ${Array.from({length:9}).map((_,i)=>tileHtml(i)).join('')}
@@ -1216,7 +1221,7 @@ function captcha(){
 
   function screenSuccess(){
     app.innerHTML = `
-      <div class="wrap wrap-captcha">
+  <div class="wrap wrap-captcha ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="cap-success-icon" aria-hidden="true">💝</div>
         <h1 class="cap-title">${copy.okTitle}</h1>
         <p class="cap-sub">${copy.okSub}</p>
@@ -1733,6 +1738,11 @@ function shake(){
   const PREV = (qs.get('preview')||'0').trim()==='1';
   const NAME = (qs.get('name')||'Friend').trim();
   const GIFT = (qs.get('giftUrl')||'#').trim();
+  const THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+const validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+const activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
 
   // Copy with URL overrides (all English by default per brief)
   const copy = {
@@ -1931,7 +1941,7 @@ function shake(){
 
   function screenIntro(){
     app.innerHTML = `
-      <div class="wrap wrap-shake">
+  <div class="wrap wrap-shake ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="sh-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="sh-title">${copy.introTitle}</h1>
         <p class="sh-sub">${copy.introSub}</p>
@@ -1950,7 +1960,7 @@ function runAttempt(){
   const showCountdown = attempt <= 3;
 
   app.innerHTML = `
-    <div class="wrap wrap-shake">
+  <div class="wrap wrap-shake ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
       <h1 class="sh-title">${showCountdown ? copy.countTitle : 'Shake it harder, hero'}</h1>
       <div id="shCount" class="sh-count" style="${showCountdown ? '' : 'display:none'}">5</div>
 
@@ -2021,7 +2031,7 @@ function runAttempt(){
 
   function screenSuccess(){
     app.innerHTML = `
-      <div class="wrap wrap-shake">
+  <div class="wrap wrap-shake ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="sh-success-icon" aria-hidden="true">💝</div>
         <h1 class="sh-title">${copy.okTitle}</h1>
         <p class="sh-sub">${copy.okSub}</p>
