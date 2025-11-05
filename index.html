@@ -2353,6 +2353,11 @@ function breathVerify(){
   var PREV = (qs.get('preview')||'0').trim()==='1';
   var NAME = (qs.get('name')||'Friend').trim();
   var GIFT = (qs.get('giftUrl')||'#').trim();
+  var THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+var validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+var activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
 
   // --- הזרקת CSS ייעודי (scoped, ללא שבירה) ---
   if(!document.getElementById('bv-css')){
@@ -2455,7 +2460,7 @@ function breathVerify(){
   // --- מסכים ---
   function screenIntro(){
     app.innerHTML =
-      '<div class="wrap wrap-breath">'+
+      '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="bv-gift-icon" aria-hidden="true">🎁</div>'+
         '<h1 class="bv-title">'+NAME+', a gift is waiting for you!</h1>'+
         '<p class="bv-sub">To receive the gift, start a short breath verification</p>'+
@@ -2467,7 +2472,7 @@ function breathVerify(){
 
   function screenCount(attempt){
     app.innerHTML =
-      '<div class="wrap wrap-breath">'+
+      '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<h1 class="bv-title">When the countdown ends, blow toward the microphone for 3 seconds</h1>'+
         '<div id="bv-count" class="bv-title" style="font-size:64px;font-weight:900;line-height:1">3</div>'+
         '<div class="bv-sub">Ready? It’s quick and easy</div>'+
@@ -2482,7 +2487,7 @@ function breathVerify(){
 
   function screenBlow(attempt){
     app.innerHTML =
-      '<div class="wrap wrap-breath">'+
+      '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<h1 id="bv-title" class="bv-title">Blow now for 3 seconds!</h1>'+
 
         /* --- HERO חדש: טבעת נשיפה + שבילי רוח + צ’יפ --- */
@@ -2618,7 +2623,7 @@ function breathVerify(){
 
   function screenSuccess(){
     app.innerHTML =
-      '<div class="wrap wrap-breath">'+
+      '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="bv-success-icon" aria-hidden="true">💝</div>'+
         '<h1 class="bv-title">You earned it 🤣</h1>'+
         '<p class="bv-sub">You are officially verified.</p>'+
