@@ -789,6 +789,11 @@ function voiceVerify(){
   const PREV = (qs.get('preview')||'0').trim()==='1';
   const NAME = (qs.get('name')||'Friend').trim();
   const GIFT = (qs.get('giftUrl')||'#').trim();
+  const THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+const validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+const activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
 
   const app = document.getElementById('app');
   app.classList.remove('card'); // “מסך נקי” כמו בשאר הפיצ'רים
@@ -857,7 +862,7 @@ function sfx(kind){
   // מסך פתיחה
   function screenIntro(){
     app.innerHTML = `
-      <div class="wrap wrap-voice">
+  <div class="wrap wrap-voice ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="vv-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="vv-title">${copy.introTitle}</h1>
         <p class="vv-sub">${copy.introSub}</p>
@@ -874,7 +879,7 @@ function sfx(kind){
   // מסך ההקלטה (נסיון ראשון → שגיאה אמינה; נסיון שני → הצלחה)
   function screenRecord(){
     app.innerHTML = `
-      <div class="wrap wrap-voice">
+  <div class="wrap wrap-voice ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <h1 class="vv-title">${copy.recTitle}</h1>
         <div class="vv-cow" id="vv-cow" aria-hidden="true"><div class="emoji">🐄</div></div>
 
@@ -1040,7 +1045,7 @@ screenSuccess(); // הקונפטי ירוץ רק במסך ההצלחה
   // מסך הצלחה
   function screenSuccess(){
     app.innerHTML = `
-      <div class="wrap wrap-voice">
+  <div class="wrap wrap-voice ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="vv-success-icon" aria-hidden="true">💝</div>
         <h1 class="vv-title">${copy.okTitle}</h1>
         <p class="vv-sub">${copy.okSub}</p>
@@ -1491,6 +1496,11 @@ function narcissistQ(){
   const PREV  = (qs.get('preview')||'0').trim()==='1';
   const NAME  = (qs.get('name')||'Friend').trim().slice(0,24);
   const GIFT  = (qs.get('giftUrl')||'#').trim();
+  const THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+const validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+const activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
   const ACCENT= (qs.get('accent')||'dark').trim().toLowerCase(); // optional: dark|blue|green|purple
 
   // Style (scoped)
@@ -1657,7 +1667,7 @@ function narcissistQ(){
 
   function screenIntro(){
     render(`
-      <div class="wrap wrap-nq ${themeClass}">
+  <div class="wrap wrap-nq ${themeClass} ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="nq-gift-icon" aria-hidden="true">🎁</div>
         <h1 class="nq-title">${copy.introTitle}</h1>
         <p class="nq-sub">${copy.introSub}</p>
@@ -1678,7 +1688,7 @@ function narcissistQ(){
   function screenQ(i){
     const d = Q[i-1];
     render(`
-      <div class="wrap wrap-nq ${themeClass}">
+  <div class="wrap wrap-nq ${themeClass} ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="nq-steps">Question ${i} of 3</div>
         <h1 class="nq-title">${d.q}</h1>
         <div class="nq-grid" id="nqGrid">
@@ -1710,7 +1720,7 @@ function narcissistQ(){
 
   function screenSuccess(){
     render(`
-      <div class="wrap wrap-nq ${themeClass}">
+  <div class="wrap wrap-nq ${themeClass} ${activeTheme !== 'dark' ? 'theme-' + activeTheme : ''}">
         <div class="nq-success-icon" aria-hidden="true">💝</div>
         <h1 class="nq-title">${copy.okTitle}</h1>
         <p class="nq-sub">${copy.okSub}</p>
@@ -2352,6 +2362,11 @@ function finger(){
   var PREV = (qs.get('preview')||'0').trim()==='1';
   var NAME = (qs.get('name')||'Friend').trim();
   var GIFT = (qs.get('giftUrl')||'#').trim();
+  var THEME = (qs.get('theme') || 'dark').toLowerCase().trim();
+var validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
+var activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
+if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
+else { document.body.className = ''; }
 
   // --- One-time CSS injection (scoped)
   if (!document.getElementById('finger-ux')) {
@@ -2462,7 +2477,7 @@ function finger(){
 
   function screenIntro(){
     render(
-      '<div class="wrap wrap-finger">'+
+  '<div class="wrap wrap-finger' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="fng-gift-icon" aria-hidden="true">🎁</div>'+
         '<h1 class="fng-title">'+copy.introTitle+'</h1>'+
         '<p class="fng-sub">'+copy.introSub+'</p>'+
@@ -2476,7 +2491,7 @@ function finger(){
 
   function screenScan(){
     render(
-      '<div class="wrap wrap-finger">'+
+  '<div class="wrap wrap-finger' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<h1 class="fng-title">'+copy.scanTitle+'</h1>'+
         '<p class="fng-sub">'+copy.scanSub+'</p>'+
         '<div id="fng-sensor" class="fng-sensor" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">'+
@@ -2587,7 +2602,7 @@ function startScan(){
 
   function screenSuccess(){
     render(
-      '<div class="wrap wrap-finger">'+
+  '<div class="wrap wrap-finger' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="fng-success-icon" aria-hidden="true">💝</div>'+
         '<h1 class="fng-title">'+copy.okTitle+'</h1>'+
         '<p class="fng-sub">'+copy.okSub+'</p>'+
