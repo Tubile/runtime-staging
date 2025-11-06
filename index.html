@@ -2746,6 +2746,32 @@ var validThemes = ['dark', 'light', 'romantic', 'luxury', 'neon'];
 var activeTheme = validThemes.includes(THEME) ? THEME : 'dark';
 if (activeTheme !== 'dark') { document.body.className = 'theme-' + activeTheme; } 
 else { document.body.className = ''; }
+  
+// --- Copy (defaults in Hebrew; allow URL overrides)
+function take(k, def){ var v = qs.get(k); if(!v || !v.trim()){ return def; } return v.trim().slice(0,80); }
+var copy = {
+  introTitle:     take('introTitle',    NAME + ', a gift is waiting for you!'),
+  introSub:       take('introSub',      'To receive the gift, start a short breath verification'),
+  introBtn:       take('introBtn',      'Verify your identity'),
+
+  countTitle:     take('countTitle',    'When the countdown ends, blow toward the microphone for 3 seconds'),
+  countSub:       take('countSub',      'Ready? It\'s quick and easy'),
+
+  blowTitle:      take('blowTitle',     'Blow now for 3 seconds!'),
+  blowChip:       take('blowChip',      'Blow now • 3s'),
+
+  errTitle:       take('errTitle',      'No airflow detected ⚠️'),
+  errText:        take('errText',       'Blow harder'),
+  errBtn:         take('errBtn',        'Try again'),
+
+  okToastTitle:   take('okToastTitle',  'Perfect blow 🤣'),
+  okToastText:    take('okToastText',   'You\'re intoxicating… with laughter'),
+  okToastBtn:     take('okToastBtn',    'take me to my gift'),
+
+  okTitle:        take('okTitle',       'You earned it 🤣'),
+  okSub:          take('okSub',         'You are officially verified.'),
+  okBtn:          take('okBtn',         'Get your real gift')
+};
 
   // --- הזרקת CSS ייעודי (scoped, ללא שבירה) ---
   if(!document.getElementById('bv-css')){
@@ -2850,9 +2876,9 @@ else { document.body.className = ''; }
     app.innerHTML =
       '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="bv-gift-icon" aria-hidden="true">🎁</div>'+
-        '<h1 class="bv-title">'+NAME+', a gift is waiting for you!</h1>'+
-        '<p class="bv-sub">To receive the gift, start a short breath verification</p>'+
-        '<button id="bv-start" class="btn bv brand">Verify your identity</button>'+
+'<h1 class="bv-title">'+copy.introTitle+'</h1>'+
+'<p class="bv-sub">'+copy.introSub+'</p>'+
+'<button id="bv-start" class="btn bv brand">'+copy.introBtn+'</button>'+
         '<div class="bv-sub" style="font-size:12px">no data collected</div>'+
       '</div>';
     document.getElementById('bv-start').addEventListener('click', function(){ play('confirm'); screenCount(1); });
@@ -2861,9 +2887,9 @@ else { document.body.className = ''; }
   function screenCount(attempt){
     app.innerHTML =
       '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
-        '<h1 class="bv-title">When the countdown ends, blow toward the microphone for 3 seconds</h1>'+
+        '<h1 class="bv-title">'+copy.countTitle+'</h1>'+
+        '<div class="bv-sub">'+copy.countSub+'</div>'+      
         '<div id="bv-count" class="bv-title" style="font-size:64px;font-weight:900;line-height:1">3</div>'+
-        '<div class="bv-sub">Ready? It’s quick and easy</div>'+
       '</div>';
     var n = 3, el = document.getElementById('bv-count');
     var t = setInterval(function(){
@@ -2876,7 +2902,7 @@ else { document.body.className = ''; }
   function screenBlow(attempt){
     app.innerHTML =
       '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
-        '<h1 id="bv-title" class="bv-title">Blow now for 3 seconds!</h1>'+
+        '<h1 id="bv-title" class="bv-title">'+copy.blowTitle+'</h1>'+
 
         /* --- HERO חדש: טבעת נשיפה + שבילי רוח + צ’יפ --- */
         '<div class="bv-hero" aria-hidden="true">'+
@@ -2896,7 +2922,7 @@ else { document.body.className = ''; }
             '</div>'+
             '<div class="bv-gust" id="bv-gust"><span></span><span></span><span></span></div>'+
           '</div>'+
-          '<div class="bv-chip">Blow now • 3s</div>'+
+          '<div class="bv-chip">'+copy.blowChip+'</div>'+
         '</div>'+
 
         /* --- המד/זמן הישנים נשמרים (לא נוגעים בפונקציונליות) --- */
@@ -2908,8 +2934,8 @@ else { document.body.className = ''; }
         (PREV?'<div class="bv-sub">Preview mode</div>':'')+
         '<canvas id="bv-confetti" class="confetti-canvas"></canvas>'+
       '</div>'+
-      '<div id="bv-toast-err" class="toast"><div class="box"><h3>No airflow detected ⚠️</h3><p>Blow harder</p><div style="height:10px"></div><button id="bv-try" class="btn bv green">Try again</button></div></div>'+
-      '<div id="bv-toast-ok" class="toast"><div class="box"><h3>Perfect blow 🤣</h3><p>You’re intoxicating… with laughter</p><div style="height:10px"></div><button id="bv-go" class="btn bv green">take me to my gift</button></div></div>';
+      '<div id="bv-toast-err" class="toast"><div class="box"><h3>'+copy.errTitle+'</h3><p>'+copy.errText+'</p><div style="height:10px"></div><button id="bv-try" class="btn bv green">'+copy.errBtn+'</button></div></div>'+
+      '<div id="bv-toast-ok" class="toast"><div class="box"><h3>'+copy.okToastTitle+'</h3><p>'+copy.okToastText+'</p><div style="height:10px"></div><button id="bv-go" class="btn bv green">'+copy.okToastBtn+'</button></div></div>';
 
     // הזזת טוסטים ל-body כדי שלא יושפעו מ-transform
     (function moveToBody(id){ var x=document.getElementById(id); if(x && !x.__moved){ document.body.appendChild(x); x.__moved=true; } })('bv-toast-err');
@@ -3013,9 +3039,9 @@ else { document.body.className = ''; }
     app.innerHTML =
       '<div class="wrap wrap-breath' + (activeTheme !== 'dark' ? ' theme-' + activeTheme : '') + '">'+
         '<div class="bv-success-icon" aria-hidden="true">💝</div>'+
-        '<h1 class="bv-title">You earned it 🤣</h1>'+
-        '<p class="bv-sub">You are officially verified.</p>'+
-        '<button id="bv-open" class="btn bv green"'+(PREV?' disabled':'')+'>Get your real gift</button>'+
+'<h1 class="bv-title">'+copy.okTitle+'</h1>'+
+'<p class="bv-sub">'+copy.okSub+'</p>'+
+'<button id="bv-open" class="btn bv green"'+(PREV?' disabled':'')+'>'+copy.okBtn+'</button>'+
         (PREV?'<div class="bv-sub">Preview only – button disabled</div>':'')+
         '<canvas id="bv-confetti" class="confetti-canvas"></canvas>'+
       '</div>';
