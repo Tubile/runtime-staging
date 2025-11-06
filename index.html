@@ -1757,7 +1757,7 @@ else { document.body.className = ''; }
     introTitle:  (qs.get('introTitle') || `${NAME}, you've got a sweet surprise! 💖`).slice(0,80),
     introSub:    (qs.get('introSub')   || `To unlock it, please verify your identity`).slice(0,80),
     introBtn:    (qs.get('introBtn')   || `Verify & get the gift`).slice(0,32),
-    gridHeader:  (qs.get('gridHeader') || `Select all images with a weirdo 👇`).slice(0,80),
+    gridHeader:  (qs.get('gridHeader') || `To verify your identity, select all images with a lovely weirdo 👇`).slice(0,80),
     verify:      (qs.get('verifyText') || `Verify`).slice(0,32),
     continueTxt: (qs.get('continueText') || `Success! get your gift`).slice(0,32),
     okTitle:     (qs.get('okTitle')    || `You're verified! 🤣`).slice(0,80),
@@ -1788,9 +1788,9 @@ else { document.body.className = ''; }
     `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'>
        <rect width='100%' height='100%' fill='white'/>
        <g fill='#111' font-family='system-ui,Segoe UI,Roboto,Helvetica,Arial' font-weight='700'>
-         <text x='50%' y='35%' text-anchor='middle' font-size='72'>The</text>
-         <text x='50%' y='50%' text-anchor='middle' font-size='72'>victim</text>
-         <text x='50%' y='65%' text-anchor='middle' font-size='72'>goes here 🤣</text>
+         <text x='50%' y='35%' text-anchor='middle' font-size='72'>We'll put</text>
+         <text x='50%' y='50%' text-anchor='middle' font-size='72'>their photo</text>
+         <text x='50%' y='65%' text-anchor='middle' font-size='72'>here 🤣</text>
        </g>
      </svg>`;
   return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
