@@ -3292,13 +3292,12 @@ function startScan(){
     sensor.addEventListener('pointerdown', function(){ startScan(); });
     sensor.addEventListener('click', function(){ if(!running) startScan(); });
 
-    document.getElementById('fng-try1').addEventListener('click', function(){
-      t1.classList.remove('show'); attempt = 1; pct = 0; colorize(); startScan();
-    });
-    document.getElementById('fng-try2').addEventListener('click', function(){
-      t2.classList.remove('show'); attempt = 2; pct = 0; colorize(); startScan();
-    });
-
+document.getElementById('fng-try1').addEventListener('click', function(){
+  t1.classList.remove('show'); attempt = 1; pct = 0; colorize();
+});
+document.getElementById('fng-try2').addEventListener('click', function(){
+  t2.classList.remove('show'); attempt = 2; pct = 0; colorize();
+});
     // init ring
     setRing(sensor, 0);
   }
