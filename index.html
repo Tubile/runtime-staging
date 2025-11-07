@@ -93,6 +93,161 @@ font-size:12px;color:#aeb7c8;background:linear-gradient(0deg,rgba(255,255,255,.0
   }
   .wrap.scrolling .custom-scrollbar .thumb{ opacity:.9; }  /* מודגש בזמן גלילה */
 }
+/* ===== VIDEO REACTION FEATURE CSS ===== */
+/* Layout מרכזי לפיצ'ר וידאו */
+.wrap-videoReaction {
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+  text-align: center;
+  margin-top: clamp(20px, 6vh, 48px);
+  padding-bottom: 24px;
+}
+
+.wrap-videoReaction h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.wrap-videoReaction .sub {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.85;
+  line-height: 1.5;
+  color: #9aa3b2;
+}
+
+/* אייקון הצלחה */
+.vr-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(52,211,153,0.15));
+  border: 1px solid rgba(16,185,129,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  line-height: 1;
+  box-shadow: 0 8px 32px rgba(16,185,129,.2);
+  animation: vrSuccessPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes vrSuccessPop {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* קונטיינרים למצלמה ולוידאו */
+.camera-container,
+.video-preview-container {
+  width: min(300px, 100%);
+  aspect-ratio: 9/16;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  position: relative;
+}
+
+.camera-container video,
+.video-preview-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* אינדיקטור הקלטה */
+.recording-indicator {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  animation: recPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.rec-timer {
+  font-variant-numeric: tabular-nums;
+}
+
+/* כפתורים ספציפיים לפיצ'ר */
+.wrap-videoReaction .btn {
+  width: min(300px, 100%);
+  min-height: 52px;
+  padding: 16px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin: 0 auto;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+.wrap-videoReaction .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+
+.wrap-videoReaction .btn:active {
+  transform: translateY(0);
+}
+
+/* כפתור ghost (משני) */
+.btn.ghost {
+  background: transparent;
+  color: #9aa3b2;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: none;
+}
+
+.btn.ghost:hover {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* כפתור הקלטה */
+.btn-record {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rec-icon {
+  font-size: 20px;
+}
+
+/* הודעות עזרה */
+.wrap-videoReaction .vr-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #9aa3b2;
+  opacity: 0.7;
+}
 </style>
 
 <!-- Infinite UX extra classes -->
@@ -3318,12 +3473,285 @@ document.getElementById('fng-try2').addEventListener('click', function(){
     btn.addEventListener('click', function(){
       if (PREV) return;
       try{ sfx('confirm'); }catch(_){}
-      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){}
-    });
-  }
+ // ✅ בדיקה: האם יש videoReaction?
+    if (qs.get('videoReaction') === '1' || qs.has('videoReaction')) {
+      screenVideoReactionUpsell(); // מעבר למסך ה-Upsell
+    } else {
+      try{ window.open(GIFT, '_blank', 'noopener'); }catch(_){} // ישירות למתנה
+    }
+  });
+}
 
   // GO
   screenIntro();
+}
+  
+// ===== VIDEO REACTION FEATURE =====
+function screenVideoReactionUpsell() {
+  // קבלת פרמטרים מה-URL
+  var NAME = qs.get('name') || 'Friend';
+  var GIFT = qs.get('gift') || '#';
+  var PREV = qs.has('prev');
+
+  // Copy - טקסטים עם אפשרות לעריכה דרך URL
+  function take(k, def) {
+    var v = qs.get(k);
+    if (!v || !v.trim()) return def;
+    return v.trim().slice(0, 200);
+  }
+
+  var copy = {
+    successTitle: take('successTitle', 'You did it! 🎉'),
+    successSub: take('successSub', 'Capture your authentic reaction in 5-10 seconds'),
+    recordBtn: take('recordBtn', '📹 Record my reaction'),
+    skipBtn: take('skipBtn', 'Skip to my gift'),
+    
+    cameraTitle: take('cameraTitle', 'Ready to capture the moment?'),
+    cameraSub: take('cameraSub', "Your genuine reaction will make their day!"),
+    
+    previewTitle: take('previewTitle', 'Love it? ❤️'),
+    previewSub: take('previewSub', 'Share your reaction and brighten their day')
+  };
+
+  // משתנים גלובליים לניהול ההקלטה
+  var mediaRecorder = null;
+  var recordedChunks = [];
+  var stream = null;
+  var recordingInterval = null;
+  var recordingSeconds = 0;
+
+  // ===== מסך 1: הצלחה + Upsell =====
+  screenSuccess();
+    render(
+      '<div class="wrap wrap-videoReaction">' +
+        '<div class="vr-success-icon" aria-hidden="true">💝</div>' +
+        '<h1>' + copy.successTitle + '</h1>' +
+        '<p class="sub">' + copy.successSub + '</p>' +
+        '<button id="vr-record" class="btn brand">' + copy.recordBtn + '</button>' +
+        '<button id="vr-skip" class="btn ghost">' + copy.skipBtn + '</button>' +
+        '<div class="vr-hint">Your reaction = double the joy 💛</div>' +
+        '<canvas id="vr-confetti" class="confetti-canvas"></canvas>' +
+      '</div>'
+    );
+  }
+
+    // אפקט קונפטי
+    confettiBurst(document.getElementById('vr-confetti'));
+
+    // כפתור Record
+    document.getElementById('vr-record').addEventListener('click', function() {
+      try { sfx('confirm'); } catch(_) {}
+      screenCamera();
+    });
+
+    // כפתור Skip - ישירות למתנה
+    document.getElementById('vr-skip').addEventListener('click', function() {
+      try { sfx('confirm'); } catch(_) {}
+      if (!PREV) {
+        try { window.open(GIFT, '_blank', 'noopener'); } catch(_) {}
+      }
+    });
+  }
+
+  // ===== מסך 2: הקלטה =====
+  function screenCamera() {
+    render(
+      '<div class="wrap wrap-videoReaction wrap-camera">' +
+        '<h1>' + copy.cameraTitle + '</h1>' +
+        '<p class="sub">' + copy.cameraSub + '</p>' +
+        '<div class="camera-container">' +
+          '<video id="vr-video" autoplay playsinline muted></video>' +
+          '<div id="vr-rec-indicator" class="recording-indicator" style="display:none;">' +
+            '<span class="rec-dot"></span>' +
+            '<span id="vr-timer" class="rec-timer">0:00</span>' +
+          '</div>' +
+        '</div>' +
+        '<button id="vr-rec-btn" class="btn btn-record brand">' +
+          '<span class="rec-icon">⏺</span> Start recording' +
+        '</button>' +
+        '<button id="vr-cancel" class="btn ghost">Cancel</button>' +
+        '<div class="vr-hint">Front camera • 5-10 seconds</div>' +
+      '</div>'
+    );
+
+    var video = document.getElementById('vr-video');
+    var recBtn = document.getElementById('vr-rec-btn');
+    var cancelBtn = document.getElementById('vr-cancel');
+    var indicator = document.getElementById('vr-rec-indicator');
+    var timer = document.getElementById('vr-timer');
+
+    var isRecording = false;
+
+    // בקשת גישה למצלמה
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user' }, // מצלמה קדמית
+      audio: true
+    })
+    .then(function(mediaStream) {
+      stream = mediaStream;
+      video.srcObject = stream;
+    })
+    .catch(function(err) {
+      console.error('Camera error:', err);
+      alert('Unable to access camera. Please check permissions.');
+      screenSuccess(); // חזרה למסך הקודם
+    });
+
+    // כפתור Start/Stop Recording
+    recBtn.addEventListener('click', function() {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    });
+
+    // כפתור Cancel
+    cancelBtn.addEventListener('click', function() {
+      stopCamera();
+      screenSuccess();
+    });
+
+    function startRecording() {
+      if (!stream) return;
+
+      try {
+        recordedChunks = [];
+        recordingSeconds = 0;
+
+        // יצירת MediaRecorder
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm;codecs=vp8,opus'
+        });
+
+        mediaRecorder.ondataavailable = function(event) {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function() {
+          var blob = new Blob(recordedChunks, { type: 'video/webm' });
+          stopCamera();
+          screenPreview(blob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+
+        // עדכון UI
+        recBtn.innerHTML = '<span class="rec-icon">⏹</span> Stop recording';
+        indicator.style.display = 'flex';
+        try { sfx('confirm'); } catch(_) {}
+
+        // טיימר
+        recordingInterval = setInterval(function() {
+          recordingSeconds++;
+          var mins = Math.floor(recordingSeconds / 60);
+          var secs = recordingSeconds % 60;
+          timer.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+
+          // עצירה אוטומטית אחרי 10 שניות
+          if (recordingSeconds >= 10) {
+            stopRecording();
+          }
+        }, 1000);
+
+      } catch(err) {
+        console.error('Recording error:', err);
+        alert('Unable to start recording.');
+      }
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+
+      isRecording = false;
+      clearInterval(recordingInterval);
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+
+      try { sfx('confirm'); } catch(_) {}
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        stream = null;
+      }
+    }
+  }
+
+  // ===== מסך 3: Preview & Share =====
+  function screenPreview(videoBlob) {
+    var videoURL = URL.createObjectURL(videoBlob);
+
+    render(
+      '<div class="wrap wrap-videoReaction wrap-preview">' +
+        '<div class="vr-success-icon" aria-hidden="true">🎬</div>' +
+        '<h1>' + copy.previewTitle + '</h1>' +
+        '<p class="sub">' + copy.previewSub + '</p>' +
+        '<div class="video-preview-container">' +
+          '<video id="vr-preview" controls playsinline></video>' +
+        '</div>' +
+        '<button id="vr-share" class="btn green">📤 Share & continue to gift</button>' +
+        '<button id="vr-retake" class="btn ghost">🔄 Record again</button>' +
+        '<div class="vr-hint">Share via WhatsApp or save to device</div>' +
+      '</div>'
+    );
+
+    var previewVideo = document.getElementById('vr-preview');
+    previewVideo.src = videoURL;
+
+    // כפתור Share
+    document.getElementById('vr-share').addEventListener('click', function() {
+      try { sfx('confirm'); } catch(_) {}
+
+      // שיתוף הווידאו
+      if (navigator.canShare && navigator.canShare({ files: [new File([videoBlob], 'reaction.webm', { type: 'video/webm' })] })) {
+        var file = new File([videoBlob], 'reaction.webm', { type: 'video/webm' });
+        
+        navigator.share({
+          files: [file],
+          title: 'My Reaction!',
+          text: 'Check out my reaction!'
+        })
+        .then(function() {
+          console.log('Shared successfully');
+        })
+        .catch(function(err) {
+          console.log('Share cancelled or failed:', err);
+        });
+      } else {
+        // אם Share API לא נתמך, להוריד את הקובץ
+        var a = document.createElement('a');
+        a.href = videoURL;
+        a.download = 'my-reaction.webm';
+        a.click();
+      }
+
+      // פתיחת המתנה במקביל
+      if (!PREV) {
+        setTimeout(function() {
+          try { window.open(GIFT, '_blank', 'noopener'); } catch(_) {}
+        }, 500);
+      }
+    });
+
+    // כפתור Record Again
+    document.getElementById('vr-retake').addEventListener('click', function() {
+      try { sfx('confirm'); } catch(_) {}
+      URL.revokeObjectURL(videoURL); // ניקוי זיכרון
+      screenCamera();
+    });
+  }
+
+  // התחלה
+  screenSuccess();
 }
 
 const map = {
